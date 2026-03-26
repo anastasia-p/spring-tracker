@@ -171,6 +171,7 @@ firebase.initializeApp({
   appId: "1:192640819831:web:34ecfca0a22434f0271c72"
 });
 db = firebase.firestore();
+db.enablePersistence().catch(function(){});
 
 function weekKey(w) { return 'week_' + w; }
 function getWeekLabel(o) {
@@ -245,11 +246,24 @@ function renderPlan() {
 
 function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
 
+function getOpenDays() {
+  var open = [];
+  document.querySelectorAll('.day-card').forEach(function(card, i) {
+    if(card.classList.contains('open')) open.push(i);
+  });
+  return open;
+}
+
 function toggleCheck(di, ei, el) {
   if(!checks[di]) checks[di] = {};
   checks[di][ei] = el.checked;
   saveChecks();
+  var open = getOpenDays();
   renderPlan();
+  open.forEach(function(idx) {
+    var cards = document.querySelectorAll('.day-card');
+    if(cards[idx]) cards[idx].classList.add('open');
+  });
 }
 
 function changeWeek(d) {
