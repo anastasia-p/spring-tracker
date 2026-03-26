@@ -5,18 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spring Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
-:root {
-  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;
-  --blue-light:#E6F1FB;--blue-text:#0C447C;--gray-light:#F1EFE8;--gray-text:#444441;
-  --bg:#F7F6F2;--card:#FFFFFF;--border:rgba(0,0,0,0.1);
-  --text:#1a1a18;--text-muted:#888780;--text-hint:#B4B2A9;
-  --radius:12px;--radius-sm:8px;
-}
+:root{--green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;--blue-light:#E6F1FB;--blue-text:#0C447C;--gray-light:#F1EFE8;--gray-text:#444441;--bg:#F7F6F2;--card:#FFFFFF;--border:rgba(0,0,0,0.1);--text:#1a1a18;--text-muted:#888780;--text-hint:#B4B2A9;--radius:12px;--radius-sm:8px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .app{max-width:680px;margin:0 auto;padding:0 0 80px}
-.header{padding:20px 20px 0;display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
+.header{padding:20px 20px 0;margin-bottom:20px}
 .header h1{font-size:22px;font-weight:600}
 .tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:'Onest',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
@@ -129,179 +125,182 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </button>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/firebase@9.23.0/app/dist/index.compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@9.23.0/firestore/dist/index.compat.js"></script>
 <script>
-window.addEventListener('load', function() {
-  firebase.initializeApp({
-    apiKey: "AIzaSyB0898njk5wWWEZgTYdQcg0Rv_loFIcH2c",
-    authDomain: "spring-tracker.firebaseapp.com",
-    projectId: "spring-tracker",
-    storageBucket: "spring-tracker.firebasestorage.app",
-    messagingSenderId: "192640819831",
-    appId: "1:192640819831:web:34ecfca0a22434f0271c72"
-  });
-  const db = firebase.firestore();
+var HIP = {name:'Растяжка сгибателей бедра',desc:'Выпад на колене, таз подворачивается вниз, вес вперед',note:'60 сек каждую сторону, нездоровую дольше'};
+var LEGS = [
+  {name:'Роллер — IT-банда',desc:'Внешняя поверхность бедра, от колена вверх',note:'1–2 мин каждой ногой, до тренировки'},
+  {name:'Всадник у стены',desc:'Разминка перед ножными',note:'1×60 сек'},
+  {name:'Step down',desc:'Ступенька 10 см, у стены, контроль колена над 2-м пальцем',note:'3×10 каждой ногой'},
+  {name:'Перенос веса с покачиванием',desc:'На одной ноге, корпус вперед, спина прямая',note:'3×10 каждой ногой'},
+  {name:'Боковые шаги',desc:'Небольшой присед, голова на одном уровне, расстояние между ногами сохраняется',note:'3×10 в каждую сторону'},
+  {name:'Cat-cow',desc:'Движение от копчика волной вверх',note:'2×10'},
+  {name:'90/90 растяжка таза',desc:'Сидя на полу, ноги в 90°, наклоны',note:'1 мин каждую сторону'},
+  HIP,
+  {name:'Глютовый мост',desc:'Лежа, медленный подъем таза позвонок за позвонком',note:'3×15'},
+];
+var UPPER = [
+  {name:'Отжимания',desc:'Средняя постановка рук, локти не разъезжаются',note:'3 подхода, запиши кол-во'},
+  {name:'Подтягивания',desc:'Или негативные — медленный спуск 3–4 сек',note:'3 подхода'},
+  {name:'Планка на предплечьях',desc:'Спина прямая, плечи от ушей',note:'3×40 сек'},
+  {name:'Боковая планка',desc:'Левая сторона первой, затем правая',note:'3 подхода каждую сторону'},
+  {name:'Руки вперед — изометрия плеч',desc:'Руки горизонтально, локти к полу, держать',note:'3×60 сек'},
+  {name:'Скручивания',desc:'Медленно, выдох в верхней точке',note:'3×15'},
+  HIP,
+];
+var PLAN = [
+  {day:'Понедельник',type:'legs',label:'Ноги + таз',exs:LEGS},
+  {day:'Вторник',type:'upper',label:'Верх + кор',exs:UPPER},
+  {day:'Среда',type:'legs',label:'Ноги + таз',exs:LEGS},
+  {day:'Четверг',type:'upper',label:'Верх + кор',exs:UPPER},
+  {day:'Пятница',type:'legs',label:'Ноги + таз',exs:LEGS},
+  {day:'Суббота',type:'upper',label:'Верх + кор',exs:UPPER},
+  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[
+    {name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''},
+  ]},
+];
 
-  const HIP = {name:'Растяжка сгибателей бедра',desc:'Выпад на колене, таз подворачивается вниз, вес вперед',note:'60 сек каждую сторону, нездоровую дольше'};
-  const LEGS = [
-    {name:'Роллер — IT-банда',desc:'Внешняя поверхность бедра, от колена вверх',note:'1–2 мин каждой ногой, до тренировки'},
-    {name:'Всадник у стены',desc:'Разминка перед ножными',note:'1×60 сек'},
-    {name:'Step down',desc:'Ступенька 10 см, у стены, контроль колена над 2-м пальцем',note:'3×10 каждой ногой'},
-    {name:'Перенос веса с покачиванием',desc:'На одной ноге, корпус вперед, спина прямая',note:'3×10 каждой ногой'},
-    {name:'Боковые шаги',desc:'Небольшой присед, голова на одном уровне, расстояние между ногами сохраняется',note:'3×10 в каждую сторону'},
-    {name:'Cat-cow',desc:'Движение от копчика волной вверх',note:'2×10'},
-    {name:'90/90 растяжка таза',desc:'Сидя на полу, ноги в 90°, наклоны',note:'1 мин каждую сторону'},
-    HIP,
-    {name:'Глютовый мост',desc:'Лежа, медленный подъем таза позвонок за позвонком',note:'3×15'},
-  ];
-  const UPPER = [
-    {name:'Отжимания',desc:'Средняя постановка рук, локти не разъезжаются',note:'3 подхода, запиши кол-во'},
-    {name:'Подтягивания',desc:'Или негативные — медленный спуск 3–4 сек',note:'3 подхода'},
-    {name:'Планка на предплечьях',desc:'Спина прямая, плечи от ушей',note:'3×40 сек'},
-    {name:'Боковая планка',desc:'Левая сторона первой, затем правая',note:'3 подхода каждую сторону'},
-    {name:'Руки вперед — изометрия плеч',desc:'Руки горизонтально, локти к полу, держать',note:'3×60 сек'},
-    {name:'Скручивания',desc:'Медленно, выдох в верхней точке',note:'3×15'},
-    HIP,
-  ];
-  const PLAN = [
-    {day:'Понедельник',type:'legs',label:'Ноги + таз',exs:LEGS},
-    {day:'Вторник',type:'upper',label:'Верх + кор',exs:UPPER},
-    {day:'Среда',type:'legs',label:'Ноги + таз',exs:LEGS},
-    {day:'Четверг',type:'upper',label:'Верх + кор',exs:UPPER},
-    {day:'Пятница',type:'legs',label:'Ноги + таз',exs:LEGS},
-    {day:'Суббота',type:'upper',label:'Верх + кор',exs:UPPER},
-    {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[
-      {name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''},
-    ]},
-  ];
+var TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest'};
+var currentWeek = 0, checks = {}, history = [], db;
 
-  const TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest'};
-  let currentWeek = 0, checks = {}, history = [];
-
-  function weekKey(w) { return 'week_' + w; }
-  function getWeekLabel(o) {
-    const now = new Date(), mon = new Date(now);
-    mon.setDate(now.getDate() - now.getDay() + 1 + o * 7);
-    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-    const f = d => d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0');
-    return f(mon) + ' — ' + f(sun);
-  }
-
-  async function loadChecks() {
-    try { const s = await db.collection('tracker').doc(weekKey(currentWeek)).get(); checks = s.exists ? (s.data().checks || {}) : {}; } catch(e) { checks = {}; }
-  }
-  async function saveChecks() {
-    try { await db.collection('tracker').doc(weekKey(currentWeek)).set({checks}); } catch(e) {}
-  }
-  async function loadHistory() {
-    try { const s = await db.collection('tracker').doc('history').get(); history = s.exists ? (s.data().entries || []) : []; } catch(e) { history = []; }
-  }
-  async function saveHistoryDb() {
-    try { await db.collection('tracker').doc('history').set({entries: history}); } catch(e) {}
-  }
-
-  function renderPlan() {
-    document.getElementById('week-label').textContent = 'Неделя ' + getWeekLabel(currentWeek);
-    let doneDays = 0, doneEx = 0, totalEx = 0;
-    PLAN.forEach(d => { if(d.type !== 'rest') totalEx += d.exs.length; });
-    const c = document.getElementById('days-container'); c.innerHTML = '';
-    PLAN.forEach((day, di) => {
-      const dc = checks[di] || {};
-      const done = day.exs.filter((_,ei) => dc[ei]).length, total = day.exs.length;
-      if(done === total && total > 0) doneDays++;
-      if(day.type !== 'rest') doneEx += done;
-      const pct = total > 0 ? Math.round(done/total*100) : 0;
-      const card = document.createElement('div');
-      card.className = 'day-card';
-      card.innerHTML = `
-        <div class="day-header" onclick="toggleDay(this)">
-          <div class="day-left">
-            <span class="day-badge ${TC[day.type]}">${day.label}</span>
-            <span class="day-name">${day.day}</span>
-          </div>
-          <div class="day-right">
-            <span class="day-count">${done}/${total}</span>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
-        <div class="day-body">
-          <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
-          <div class="ex-list">${day.exs.map((ex,ei) => `
-            <div class="ex-item">
-              <input type="checkbox" class="ex-check" ${dc[ei]?'checked':''} onchange="toggleCheck(${di},${ei},this)">
-              <div class="ex-info">
-                <div class="ex-name">${ex.name}</div>
-                <div class="ex-desc">${ex.desc}</div>
-                ${ex.note ? `<div class="ex-note">${ex.note}</div>` : ''}
-              </div>
-            </div>`).join('')}
-          </div>
-        </div>`;
-      c.appendChild(card);
-    });
-    const tp = totalEx > 0 ? Math.round(doneEx/totalEx*100) : 0;
-    document.getElementById('s-days').textContent = doneDays;
-    document.getElementById('s-ex').textContent = doneEx;
-    document.getElementById('s-pct').textContent = tp + '%';
-  }
-
-  window.toggleDay = function(el) { el.closest('.day-card').classList.toggle('open'); };
-
-  window.toggleCheck = async function(di, ei, el) {
-    if(!checks[di]) checks[di] = {};
-    checks[di][ei] = el.checked;
-    await saveChecks();
-    renderPlan();
-  };
-
-  window.changeWeek = async function(d) { currentWeek += d; await loadChecks(); renderPlan(); };
-
-  window.saveTest = async function() {
-    const ids = ['t1','t2','t3','t4','t5','t6','t7','t8'];
-    const vals = ids.map(id => { const v = document.getElementById(id).value; return v === '' ? null : parseInt(v); });
-    history.push({date: new Date().toLocaleDateString('ru'), vals});
-    await saveHistoryDb();
-    document.getElementById('saved-msg').style.display = 'block';
-    setTimeout(() => document.getElementById('saved-msg').style.display = 'none', 2000);
-    ids.forEach(id => document.getElementById(id).value = '');
-    renderHistory();
-  };
-
-  function renderHistory() {
-    const c = document.getElementById('history-container');
-    if(!history.length) { c.innerHTML = '<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>'; return; }
-    const labels = ['2 ноги','Прав.','Лев.','Баланс','Отжим.','Подтяг.','Пл.Л','Пл.П'];
-    let html = '<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
-    labels.forEach(l => html += `<th>${l}</th>`);
-    html += '</tr></thead><tbody>';
-    history.forEach((e, i) => {
-      html += `<tr><td>${e.date}</td>`;
-      e.vals.forEach((v, vi) => {
-        let delta = '';
-        if(i > 0 && v !== null && history[i-1].vals[vi] !== null) {
-          const diff = v - history[i-1].vals[vi];
-          if(diff > 0) delta = `<span class="delta up">+${diff}</span>`;
-          else if(diff < 0) delta = `<span class="delta down">${diff}</span>`;
-        }
-        html += `<td>${v !== null ? v : '—'}${delta}</td>`;
-      });
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-    c.innerHTML = html;
-  }
-
-  window.showTab = function(name, btn) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(name).classList.add('active');
-    btn.classList.add('active');
-    if(name === 'progress') renderHistory();
-  };
-
-  loadChecks().then(() => loadHistory()).then(() => renderPlan());
+firebase.initializeApp({
+  apiKey: "AIzaSyB0898njk5wWWEZgTYdQcg0Rv_loFIcH2c",
+  authDomain: "spring-tracker.firebaseapp.com",
+  projectId: "spring-tracker",
+  storageBucket: "spring-tracker.firebasestorage.app",
+  messagingSenderId: "192640819831",
+  appId: "1:192640819831:web:34ecfca0a22434f0271c72"
 });
+db = firebase.firestore();
+
+function weekKey(w) { return 'week_' + w; }
+function getWeekLabel(o) {
+  var now = new Date(), mon = new Date(now);
+  mon.setDate(now.getDate() - now.getDay() + 1 + o * 7);
+  var sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  var f = function(d) { return d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0'); };
+  return f(mon) + ' — ' + f(sun);
+}
+
+function loadChecks() {
+  return db.collection('tracker').doc(weekKey(currentWeek)).get().then(function(s) {
+    checks = s.exists ? (s.data().checks || {}) : {};
+  }).catch(function() { checks = {}; });
+}
+function saveChecks() {
+  return db.collection('tracker').doc(weekKey(currentWeek)).set({checks: checks}).catch(function(){});
+}
+function loadHistory() {
+  return db.collection('tracker').doc('history').get().then(function(s) {
+    history = s.exists ? (s.data().entries || []) : [];
+  }).catch(function() { history = []; });
+}
+function saveHistoryDb() {
+  return db.collection('tracker').doc('history').set({entries: history}).catch(function(){});
+}
+
+function renderPlan() {
+  document.getElementById('week-label').textContent = 'Неделя ' + getWeekLabel(currentWeek);
+  var doneDays = 0, doneEx = 0, totalEx = 0;
+  PLAN.forEach(function(d) { if(d.type !== 'rest') totalEx += d.exs.length; });
+  var c = document.getElementById('days-container'); c.innerHTML = '';
+  PLAN.forEach(function(day, di) {
+    var dc = checks[di] || {};
+    var done = day.exs.filter(function(_,ei) { return dc[ei]; }).length, total = day.exs.length;
+    if(done === total && total > 0) doneDays++;
+    if(day.type !== 'rest') doneEx += done;
+    var pct = total > 0 ? Math.round(done/total*100) : 0;
+    var card = document.createElement('div');
+    card.className = 'day-card';
+    card.innerHTML =
+      '<div class="day-header" onclick="toggleDay(this)">' +
+        '<div class="day-left">' +
+          '<span class="day-badge ' + TC[day.type] + '">' + day.label + '</span>' +
+          '<span class="day-name">' + day.day + '</span>' +
+        '</div>' +
+        '<div class="day-right">' +
+          '<span class="day-count">' + done + '/' + total + '</span>' +
+          '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+        '</div>' +
+      '</div>' +
+      '<div class="day-body">' +
+        '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
+        '<div class="ex-list">' + day.exs.map(function(ex, ei) {
+          return '<div class="ex-item">' +
+            '<input type="checkbox" class="ex-check" ' + (dc[ei] ? 'checked' : '') + ' onchange="toggleCheck(' + di + ',' + ei + ',this)">' +
+            '<div class="ex-info">' +
+              '<div class="ex-name">' + ex.name + '</div>' +
+              '<div class="ex-desc">' + ex.desc + '</div>' +
+              (ex.note ? '<div class="ex-note">' + ex.note + '</div>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('') + '</div>' +
+      '</div>';
+    c.appendChild(card);
+  });
+  var tp = totalEx > 0 ? Math.round(doneEx/totalEx*100) : 0;
+  document.getElementById('s-days').textContent = doneDays;
+  document.getElementById('s-ex').textContent = doneEx;
+  document.getElementById('s-pct').textContent = tp + '%';
+}
+
+function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
+
+function toggleCheck(di, ei, el) {
+  if(!checks[di]) checks[di] = {};
+  checks[di][ei] = el.checked;
+  saveChecks();
+  renderPlan();
+}
+
+function changeWeek(d) {
+  currentWeek += d;
+  loadChecks().then(function() { renderPlan(); });
+}
+
+function saveTest() {
+  var ids = ['t1','t2','t3','t4','t5','t6','t7','t8'];
+  var vals = ids.map(function(id) { var v = document.getElementById(id).value; return v === '' ? null : parseInt(v); });
+  history.push({date: new Date().toLocaleDateString('ru'), vals: vals});
+  saveHistoryDb();
+  document.getElementById('saved-msg').style.display = 'block';
+  setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
+  ids.forEach(function(id) { document.getElementById(id).value = ''; });
+  renderHistory();
+}
+
+function renderHistory() {
+  var c = document.getElementById('history-container');
+  if(!history.length) { c.innerHTML = '<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>'; return; }
+  var labels = ['2 ноги','Прав.','Лев.','Баланс','Отжим.','Подтяг.','Пл.Л','Пл.П'];
+  var html = '<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
+  labels.forEach(function(l) { html += '<th>' + l + '</th>'; });
+  html += '</tr></thead><tbody>';
+  history.forEach(function(e, i) {
+    html += '<tr><td>' + e.date + '</td>';
+    e.vals.forEach(function(v, vi) {
+      var delta = '';
+      if(i > 0 && v !== null && history[i-1].vals[vi] !== null) {
+        var diff = v - history[i-1].vals[vi];
+        if(diff > 0) delta = '<span class="delta up">+' + diff + '</span>';
+        else if(diff < 0) delta = '<span class="delta down">' + diff + '</span>';
+      }
+      html += '<td>' + (v !== null ? v : '—') + delta + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  c.innerHTML = html;
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById(name).classList.add('active');
+  btn.classList.add('active');
+  if(name === 'progress') renderHistory();
+}
+
+loadChecks().then(function() { return loadHistory(); }).then(function() { renderPlan(); });
 </script>
 </body>
 </html>
