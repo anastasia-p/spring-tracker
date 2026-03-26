@@ -36,7 +36,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
 .day-left{display:flex;align-items:center;gap:10px}
 .day-name{font-size:15px;font-weight:500}
-.day-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.day-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;width:90px;text-align:center;white-space:nowrap;overflow:hidden}
 .b-legs{background:var(--green-light);color:var(--green-text)}
 .b-upper{background:var(--blue-light);color:var(--blue-text)}
 .b-rest{background:var(--gray-light);color:var(--gray-text)}
@@ -225,8 +225,8 @@ var WINGCHUN_PLAN = [
   {day:'Четверг',type:'wc',label:'Вин Чун',exs:WC_EXS},
   {day:'Пятница',type:'wc',label:'Вин Чун',exs:WC_EXS},
   {day:'Суббота',type:'wc',label:'Вин Чун',exs:WC_EXS},
-  {day:'Воскресенье',type:'rest',label:'Выходной',exs:[
-    {name:'Выходной день',desc:'Отдых от Вин Чун',note:''},
+  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[
+    {name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''},
   ]},
 ];
 
@@ -457,10 +457,3 @@ init();
 </script>
 </body>
 </html>
-'''
-
-with open('/home/claude/fitness-tracker.html', 'w') as f:
-    f.write(html)
-print('done', len(html))
-EOF
-python3 /tmp/build.py
