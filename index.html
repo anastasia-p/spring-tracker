@@ -323,7 +323,7 @@ function renderSection(section) {
     var isComplete = done === total && total > 0 && day.type !== 'rest';
     var doneMark = isComplete
       ? '<div class="done-mark"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-      : '';
+      : '<div class="done-mark" style="background:transparent"></div>';
     var card = document.createElement('div');
     card.className = 'day-card';
     card.innerHTML =
