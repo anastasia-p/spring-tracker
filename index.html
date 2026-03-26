@@ -212,13 +212,9 @@ function renderPlan() {
     var pct = total > 0 ? Math.round(done/total*100) : 0;
     var card = document.createElement('div');
     card.className = 'day-card';
-    var doneMark = (done === total && total > 0)
-      ? '<div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-      : '<div style="width:22px;height:22px;flex-shrink:0"></div>';
     card.innerHTML =
       '<div class="day-header" onclick="toggleDay(this)">' +
         '<div class="day-left">' +
-          doneMark +
           '<span class="day-badge ' + TC[day.type] + '">' + day.label + '</span>' +
           '<span class="day-name">' + day.day + '</span>' +
         '</div>' +
