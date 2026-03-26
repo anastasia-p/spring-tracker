@@ -145,11 +145,15 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
         <div class="test-item"><div class="test-label">Встать со стула — 2 ноги (30 сек)</div><input class="test-input" type="number" id="t1" placeholder="—"><div class="test-unit">раз</div></div>
         <div class="test-item"><div class="test-label">Встать со стула — правая нога (15 сек)</div><input class="test-input" type="number" id="t2" placeholder="—"><div class="test-unit">раз</div></div>
         <div class="test-item"><div class="test-label">Встать со стула — левая нога (15 сек)</div><input class="test-input" type="number" id="t3" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Баланс на одной ноге (глаза закрыты)</div><input class="test-input" type="number" id="t4" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Отжимания максимум</div><input class="test-input" type="number" id="t5" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Подтягивания максимум</div><input class="test-input" type="number" id="t6" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Боковая планка — левая</div><input class="test-input" type="number" id="t7" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Боковая планка — правая</div><input class="test-input" type="number" id="t8" placeholder="—"><div class="test-unit">секунд</div></div>
+        <div class="test-item"><div class="test-label">Баланс правая нога (глаза закрыты)</div><input class="test-input" type="number" id="t4" placeholder="—"><div class="test-unit">секунд</div></div>
+        <div class="test-item"><div class="test-label">Баланс левая нога (глаза закрыты)</div><input class="test-input" type="number" id="t5" placeholder="—"><div class="test-unit">секунд</div></div>
+        <div class="test-item"><div class="test-label">Отжимания максимум</div><input class="test-input" type="number" id="t6" placeholder="—"><div class="test-unit">раз</div></div>
+        <div class="test-item"><div class="test-label">Подтягивания максимум</div><input class="test-input" type="number" id="t7" placeholder="—"><div class="test-unit">раз</div></div>
+        <div class="test-item"><div class="test-label">Боковая планка — левая</div><input class="test-input" type="number" id="t8" placeholder="—"><div class="test-unit">секунд</div></div>
+        <div class="test-item"><div class="test-label">Боковая планка — правая</div><input class="test-input" type="number" id="t9" placeholder="—"><div class="test-unit">секунд</div></div>
+        <div class="test-item"><div class="test-label">Дерево</div><input class="test-input" type="number" id="t10" placeholder="—"><div class="test-unit">минут</div></div>
+        <div class="test-item"><div class="test-label">Всадник у стены</div><input class="test-input" type="number" id="t11" placeholder="—"><div class="test-unit">секунд</div></div>
+        <div class="test-item"><div class="test-label">Стульчик у стены</div><input class="test-input" type="number" id="t12" placeholder="—"><div class="test-unit">секунд</div></div>
       </div>
       <button class="save-btn" onclick="saveTest()">Сохранить результаты</button>
       <div class="saved-msg" id="saved-msg">Сохранено!</div>
@@ -183,7 +187,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 var HIP = {name:'Растяжка сгибателей бедра',desc:'Выпад на колене, таз подворачивается вниз, вес вперед',note:'60 сек каждую сторону, нездоровую дольше'};
 var LEGS = [
   {name:'Роллер — IT-банда',desc:'Внешняя поверхность бедра, от колена вверх',note:'1–2 мин каждой ногой, до тренировки'},
-  {name:'Всадник у стены',desc:'Разминка перед ножными',note:'1×60 сек'},
   {name:'Step down',desc:'Ступенька 10 см, у стены, контроль колена над 2-м пальцем',note:'3×10 каждой ногой'},
   {name:'Перенос веса с покачиванием',desc:'На одной ноге, корпус вперед, спина прямая',note:'3×10 каждой ногой'},
   {name:'Боковые шаги',desc:'Небольшой присед, голова на одном уровне, расстояние между ногами сохраняется',note:'3×10 в каждую сторону'},
@@ -429,7 +432,7 @@ function changeWeek(section, d) {
 }
 
 function saveTest() {
-  var ids = ['t1','t2','t3','t4','t5','t6','t7','t8'];
+  var ids = ['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12'];
   var vals = ids.map(function(id) { var v = document.getElementById(id).value; return v === '' ? null : parseInt(v); });
   history.push({date: new Date().toLocaleDateString('ru'), vals: vals});
   saveHistoryDb();
@@ -442,7 +445,7 @@ function saveTest() {
 function renderHistory() {
   var c = document.getElementById('history-container');
   if(!history.length) { c.innerHTML = '<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>'; return; }
-  var labels = ['2 ноги','Прав.','Лев.','Баланс','Отжим.','Подтяг.','Пл.Л','Пл.П'];
+  var labels = ['2 ноги','Прав.','Лев.','Бал.П','Бал.Л','Отжим.','Подтяг.','Пл.Л','Пл.П','Дерево','Всадник','Стульчик'];
   var html = '<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
   labels.forEach(function(l) { html += '<th>' + l + '</th>'; });
   html += '</tr></thead><tbody>';
