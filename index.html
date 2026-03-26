@@ -364,8 +364,11 @@ function renderSection(section) {
     if(day.type !== 'rest') doneEx += done;
     var pct = total > 0 ? Math.round(done/total*100) : 0;
     var isComplete = done === total && total > 0 && day.type !== 'rest';
+    var isPartial = done > 0 && done < total && day.type !== 'rest';
     var doneMark = isComplete
       ? '<div class="done-mark"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+      : isPartial
+      ? '<div class="done-mark" style="background:#FAC775"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
       : '<div class="done-mark" style="background:transparent"></div>';
     var card = document.createElement('div');
     card.className = 'day-card';
