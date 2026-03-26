@@ -1,13 +1,14 @@
 {
   "name": "Spring Tracker",
-  "short_name": "Spring",
-  "start_url": "./fitness-tracker.html",
+  "short_name": "Spring Tracker",
+  "start_url": "/spring-tracker/",
+  "scope": "/spring-tracker/",
   "display": "standalone",
   "background_color": "#FBEAF0",
   "theme_color": "#1D9E75",
   "icons": [
     {
-      "src": "./icon.svg",
+      "src": "/spring-tracker/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
