@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Spring">
+<meta name="apple-mobile-web-app-title" content="Spring Tracker">
 <link rel="apple-touch-icon" href="./icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -20,39 +20,52 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .app{max-width:680px;margin:0 auto;padding:0 0 80px}
-.header{background:#FBEAF0;padding:16px 16px 0}
-.header-top{display:flex;align-items:center;gap:10px;padding-bottom:12px}.header h1{font-size:20px;font-weight:600}.header-line{border-bottom:1px solid rgba(0,0,0,0.08);margin:0 -16px}
+
+/* Header - always same height */
+.app-header{background:#FBEAF0;border-bottom:1px solid rgba(0,0,0,0.1)}
+.header-top{display:flex;align-items:center;gap:10px;padding:16px 16px 12px}
+.header-top h1{font-size:20px;font-weight:600;color:var(--text)}
+.sub-tabs{display:flex;padding:0 16px;border-bottom:none}
+.sub-tab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border:none;background:none;font-family:'Onest',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.sub-tab.active{color:var(--green);border-bottom:2px solid var(--green)}
+
+/* Screens */
+.screen{display:none;padding:0}
+.screen.active{display:block}
+.sub-screen{display:none;padding:0 16px}
+.sub-screen.active{display:block}
+
+/* Bottom nav */
 .tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:'Onest',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
 .tab-btn.active{color:var(--green)}
 .tab-btn svg{width:20px;height:20px}
-.screen{display:none;padding:0}
-.screen.active{display:block}
-.sub-tabs{display:flex;border-bottom:1px solid rgba(0,0,0,0.08);padding:0;gap:0;margin-bottom:16px}
-.sub-tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border:none;background:none;font-family:'Onest',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
-.sub-tab.active{color:#1D9E75;border-bottom:2px solid #1D9E75}
-.sub-screen{display:none;padding:0 16px}
-.sub-screen.active{display:block}
-.week-nav{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+
+/* Week nav */
+.week-nav{display:flex;align-items:center;gap:8px;padding:16px 0 0}
 .week-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;font-size:16px;color:var(--text);display:flex;align-items:center;justify-content:center}
 .week-nav span{flex:1;text-align:center;font-size:14px;font-weight:500}
-.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+
+/* Summary */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}
 .summary-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;text-align:center;border:1px solid var(--border)}
 .summary-num{font-size:24px;font-weight:600}
 .summary-lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* Day cards */
 .day-card{background:var(--card);border-radius:var(--radius);margin-bottom:10px;border:1px solid var(--border);overflow:hidden}
 .day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
 .day-left{display:flex;align-items:center;gap:10px}
 .day-name{font-size:15px;font-weight:500}
-.day-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;width:90px;text-align:center;white-space:nowrap;overflow:hidden}
+.day-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;width:90px;text-align:center}
 .b-legs{background:var(--green-light);color:var(--green-text)}
 .b-upper{background:var(--blue-light);color:var(--blue-text)}
 .b-rest{background:var(--gray-light);color:var(--gray-text)}
 .b-wc{background:var(--purple-light);color:var(--purple-text)}
 .b-qi{background:var(--amber-light);color:var(--amber-text)}
 .day-right{display:flex;align-items:center;gap:8px}
-.day-count{font-size:12px;color:var(--text-muted)}
-.done-mark{width:22px;height:22px;border-radius:50%;background:#1D9E75;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.day-count{font-size:12px;color:var(--text-muted);min-width:32px;text-align:right}
+.done-mark{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .done-mark svg{width:12px;height:12px}
 .chevron{width:16px;height:16px;color:var(--text-hint);transition:transform .2s}
 .day-card.open .chevron{transform:rotate(180deg)}
@@ -69,8 +82,10 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .ex-name{font-size:14px;font-weight:500}
 .ex-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
 .ex-note{font-size:12px;color:var(--green-dark);margin-top:3px;font-style:italic}
-.test-section{padding:0 16px}
-.section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:20px 0 10px}
+
+/* Test */
+.test-section{padding:16px 16px 0}
+.section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
 .test-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .test-item{background:var(--card);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border)}
 .test-label{font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.4}
@@ -79,7 +94,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .save-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'Onest',sans-serif;cursor:pointer;transition:background .15s}
 .save-btn:hover{background:var(--green-dark)}
 .saved-msg{text-align:center;color:var(--green);font-size:13px;margin-top:8px;display:none}
-.progress-section{padding:0 16px}
+
+/* Progress */
+.progress-section{padding:16px 16px 0}
 .history-wrap{overflow-x:auto}
 .history-table{width:100%;border-collapse:collapse;font-size:13px}
 .history-table th{text-align:left;padding:8px 10px;font-weight:500;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -89,22 +106,24 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .up{color:var(--green)}
 .down{color:#E24B4A}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:14px;line-height:1.6}
-.loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:14px}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="header">
-    <div class="header-top"><svg width="28" height="28" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg><h1>Spring Tracker</h1></div>
-  </div>
 
-  <div id="plan" class="screen active">
-    <div class="sub-tabs">
+  <div class="app-header">
+    <div class="header-top">
+      <svg width="28" height="28" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      <h1>Spring Tracker</h1>
+    </div>
+    <div class="sub-tabs" id="sub-tabs">
       <button class="sub-tab active" onclick="showSubTab('strength',this)">Силовые</button>
       <button class="sub-tab" onclick="showSubTab('wingchun',this)">Вин Чун</button>
       <button class="sub-tab" onclick="showSubTab('qigong',this)">Цигун</button>
     </div>
+  </div>
 
+  <div id="plan" class="screen active">
     <div id="strength" class="sub-screen active">
       <div class="week-nav">
         <button onclick="changeWeek('strength',-1)">←</button>
@@ -118,7 +137,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       </div>
       <div id="strength-days"></div>
     </div>
-
     <div id="wingchun" class="sub-screen">
       <div class="week-nav">
         <button onclick="changeWeek('wingchun',-1)">←</button>
@@ -132,7 +150,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       </div>
       <div id="wingchun-days"></div>
     </div>
-
     <div id="qigong" class="sub-screen">
       <div class="week-nav">
         <button onclick="changeWeek('qigong',-1)">←</button>
@@ -150,7 +167,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="test" class="screen">
     <div class="test-section">
-      <div class="section-title" style="margin-top:0">Еженедельный тест</div>
+      <div class="section-title">Еженедельный тест</div>
       <div class="test-grid">
         <div class="test-item"><div class="test-label">Встать со стула — 2 ноги (30 сек)</div><input class="test-input" type="number" id="t1" placeholder="—"><div class="test-unit">раз</div></div>
         <div class="test-item"><div class="test-label">Встать со стула — правая нога (15 сек)</div><input class="test-input" type="number" id="t2" placeholder="—"><div class="test-unit">раз</div></div>
@@ -172,10 +189,11 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="progress" class="screen">
     <div class="progress-section">
-      <div class="section-title" style="margin-top:0">История тестов</div>
+      <div class="section-title">История тестов</div>
       <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
     </div>
   </div>
+
 </div>
 
 <nav class="tabs-bar">
@@ -214,7 +232,6 @@ var UPPER = [
   {name:'Планка с касанием плеч',desc:'На прямых руках, таз не крутится, движение медленное',note:'3×10 каждой рукой'},
   HIP,
 ];
-
 var STRENGTH_PLAN = [
   {day:'Понедельник',type:'legs',label:'Ноги + таз',exs:LEGS},
   {day:'Вторник',type:'upper',label:'Верх + кор',exs:UPPER},
@@ -222,67 +239,22 @@ var STRENGTH_PLAN = [
   {day:'Четверг',type:'upper',label:'Верх + кор',exs:UPPER},
   {day:'Пятница',type:'legs',label:'Ноги + таз',exs:LEGS},
   {day:'Суббота',type:'upper',label:'Верх + кор',exs:UPPER},
-  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[
-    {name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''},
-  ]},
+  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[{name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''}]},
 ];
 
 var ISO = {name:'Изометрия плеч',desc:'Руки горизонтально вперед, локти к полу, держать',note:'3×60 сек'};
 var VSADNIK = {name:'Всадник у стены',desc:'Ноги шире плеч, носки наружу, спина у стены',note:'3×60 сек'};
 var STULCHIK = {name:'Стульчик',desc:'Угол 90° в колене, спина у стены',note:'3×60 сек'};
 var UDARY = {name:'Удары ногами',desc:'Отработка ударов ногами',note:''};
-
 var WINGCHUN_PLAN = [
-  {day:'Понедельник',type:'wc',label:'Вин Чун',exs:[
-    VSADNIK, STULCHIK,
-    {name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},
-    UDARY,
-    {name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},
-    ISO,
-    {name:'Манекен',desc:'Работа на деревянном манекене',note:''},
-  ]},
-  {day:'Вторник',type:'wc',label:'Вин Чун',exs:[
-    VSADNIK, STULCHIK,
-    {name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},
-    UDARY,
-    {name:'Дорожка с блоками',desc:'Дорожка с добавлением блоков',note:''},
-    {name:'Руки змеи',desc:'Отработка рук змеи',note:''},
-  ]},
-  {day:'Среда',type:'wc',label:'Вин Чун',exs:[
-    VSADNIK, STULCHIK,
-    {name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},
-    UDARY,
-    {name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},
-    ISO,
-    {name:'Ши Сан Сы',desc:'Тринадцать форм',note:''},
-  ]},
-  {day:'Четверг',type:'wc',label:'Вин Чун',exs:[
-    VSADNIK, STULCHIK,
-    {name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},
-    UDARY,
-    {name:'Ноги Чам Кью',desc:'Работа ног из второй формы',note:''},
-    {name:'Руки змеи',desc:'Отработка рук змеи',note:''},
-  ]},
-  {day:'Пятница',type:'wc',label:'Вин Чун',exs:[
-    VSADNIK, STULCHIK,
-    {name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},
-    UDARY,
-    {name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},
-    ISO,
-    {name:'Дуилянь',desc:'Парная работа / спарринг упражнения',note:''},
-  ]},
-  {day:'Суббота',type:'wc',label:'Вин Чун',exs:[
-    VSADNIK, STULCHIK,
-    {name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},
-    UDARY,
-    {name:'Палки',desc:'Работа с палками',note:''},
-    {name:'Руки змеи',desc:'Отработка рук змеи',note:''},
-  ]},
-  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[
-    {name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''},
-  ]},
+  {day:'Понедельник',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},UDARY,{name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},ISO,{name:'Манекен',desc:'Работа на деревянном манекене',note:''}]},
+  {day:'Вторник',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},UDARY,{name:'Дорожка с блоками',desc:'Дорожка с добавлением блоков',note:''},{name:'Руки змеи',desc:'Отработка рук змеи',note:''}]},
+  {day:'Среда',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},UDARY,{name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},ISO,{name:'Ши Сан Сы',desc:'Тринадцать форм',note:''}]},
+  {day:'Четверг',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},UDARY,{name:'Ноги Чам Кью',desc:'Работа ног из второй формы',note:''},{name:'Руки змеи',desc:'Отработка рук змеи',note:''}]},
+  {day:'Пятница',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},UDARY,{name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},ISO,{name:'Дуилянь',desc:'Парная работа / спарринг упражнения',note:''}]},
+  {day:'Суббота',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},UDARY,{name:'Палки',desc:'Работа с палками',note:''},{name:'Руки змеи',desc:'Отработка рук змеи',note:''}]},
+  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[{name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''}]},
 ];
-
 var QI_EXS = [
   {name:'Дерево',desc:'Стояние в позиции, концентрация на даньтянь',note:'Начни с 5 мин, добавляй 2–3 мин в неделю'},
   {name:'Ичжичань',desc:'Комплекс цигун школы Ши Янбина',note:'15–20 мин'},
@@ -296,219 +268,186 @@ var QIGONG_PLAN = [
   {day:'Суббота',type:'qi',label:'Цигун',exs:QI_EXS},
   {day:'Воскресенье',type:'qi',label:'Цигун',exs:QI_EXS},
 ];
-
-var PLANS = {
-  strength: STRENGTH_PLAN,
-  wingchun: WINGCHUN_PLAN,
-  qigong: QIGONG_PLAN
-};
-
+var PLANS = {strength:STRENGTH_PLAN,wingchun:WINGCHUN_PLAN,qigong:QIGONG_PLAN};
 var TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest',wc:'b-wc',qi:'b-qi'};
-
-var weeks = {strength:0, wingchun:0, qigong:0};
-var checksData = {strength:{}, wingchun:{}, qigong:{}};
+var weeks = {strength:0,wingchun:0,qigong:0};
+var checksData = {strength:{},wingchun:{},qigong:{}};
 var history = [];
 var db;
 
 firebase.initializeApp({
-  apiKey: "AIzaSyB0898njk5wWWEZgTYdQcg0Rv_loFIcH2c",
-  authDomain: "spring-tracker.firebaseapp.com",
-  projectId: "spring-tracker",
-  storageBucket: "spring-tracker.firebasestorage.app",
-  messagingSenderId: "192640819831",
-  appId: "1:192640819831:web:34ecfca0a22434f0271c72"
+  apiKey:'AIzaSyB0898njk5wWWEZgTYdQcg0Rv_loFIcH2c',
+  authDomain:'spring-tracker.firebaseapp.com',
+  projectId:'spring-tracker',
+  storageBucket:'spring-tracker.firebasestorage.app',
+  messagingSenderId:'192640819831',
+  appId:'1:192640819831:web:34ecfca0a22434f0271c72'
 });
 db = firebase.firestore();
 db.enablePersistence().catch(function(){});
 
-function weekKey(w) { return 'week_' + w; }
-function getWeekLabel(o) {
-  var now = new Date(), mon = new Date(now);
-  mon.setDate(now.getDate() - now.getDay() + 1 + o * 7);
-  var sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  var f = function(d) { return d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0'); };
-  return f(mon) + ' — ' + f(sun);
+function weekKey(w){return 'week_'+w;}
+function getWeekLabel(o){
+  var now=new Date(),mon=new Date(now);
+  mon.setDate(now.getDate()-now.getDay()+1+o*7);
+  var sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  var f=function(d){return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');};
+  return f(mon)+' — '+f(sun);
 }
-
-function loadChecks(section) {
-  var w = weeks[section];
-  return db.collection(section).doc(weekKey(w)).get().then(function(s) {
-    checksData[section][w] = s.exists ? (s.data().checks || {}) : {};
-  }).catch(function() { checksData[section][w] = {}; });
+function loadChecks(section){
+  var w=weeks[section];
+  return db.collection(section).doc(weekKey(w)).get().then(function(s){
+    checksData[section][w]=s.exists?(s.data().checks||{}):{};
+  }).catch(function(){checksData[section][w]={};});
 }
-
-function saveChecks(section) {
-  var w = weeks[section];
-  var c = checksData[section][w] || {};
-  return db.collection(section).doc(weekKey(w)).set({checks: c}).catch(function(){});
+function saveChecks(section){
+  var w=weeks[section];
+  return db.collection(section).doc(weekKey(w)).set({checks:checksData[section][w]||{}}).catch(function(){});
 }
-
-function loadHistory() {
-  return db.collection('tracker').doc('history').get().then(function(s) {
-    history = s.exists ? (s.data().entries || []) : [];
-  }).catch(function() { history = []; });
+function loadHistory(){
+  return db.collection('tracker').doc('history').get().then(function(s){
+    history=s.exists?(s.data().entries||[]):[];
+  }).catch(function(){history=[];});
 }
-
-function saveHistoryDb() {
-  return db.collection('tracker').doc('history').set({entries: history}).catch(function(){});
+function saveHistoryDb(){
+  return db.collection('tracker').doc('history').set({entries:history}).catch(function(){});
 }
+function getChecks(section){return checksData[section][weeks[section]]||{};}
 
-function getChecks(section) {
-  var w = weeks[section];
-  return checksData[section][w] || {};
-}
-
-function renderSection(section) {
-  var plan = PLANS[section];
-  var w = weeks[section];
-  var checks = getChecks(section);
-  document.getElementById(section + '-week-label').textContent = 'Неделя ' + getWeekLabel(w);
-  var doneDays = 0, doneEx = 0, totalEx = 0;
-  plan.forEach(function(d) { if(d.type !== 'rest') totalEx += d.exs.length; });
-  var c = document.getElementById(section + '-days'); c.innerHTML = '';
-  plan.forEach(function(day, di) {
-    var dc = checks[di] || {};
-    var done = day.exs.filter(function(_,ei) { return dc[ei]; }).length;
-    var total = day.exs.length;
-    if(done === total && total > 0 && day.type !== 'rest') doneDays++;
-    if(day.type !== 'rest') doneEx += done;
-    var pct = total > 0 ? Math.round(done/total*100) : 0;
-    var isComplete = done === total && total > 0 && day.type !== 'rest';
-    var isPartial = done > 0 && done < total && day.type !== 'rest';
-    var doneMark = isComplete
-      ? '<div class="done-mark"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-      : isPartial
-      ? '<div class="done-mark" style="background:#FAC775"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-      : '<div class="done-mark" style="background:transparent"></div>';
-    var card = document.createElement('div');
-    card.className = 'day-card';
-    card.innerHTML =
-      '<div class="day-header" onclick="toggleDay(this)">' +
-        '<div class="day-left">' +
-          '<span class="day-badge ' + TC[day.type] + '">' + day.label + '</span>' +
-          '<span class="day-name">' + day.day + '</span>' +
-        '</div>' +
-        '<div class="day-right">' +
-          doneMark +
-          '<span class="day-count" style="min-width:32px;text-align:right">' + done + '/' + total + '</span>' +
-          '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
-        '</div>' +
-      '</div>' +
-      '<div class="day-body">' +
-        '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
-        '<div class="ex-list">' + day.exs.map(function(ex, ei) {
-          return '<div class="ex-item">' +
-            '<input type="checkbox" class="ex-check" ' + (dc[ei] ? 'checked' : '') + ' onchange="toggleCheck(\'' + section + '\',' + di + ',' + ei + ',this)">' +
-            '<div class="ex-info">' +
-              '<div class="ex-name">' + ex.name + '</div>' +
-              '<div class="ex-desc">' + ex.desc + '</div>' +
-              (ex.note ? '<div class="ex-note">' + ex.note + '</div>' : '') +
-            '</div>' +
+function renderSection(section){
+  var plan=PLANS[section],w=weeks[section],checks=getChecks(section);
+  document.getElementById(section+'-week-label').textContent='Неделя '+getWeekLabel(w);
+  var doneDays=0,doneEx=0,totalEx=0;
+  plan.forEach(function(d){if(d.type!=='rest')totalEx+=d.exs.length;});
+  var c=document.getElementById(section+'-days');c.innerHTML='';
+  plan.forEach(function(day,di){
+    var dc=checks[di]||{};
+    var done=day.exs.filter(function(_,ei){return dc[ei];}).length,total=day.exs.length;
+    if(done===total&&total>0&&day.type!=='rest')doneDays++;
+    if(day.type!=='rest')doneEx+=done;
+    var pct=total>0?Math.round(done/total*100):0;
+    var isComplete=done===total&&total>0&&day.type!=='rest';
+    var isPartial=done>0&&done<total&&day.type!=='rest';
+    var markBg=isComplete?'#1D9E75':isPartial?'#FAC775':'transparent';
+    var markInner=isComplete||isPartial?'<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';
+    var card=document.createElement('div');
+    card.className='day-card';
+    card.innerHTML=
+      '<div class="day-header" onclick="toggleDay(this)">'+
+        '<div class="day-left">'+
+          '<span class="day-badge '+TC[day.type]+'">'+day.label+'</span>'+
+          '<span class="day-name">'+day.day+'</span>'+
+        '</div>'+
+        '<div class="day-right">'+
+          '<div class="done-mark" style="background:'+markBg+'">'+markInner+'</div>'+
+          '<span class="day-count">'+done+'/'+total+'</span>'+
+          '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'+
+        '</div>'+
+      '</div>'+
+      '<div class="day-body">'+
+        '<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div>'+
+        '<div class="ex-list">'+day.exs.map(function(ex,ei){
+          return '<div class="ex-item">'+
+            '<input type="checkbox" class="ex-check" '+(dc[ei]?'checked':'')+' onchange="toggleCheck(\''+section+'\','+di+','+ei+',this)">'+
+            '<div class="ex-info">'+
+              '<div class="ex-name">'+ex.name+'</div>'+
+              '<div class="ex-desc">'+ex.desc+'</div>'+
+              (ex.note?'<div class="ex-note">'+ex.note+'</div>':'')+
+            '</div>'+
           '</div>';
-        }).join('') + '</div>' +
+        }).join('')+'</div>'+
       '</div>';
     c.appendChild(card);
   });
-  var tp = totalEx > 0 ? Math.round(doneEx/totalEx*100) : 0;
-  document.getElementById(section + '-s-days').textContent = doneDays;
-  document.getElementById(section + '-s-ex').textContent = doneEx;
-  document.getElementById(section + '-s-pct').textContent = tp + '%';
+  var tp=totalEx>0?Math.round(doneEx/totalEx*100):0;
+  document.getElementById(section+'-s-days').textContent=doneDays;
+  document.getElementById(section+'-s-ex').textContent=doneEx;
+  document.getElementById(section+'-s-pct').textContent=tp+'%';
 }
 
-function getOpenDays(section) {
-  var open = [];
-  var cards = document.querySelectorAll('#' + section + '-days .day-card');
-  cards.forEach(function(card, i) { if(card.classList.contains('open')) open.push(i); });
+function getOpenDays(section){
+  var open=[];
+  document.querySelectorAll('#'+section+'-days .day-card').forEach(function(card,i){if(card.classList.contains('open'))open.push(i);});
   return open;
 }
-
-function restoreOpenDays(section, open) {
-  var cards = document.querySelectorAll('#' + section + '-days .day-card');
-  open.forEach(function(i) { if(cards[i]) cards[i].classList.add('open'); });
+function restoreOpenDays(section,open){
+  var cards=document.querySelectorAll('#'+section+'-days .day-card');
+  open.forEach(function(i){if(cards[i])cards[i].classList.add('open');});
 }
-
-function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
-
-function toggleCheck(section, di, ei, el) {
-  var w = weeks[section];
-  if(!checksData[section][w]) checksData[section][w] = {};
-  if(!checksData[section][w][di]) checksData[section][w][di] = {};
-  checksData[section][w][di][ei] = el.checked;
+function toggleDay(el){el.closest('.day-card').classList.toggle('open');}
+function toggleCheck(section,di,ei,el){
+  var w=weeks[section];
+  if(!checksData[section][w])checksData[section][w]={};
+  if(!checksData[section][w][di])checksData[section][w][di]={};
+  checksData[section][w][di][ei]=el.checked;
   saveChecks(section);
-  var open = getOpenDays(section);
+  var open=getOpenDays(section);
   renderSection(section);
-  restoreOpenDays(section, open);
+  restoreOpenDays(section,open);
+}
+function changeWeek(section,d){
+  weeks[section]+=d;
+  loadChecks(section).then(function(){renderSection(section);});
 }
 
-function changeWeek(section, d) {
-  weeks[section] += d;
-  loadChecks(section).then(function() { renderSection(section); });
-}
-
-function saveTest() {
-  var ids = ['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12'];
-  var vals = ids.map(function(id) { var v = document.getElementById(id).value; return v === '' ? null : parseInt(v); });
-  history.push({date: new Date().toLocaleDateString('ru'), vals: vals});
+function saveTest(){
+  var ids=['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12'];
+  var vals=ids.map(function(id){var v=document.getElementById(id).value;return v===''?null:parseInt(v);});
+  history.push({date:new Date().toLocaleDateString('ru'),vals:vals});
   saveHistoryDb();
-  document.getElementById('saved-msg').style.display = 'block';
-  setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
-  ids.forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('saved-msg').style.display='block';
+  setTimeout(function(){document.getElementById('saved-msg').style.display='none';},2000);
+  ids.forEach(function(id){document.getElementById(id).value='';});
   renderHistory();
 }
 
-function renderHistory() {
-  var c = document.getElementById('history-container');
-  if(!history.length) { c.innerHTML = '<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>'; return; }
-  var labels = ['2 ноги','Прав.','Лев.','Бал.П','Бал.Л','Отжим.','Подтяг.','Пл.Л','Пл.П','Дерево','Всадник','Стульчик'];
-  var html = '<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
-  labels.forEach(function(l) { html += '<th>' + l + '</th>'; });
-  html += '</tr></thead><tbody>';
-  history.forEach(function(e, i) {
-    html += '<tr><td>' + e.date + '</td>';
-    e.vals.forEach(function(v, vi) {
-      var delta = '';
-      if(i > 0 && v !== null && history[i-1].vals[vi] !== null) {
-        var diff = v - history[i-1].vals[vi];
-        if(diff > 0) delta = '<span class="delta up">+' + diff + '</span>';
-        else if(diff < 0) delta = '<span class="delta down">' + diff + '</span>';
+function renderHistory(){
+  var c=document.getElementById('history-container');
+  if(!history.length){c.innerHTML='<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>';return;}
+  var labels=['2 ноги','Прав.','Лев.','Бал.П','Бал.Л','Отжим.','Подтяг.','Пл.Л','Пл.П','Дерево','Всадник','Стульчик'];
+  var html='<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
+  labels.forEach(function(l){html+='<th>'+l+'</th>';});
+  html+='</tr></thead><tbody>';
+  history.forEach(function(e,i){
+    html+='<tr><td>'+e.date+'</td>';
+    e.vals.forEach(function(v,vi){
+      var delta='';
+      if(i>0&&v!==null&&history[i-1].vals[vi]!==null){
+        var diff=v-history[i-1].vals[vi];
+        if(diff>0)delta='<span class="delta up">+'+diff+'</span>';
+        else if(diff<0)delta='<span class="delta down">'+diff+'</span>';
       }
-      html += '<td>' + (v !== null ? v : '—') + delta + '</td>';
+      html+='<td>'+(v!==null?v:'—')+delta+'</td>';
     });
-    html += '</tr>';
+    html+='</tr>';
   });
-  html += '</tbody></table></div>';
-  c.innerHTML = html;
+  html+='</tbody></table></div>';
+  c.innerHTML=html;
 }
 
-function showTab(name, btn) {
-  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+function showTab(name,btn){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById(name).classList.add('active');
   btn.classList.add('active');
-  if(name === 'progress') renderHistory();
+  document.getElementById('sub-tabs').style.visibility=name==='plan'?'visible':'hidden';
+  if(name==='progress')renderHistory();
 }
 
-var currentSubTab = 'strength';
-function showSubTab(name, btn) {
-  document.querySelectorAll('.sub-screen').forEach(function(s) { s.classList.remove('active'); });
-  document.querySelectorAll('.sub-tab').forEach(function(b) { b.classList.remove('active'); });
+function showSubTab(name,btn){
+  document.querySelectorAll('.sub-screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.remove('active');});
   document.getElementById(name).classList.add('active');
   btn.classList.add('active');
-  currentSubTab = name;
 }
 
-function init() {
-  var p1 = loadChecks('strength');
-  var p2 = loadChecks('wingchun');
-  var p3 = loadChecks('qigong');
-  var p4 = loadHistory();
-  Promise.all([p1,p2,p3,p4]).then(function() {
+function init(){
+  Promise.all([loadChecks('strength'),loadChecks('wingchun'),loadChecks('qigong'),loadHistory()]).then(function(){
     renderSection('strength');
     renderSection('wingchun');
     renderSection('qigong');
   });
 }
-
 init();
 </script>
 </body>
