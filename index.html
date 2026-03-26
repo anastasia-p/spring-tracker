@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spring Tracker</title>
 <link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
 <meta name="theme-color" content="#1D9E75">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -386,8 +387,8 @@ function renderSection(section) {
           '<span class="day-name">' + day.day + '</span>' +
         '</div>' +
         '<div class="day-right">' +
+          '<span class="day-count" style="min-width:32px;text-align:right">' + done + '/' + total + '</span>' +
           doneMark +
-          '<span class="day-count">' + done + '/' + total + '</span>' +
           '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
         '</div>' +
       '</div>' +
