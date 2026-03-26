@@ -20,17 +20,17 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .app{max-width:680px;margin:0 auto;padding:0 0 80px}
-.header{padding:20px 20px 12px}
-.header h1{font-size:22px;font-weight:600}
+.header{background:#FBEAF0;padding:16px 16px 0}
+.header-top{display:flex;align-items:center;gap:10px;padding-bottom:12px}.header h1{font-size:20px;font-weight:600}.header-line{border-bottom:1px solid rgba(0,0,0,0.08);margin:0 -16px}
 .tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:'Onest',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
 .tab-btn.active{color:var(--green)}
 .tab-btn svg{width:20px;height:20px}
 .screen{display:none;padding:0}
 .screen.active{display:block}
-.sub-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;gap:0;margin-bottom:16px}
+.sub-tabs{display:flex;border-bottom:1px solid rgba(0,0,0,0.08);padding:0;gap:0;margin-bottom:16px}
 .sub-tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border:none;background:none;font-family:'Onest',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
-.sub-tab.active{color:var(--green);border-bottom:2px solid var(--green)}
+.sub-tab.active{color:#1D9E75;border-bottom:2px solid #1D9E75}
 .sub-screen{display:none;padding:0 16px}
 .sub-screen.active{display:block}
 .week-nav{display:flex;align-items:center;gap:8px;margin-bottom:16px}
@@ -94,7 +94,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 </head>
 <body>
 <div class="app">
-  <div class="header"><h1>Spring Tracker</h1></div>
+  <div class="header">
+    <div class="header-top"><svg width="28" height="28" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg><h1>Spring Tracker</h1></div>
+  </div>
 
   <div id="plan" class="screen active">
     <div class="sub-tabs">
@@ -148,7 +150,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="test" class="screen">
     <div class="test-section">
-      <div class="section-title">Еженедельный тест</div>
+      <div class="section-title" style="margin-top:0">Еженедельный тест</div>
       <div class="test-grid">
         <div class="test-item"><div class="test-label">Встать со стула — 2 ноги (30 сек)</div><input class="test-input" type="number" id="t1" placeholder="—"><div class="test-unit">раз</div></div>
         <div class="test-item"><div class="test-label">Встать со стула — правая нога (15 сек)</div><input class="test-input" type="number" id="t2" placeholder="—"><div class="test-unit">раз</div></div>
@@ -170,7 +172,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="progress" class="screen">
     <div class="progress-section">
-      <div class="section-title">История тестов</div>
+      <div class="section-title" style="margin-top:0">История тестов</div>
       <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
     </div>
   </div>
