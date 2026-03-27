@@ -36,7 +36,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .tab-btn svg{width:20px;height:20px}
 .tab-divider{width:0.5px;height:32px;background:var(--border);flex-shrink:0}
 .settings-btn{padding:0 16px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:color .15s}
-.settings-btn:hover{color:var(--text)}
 .settings-btn svg{width:22px;height:22px}
 .week-nav{display:flex;align-items:center;gap:8px;padding:16px 0 0}
 .week-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;font-size:16px;color:var(--text);display:flex;align-items:center;justify-content:center}
@@ -74,6 +73,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .ex-name{font-size:14px;font-weight:500}
 .ex-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
 .ex-note{font-size:12px;color:var(--green-dark);margin-top:3px;font-style:italic}
+.ex-value{font-size:12px;color:var(--green);margin-top:3px;font-weight:500}
 .section-pad{padding:16px 16px 0}
 .section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
 .test-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
@@ -94,17 +94,58 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .down{color:#E24B4A}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:14px;line-height:1.6}
 .loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:14px}
+
+/* Tree card */
+.tree-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:16px}
+.tree-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.tree-title-wrap{display:flex;align-items:center;gap:10px}
+.tree-icon{width:36px;height:36px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center}
+.tree-icon svg{width:18px;height:18px}
+.tree-level-name{font-size:15px;font-weight:500}
+.tree-hours{font-size:12px;color:var(--text-muted);margin-top:2px}
+.tree-q-btn{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:13px;color:var(--text-muted);display:flex;align-items:center;justify-content:center}
+.tree-progress-wrap{height:6px;background:var(--bg);border-radius:3px;margin-bottom:8px}
+.tree-progress-bar{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.tree-progress-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted)}
+
+/* Settings */
 .settings-group{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
 .settings-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
 .settings-item:last-child{border-bottom:none}
 .settings-item-label{font-size:14px;font-weight:500}
 .settings-item-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
-.update-btn{padding:8px 16px;background:var(--green-light);color:var(--green-text);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;transition:background .15s;white-space:nowrap}
-.update-btn:hover{background:#9FE1CB}
+.update-btn{padding:8px 16px;background:var(--green-light);color:var(--green-text);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;white-space:nowrap}
 .update-btn:disabled{opacity:0.5;cursor:not-allowed}
 .update-status{font-size:12px;margin-top:4px}
 .update-status.ok{color:var(--green)}
 .update-status.err{color:#E24B4A}
+
+/* Popups */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.popup-box{background:var(--card);border-radius:var(--radius);width:100%;max-width:320px;overflow:hidden}
+.popup-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border)}
+.popup-title{font-size:16px;font-weight:500}
+.popup-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:20px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;line-height:1}
+.popup-body{padding:16px}
+.popup-ex{font-size:13px;color:var(--text-muted);margin-bottom:12px}
+.popup-input-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.popup-input{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:22px;font-weight:600;font-family:'Onest',sans-serif;text-align:center;background:var(--bg);color:var(--text)}
+.popup-unit-label{font-size:14px;color:var(--text-muted);min-width:28px}
+.popup-actions{display:flex;gap:8px}
+.popup-actions button{flex:1;padding:12px;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer}
+.btn-cancel{background:var(--bg);color:var(--text-muted)}
+.btn-save{background:var(--green);color:white}
+
+/* Levels popup */
+.level-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.level-row:last-child{border-bottom:none}
+.level-num{width:24px;height:24px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--green-text);flex-shrink:0}
+.level-num.cur{background:var(--green);color:white}
+.level-info{flex:1}
+.level-name{font-size:13px;font-weight:500;color:var(--text)}
+.level-desc{font-size:11px;color:var(--text-muted);margin-top:1px}
+.level-hours{font-size:12px;color:var(--text-muted);white-space:nowrap}
+.levels-scroll{max-height:60vh;overflow-y:auto}
 </style>
 </head>
 <body>
@@ -124,11 +165,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="plan" class="screen active">
     <div id="strength" class="sub-screen active">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">←</button>
-        <span id="strength-week-label"></span>
-        <button onclick="changeWeek(1)">→</button>
-      </div>
+      <div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="strength-week-label"></span><button onclick="changeWeek(1)">→</button></div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="strength-s-days">—</div><div class="summary-lbl">дней</div></div>
         <div class="summary-card"><div class="summary-num" id="strength-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
@@ -137,11 +174,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div id="strength-days"><div class="loading">Загрузка...</div></div>
     </div>
     <div id="wingchun" class="sub-screen">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">←</button>
-        <span id="wingchun-week-label"></span>
-        <button onclick="changeWeek(1)">→</button>
-      </div>
+      <div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="wingchun-week-label"></span><button onclick="changeWeek(1)">→</button></div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="wingchun-s-days">—</div><div class="summary-lbl">дней</div></div>
         <div class="summary-card"><div class="summary-num" id="wingchun-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
@@ -150,11 +183,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div id="wingchun-days"><div class="loading">Загрузка...</div></div>
     </div>
     <div id="qigong" class="sub-screen">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">←</button>
-        <span id="qigong-week-label"></span>
-        <button onclick="changeWeek(1)">→</button>
-      </div>
+      <div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="qigong-week-label"></span><button onclick="changeWeek(1)">→</button></div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="qigong-s-days">—</div><div class="summary-lbl">дней</div></div>
         <div class="summary-card"><div class="summary-num" id="qigong-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
@@ -175,7 +204,29 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="progress" class="screen">
     <div class="section-pad">
-      <div class="section-title">История тестов</div>
+      <div class="section-title">Дерево</div>
+      <div class="tree-card">
+        <div class="tree-header">
+          <div class="tree-title-wrap">
+            <div class="tree-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 20v-8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q13 6 19 4 Q18 11 12 12Z" fill="#1D9E75"/><path d="M12 15 Q11 9 5 8 Q6 14 12 15Z" fill="#5DCAA5"/></svg>
+            </div>
+            <div>
+              <div class="tree-level-name" id="tree-level-name">Загрузка...</div>
+              <div class="tree-hours" id="tree-hours"></div>
+            </div>
+          </div>
+          <button class="tree-q-btn" onclick="showTreeLevels()">?</button>
+        </div>
+        <div class="tree-progress-wrap">
+          <div class="tree-progress-bar" id="tree-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="tree-progress-labels">
+          <span id="tree-next-label"></span>
+          <span id="tree-progress-pct"></span>
+        </div>
+      </div>
+      <div class="section-title">Тесты</div>
       <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
     </div>
   </div>
@@ -185,38 +236,22 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="section-title">Обновление планов</div>
       <div class="settings-group">
         <div class="settings-item">
-          <div>
-            <div class="settings-item-label">Силовые тренировки</div>
-            <div class="settings-item-desc">plans/strength.json</div>
-            <div class="update-status" id="status-strength"></div>
-          </div>
+          <div><div class="settings-item-label">Силовые тренировки</div><div class="settings-item-desc">plans/strength.json</div><div class="update-status" id="status-strength"></div></div>
           <button class="update-btn" onclick="updatePlan('strength')">Обновить</button>
         </div>
         <div class="settings-item">
-          <div>
-            <div class="settings-item-label">Вин Чун</div>
-            <div class="settings-item-desc">plans/wingchun.json</div>
-            <div class="update-status" id="status-wingchun"></div>
-          </div>
+          <div><div class="settings-item-label">Вин Чун</div><div class="settings-item-desc">plans/wingchun.json</div><div class="update-status" id="status-wingchun"></div></div>
           <button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button>
         </div>
         <div class="settings-item">
-          <div>
-            <div class="settings-item-label">Цигун</div>
-            <div class="settings-item-desc">plans/qigong.json</div>
-            <div class="update-status" id="status-qigong"></div>
-          </div>
+          <div><div class="settings-item-label">Цигун</div><div class="settings-item-desc">plans/qigong.json</div><div class="update-status" id="status-qigong"></div></div>
           <button class="update-btn" onclick="updatePlan('qigong')">Обновить</button>
         </div>
       </div>
       <div class="section-title">Обновление тестов</div>
       <div class="settings-group">
         <div class="settings-item">
-          <div>
-            <div class="settings-item-label">Список показателей</div>
-            <div class="settings-item-desc">plans/tests.json</div>
-            <div class="update-status" id="status-tests"></div>
-          </div>
+          <div><div class="settings-item-label">Список показателей</div><div class="settings-item-desc">plans/tests.json</div><div class="update-status" id="status-tests"></div></div>
           <button class="update-btn" onclick="updatePlan('tests')">Обновить</button>
         </div>
       </div>
@@ -243,6 +278,41 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </nav>
+
+<!-- Value input popup -->
+<div class="popup-overlay" id="value-popup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title">Введи значение</span>
+      <button class="popup-close" onclick="cancelPopup()">×</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-ex" id="popup-ex-name"></div>
+      <div class="popup-input-row">
+        <input class="popup-input" type="number" id="popup-value" min="0" placeholder="0"
+          onkeydown="if(event.key==='Enter') savePopupValue()">
+        <span class="popup-unit-label" id="popup-unit"></span>
+      </div>
+      <div class="popup-actions">
+        <button class="btn-cancel" onclick="cancelPopup()">Отмена</button>
+        <button class="btn-save" onclick="savePopupValue()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Levels popup -->
+<div class="popup-overlay" id="levels-popup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title">Уровни дерева</span>
+      <button class="popup-close" onclick="closeLevelsPopup()">×</button>
+    </div>
+    <div class="levels-scroll">
+      <div id="levels-list"></div>
+    </div>
+  </div>
+</div>
 
 <script src="./js/main.js"></script>
 <script src="./js/settings.js"></script>

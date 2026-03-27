@@ -15,10 +15,27 @@ var TC = { legs: 'b-legs', upper: 'b-upper', rest: 'b-rest', wc: 'b-wc', qi: 'b-
 var DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 var SECTIONS = ['strength', 'wingchun', 'qigong'];
 
+var TREE_LEVELS = [
+  { level: 0, name: 'Спящее семя',    hours: 0,     desc: 'Ещё не началось' },
+  { level: 1, name: 'Семя',           hours: 10,    desc: 'Зерно посажено' },
+  { level: 2, name: 'Росток',         hours: 30,    desc: 'Пробился сквозь землю' },
+  { level: 3, name: 'Саженец',        hours: 60,    desc: 'Корни уходят вглубь' },
+  { level: 4, name: 'Молодое дерево', hours: 100,   desc: 'Ствол окреп, ветви расправились' },
+  { level: 5, name: 'Дерево',         hours: 300,   desc: 'Регулярная практика' },
+  { level: 6, name: 'Зрелое дерево',  hours: 600,   desc: 'Корни в подземных водах' },
+  { level: 7, name: 'Священное дерево', hours: 1000, desc: 'Птицы сами прилетают' },
+  { level: 8, name: 'Мировое дерево', hours: 5000,  desc: 'Ветви касаются неба' },
+  { level: 9, name: 'Иггдрасиль',     hours: 10000, desc: 'Соединяешь миры' },
+];
+
 // State
 var weekOffset = 0;
 var cache = { strength: {}, wingchun: {}, qigong: {} };
 var plans = { strength: null, wingchun: null, qigong: null, tests: null };
+var treeTotalMinutes = 0;
+
+// Popup state
+var pendingCheck = null; // {section, dk, exName, el}
 
 // --- Date utils ---
 
@@ -76,14 +93,16 @@ function loadDayData(section, date) {
         plan: data.plan || (dayPlan ? dayPlan.exercises : []),
         type: data.type || (dayPlan ? dayPlan.type : 'rest'),
         label: data.label || (dayPlan ? dayPlan.label : ''),
-        checks: data.checks || {}
+        checks: data.checks || {},
+        values: data.values || {}
       };
     } else {
       cache[section][dk] = {
         plan: dayPlan ? dayPlan.exercises : [],
         type: dayPlan ? dayPlan.type : 'rest',
         label: dayPlan ? dayPlan.label : '',
-        checks: {}
+        checks: {},
+        values: {}
       };
     }
     return cache[section][dk];
@@ -93,7 +112,8 @@ function loadDayData(section, date) {
       plan: dayPlan ? dayPlan.exercises : [],
       type: dayPlan ? dayPlan.type : 'rest',
       label: dayPlan ? dayPlan.label : '',
-      checks: {}
+      checks: {},
+      values: {}
     };
     return cache[section][dk];
   });
@@ -106,8 +126,97 @@ function saveDayData(section, date) {
     plan: data.plan,
     type: data.type,
     label: data.label,
-    checks: data.checks
+    checks: data.checks,
+    values: data.values
   }).catch(function() {});
+}
+
+// --- Tree minutes ---
+
+function loadTreeMinutes() {
+  return db.collection('tracker').doc('tree').get().then(function(s) {
+    treeTotalMinutes = s.exists ? (s.data().totalMinutes || 0) : 0;
+  }).catch(function() { treeTotalMinutes = 0; });
+}
+
+function recalcTreeMinutes() {
+  db.collection('qigong').get().then(function(snap) {
+    var total = 0;
+    snap.forEach(function(doc) {
+      var values = doc.data().values || {};
+      if (values['Дерево']) total += values['Дерево'];
+    });
+    treeTotalMinutes = total;
+    db.collection('tracker').doc('tree').set({ totalMinutes: total }).catch(function() {});
+    renderTreeProgress();
+  }).catch(function() {});
+}
+
+// --- Tree level ---
+
+function getTreeLevel(totalMinutes) {
+  var hours = totalMinutes / 60;
+  var current = TREE_LEVELS[0];
+  for (var i = 0; i < TREE_LEVELS.length; i++) {
+    if (hours >= TREE_LEVELS[i].hours) current = TREE_LEVELS[i];
+    else break;
+  }
+  return current;
+}
+
+function getNextLevel(totalMinutes) {
+  var hours = totalMinutes / 60;
+  for (var i = 0; i < TREE_LEVELS.length; i++) {
+    if (hours < TREE_LEVELS[i].hours) return TREE_LEVELS[i];
+  }
+  return null;
+}
+
+function getTreeProgress(totalMinutes) {
+  var hours = totalMinutes / 60;
+  var current = getTreeLevel(totalMinutes);
+  var next = getNextLevel(totalMinutes);
+  if (!next) return 100;
+  var range = next.hours - current.hours;
+  var done = hours - current.hours;
+  return Math.round(done / range * 100);
+}
+
+// --- Value popup ---
+
+function showValuePopup(section, dk, exName, unit, el) {
+  pendingCheck = { section: section, dk: dk, exName: exName, unit: unit, el: el };
+  document.getElementById('popup-unit').textContent = unit;
+  document.getElementById('popup-ex-name').textContent = exName;
+  document.getElementById('popup-value').value = '';
+  document.getElementById('value-popup').style.display = 'flex';
+  setTimeout(function() { document.getElementById('popup-value').focus(); }, 100);
+}
+
+function savePopupValue() {
+  if (!pendingCheck) return;
+  var val = parseInt(document.getElementById('popup-value').value) || 0;
+  var p = pendingCheck;
+  if (!cache[p.section][p.dk]) return;
+  cache[p.section][p.dk].checks[p.exName] = true;
+  cache[p.section][p.dk].values[p.exName] = val;
+  saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
+  if (p.exName === 'Дерево') recalcTreeMinutes();
+  closePopup();
+  var open = getOpenCards(p.section);
+  renderSection(p.section, open);
+}
+
+function cancelPopup() {
+  if (pendingCheck && pendingCheck.el) {
+    pendingCheck.el.checked = false;
+  }
+  closePopup();
+}
+
+function closePopup() {
+  document.getElementById('value-popup').style.display = 'none';
+  pendingCheck = null;
 }
 
 // --- Render plan ---
@@ -127,7 +236,7 @@ function renderSection(section, keepOpen) {
     container.innerHTML = '';
     results.forEach(function(dayData, i) {
       var date = dates[i], dk = dateKey(date);
-      var checks = dayData.checks || {}, exs = dayData.plan || [];
+      var checks = dayData.checks || {}, values = dayData.values || {}, exs = dayData.plan || [];
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
       if (done === total && total > 0 && dayData.type !== 'rest') doneDays++;
@@ -156,13 +265,21 @@ function renderSection(section, keepOpen) {
         '<div class="day-body">' +
           '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
           '<div class="ex-list">' + exs.map(function(ex) {
+            var hasValue = ex.trackValue && checks[ex.name] && values[ex.name] > 0;
+            var valueLine = hasValue
+              ? '<div class="ex-value">' + values[ex.name] + ' ' + (ex.unit || '') + '</div>'
+              : '';
+            var safeExName = ex.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            var onchange = ex.trackValue
+              ? 'onchange="handleExCheck(\'' + section + '\',\'' + dk + '\',\'' + safeExName + '\',\'' + (ex.unit||'') + '\',this)"'
+              : 'onchange="toggleCheck(\'' + section + '\',\'' + dk + '\',\'' + safeExName + '\',this)"';
             return '<div class="ex-item">' +
-              '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') +
-              ' onchange="toggleCheck(\'' + section + '\',\'' + dk + '\',\'' + ex.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\',this)">' +
+              '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + ' ' + onchange + '>' +
               '<div class="ex-info">' +
                 '<div class="ex-name">' + ex.name + '</div>' +
                 '<div class="ex-desc">' + ex.desc + '</div>' +
                 (ex.note ? '<div class="ex-note">' + ex.note + '</div>' : '') +
+                valueLine +
               '</div>' +
             '</div>';
           }).join('') + '</div>' +
@@ -189,6 +306,20 @@ function getOpenCards(section) {
 }
 
 function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
+
+function handleExCheck(section, dk, exName, unit, el) {
+  if (el.checked) {
+    showValuePopup(section, dk, exName, unit, el);
+  } else {
+    if (!cache[section][dk]) return;
+    cache[section][dk].checks[exName] = false;
+    cache[section][dk].values[exName] = 0;
+    saveDayData(section, new Date(dk + 'T12:00:00'));
+    if (exName === 'Дерево') recalcTreeMinutes();
+    var open = getOpenCards(section);
+    renderSection(section, open);
+  }
+}
 
 function toggleCheck(section, dk, exName, el) {
   if (!cache[section][dk]) return;
@@ -273,6 +404,48 @@ function loadAndRenderHistory() {
   }).catch(function() { c.innerHTML = '<div class="empty">Ошибка загрузки.</div>'; });
 }
 
+// --- Tree progress ---
+
+function renderTreeProgress() {
+  var current = getTreeLevel(treeTotalMinutes);
+  var next = getNextLevel(treeTotalMinutes);
+  var pct = getTreeProgress(treeTotalMinutes);
+  var hours = (treeTotalMinutes / 60).toFixed(1);
+
+  var nextLabel = next
+    ? 'до ур. ' + next.level + ' — ' + next.name + ' (' + next.hours + ' ч)'
+    : 'Максимальный уровень достигнут';
+
+  document.getElementById('tree-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('tree-hours').textContent = hours + ' ч';
+  document.getElementById('tree-progress-bar').style.width = pct + '%';
+  document.getElementById('tree-progress-pct').textContent = pct + '%';
+  document.getElementById('tree-next-label').textContent = nextLabel;
+}
+
+function showTreeLevels() {
+  var html = TREE_LEVELS.map(function(lvl) {
+    var current = getTreeLevel(treeTotalMinutes);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + (lvl.hours > 0 ? lvl.hours + ' ч' : '—') + '</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('levels-list').innerHTML = html;
+  document.getElementById('levels-popup').style.display = 'flex';
+}
+
+function closeLevelsPopup() {
+  document.getElementById('levels-popup').style.display = 'none';
+}
+
 // --- Navigation ---
 
 function showTab(name, btn) {
@@ -283,7 +456,7 @@ function showTab(name, btn) {
   if (btn.classList.contains('tab-btn')) btn.classList.add('active');
   else btn.style.color = 'var(--green)';
   document.getElementById('sub-tabs').style.visibility = name === 'plan' ? 'visible' : 'hidden';
-  if (name === 'progress') loadAndRenderHistory();
+  if (name === 'progress') { loadAndRenderHistory(); renderTreeProgress(); }
 }
 
 function showSubTab(name, btn) {
@@ -301,9 +474,11 @@ function init() {
     loadPlanFromFirebase('wingchun'),
     loadPlanFromFirebase('qigong'),
     loadPlanFromFirebase('tests'),
+    loadTreeMinutes(),
   ]).then(function() {
     SECTIONS.forEach(function(s) { renderSection(s); });
     renderTestForm();
+    renderTreeProgress();
   });
 }
 
