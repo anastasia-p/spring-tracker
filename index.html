@@ -30,10 +30,14 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .screen.active{display:block}
 .sub-screen{display:none;padding:0 16px}
 .sub-screen.active{display:block}
-.tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);align-items:center}
 .tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:'Onest',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
 .tab-btn.active{color:var(--green)}
 .tab-btn svg{width:20px;height:20px}
+.tab-divider{width:0.5px;height:32px;background:var(--border);flex-shrink:0}
+.settings-btn{padding:0 16px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:color .15s}
+.settings-btn:hover{color:var(--text)}
+.settings-btn svg{width:22px;height:22px}
 .week-nav{display:flex;align-items:center;gap:8px;padding:16px 0 0}
 .week-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;font-size:16px;color:var(--text);display:flex;align-items:center;justify-content:center}
 .week-nav span{flex:1;text-align:center;font-size:14px;font-weight:500}
@@ -70,7 +74,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .ex-name{font-size:14px;font-weight:500}
 .ex-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
 .ex-note{font-size:12px;color:var(--green-dark);margin-top:3px;font-style:italic}
-.test-section{padding:16px 16px 0}
+.section-pad{padding:16px 16px 0}
 .section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
 .test-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .test-item{background:var(--card);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border)}
@@ -80,7 +84,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .save-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'Onest',sans-serif;cursor:pointer;transition:background .15s}
 .save-btn:hover{background:var(--green-dark)}
 .saved-msg{text-align:center;color:var(--green);font-size:13px;margin-top:8px;display:none}
-.progress-section{padding:16px 16px 0}
 .history-wrap{overflow-x:auto}
 .history-table{width:100%;border-collapse:collapse;font-size:13px}
 .history-table th{text-align:left;padding:8px 10px;font-weight:500;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -91,6 +94,17 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .down{color:#E24B4A}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:14px;line-height:1.6}
 .loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:14px}
+.settings-group{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
+.settings-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.settings-item:last-child{border-bottom:none}
+.settings-item-label{font-size:14px;font-weight:500}
+.settings-item-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+.update-btn{padding:8px 16px;background:var(--green-light);color:var(--green-text);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;transition:background .15s;white-space:nowrap}
+.update-btn:hover{background:#9FE1CB}
+.update-btn:disabled{opacity:0.5;cursor:not-allowed}
+.update-status{font-size:12px;margin-top:4px}
+.update-status.ok{color:var(--green)}
+.update-status.err{color:#E24B4A}
 </style>
 </head>
 <body>
@@ -111,9 +125,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   <div id="plan" class="screen active">
     <div id="strength" class="sub-screen active">
       <div class="week-nav">
-        <button onclick="changeWeek('strength',-1)">←</button>
+        <button onclick="changeWeek(-1)">←</button>
         <span id="strength-week-label"></span>
-        <button onclick="changeWeek('strength',1)">→</button>
+        <button onclick="changeWeek(1)">→</button>
       </div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="strength-s-days">—</div><div class="summary-lbl">дней</div></div>
@@ -124,9 +138,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
     <div id="wingchun" class="sub-screen">
       <div class="week-nav">
-        <button onclick="changeWeek('wingchun',-1)">←</button>
+        <button onclick="changeWeek(-1)">←</button>
         <span id="wingchun-week-label"></span>
-        <button onclick="changeWeek('wingchun',1)">→</button>
+        <button onclick="changeWeek(1)">→</button>
       </div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="wingchun-s-days">—</div><div class="summary-lbl">дней</div></div>
@@ -137,9 +151,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
     <div id="qigong" class="sub-screen">
       <div class="week-nav">
-        <button onclick="changeWeek('qigong',-1)">←</button>
+        <button onclick="changeWeek(-1)">←</button>
         <span id="qigong-week-label"></span>
-        <button onclick="changeWeek('qigong',1)">→</button>
+        <button onclick="changeWeek(1)">→</button>
       </div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="qigong-s-days">—</div><div class="summary-lbl">дней</div></div>
@@ -151,31 +165,61 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 
   <div id="test" class="screen">
-    <div class="test-section">
+    <div class="section-pad">
       <div class="section-title">Еженедельный тест</div>
-      <div class="test-grid">
-        <div class="test-item"><div class="test-label">Встать со стула — 2 ноги (30 сек)</div><input class="test-input" type="number" id="t1" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Встать со стула — правая нога (15 сек)</div><input class="test-input" type="number" id="t2" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Встать со стула — левая нога (15 сек)</div><input class="test-input" type="number" id="t3" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Баланс правая нога (глаза закрыты)</div><input class="test-input" type="number" id="t4" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Баланс левая нога (глаза закрыты)</div><input class="test-input" type="number" id="t5" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Отжимания максимум</div><input class="test-input" type="number" id="t6" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Подтягивания максимум</div><input class="test-input" type="number" id="t7" placeholder="—"><div class="test-unit">раз</div></div>
-        <div class="test-item"><div class="test-label">Боковая планка — левая</div><input class="test-input" type="number" id="t8" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Боковая планка — правая</div><input class="test-input" type="number" id="t9" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Дерево</div><input class="test-input" type="number" id="t10" placeholder="—"><div class="test-unit">минут</div></div>
-        <div class="test-item"><div class="test-label">Всадник у стены</div><input class="test-input" type="number" id="t11" placeholder="—"><div class="test-unit">секунд</div></div>
-        <div class="test-item"><div class="test-label">Стульчик у стены</div><input class="test-input" type="number" id="t12" placeholder="—"><div class="test-unit">секунд</div></div>
-      </div>
+      <div class="test-grid" id="test-grid"><div class="loading">Загрузка...</div></div>
       <button class="save-btn" onclick="saveTest()">Сохранить результаты</button>
       <div class="saved-msg" id="saved-msg">Сохранено!</div>
     </div>
   </div>
 
   <div id="progress" class="screen">
-    <div class="progress-section">
+    <div class="section-pad">
       <div class="section-title">История тестов</div>
       <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
+    </div>
+  </div>
+
+  <div id="settings" class="screen">
+    <div class="section-pad">
+      <div class="section-title">Обновление планов</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">Силовые тренировки</div>
+            <div class="settings-item-desc">plans/strength.json</div>
+            <div class="update-status" id="status-strength"></div>
+          </div>
+          <button class="update-btn" onclick="updatePlan('strength')">Обновить</button>
+        </div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">Вин Чун</div>
+            <div class="settings-item-desc">plans/wingchun.json</div>
+            <div class="update-status" id="status-wingchun"></div>
+          </div>
+          <button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button>
+        </div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">Цигун</div>
+            <div class="settings-item-desc">plans/qigong.json</div>
+            <div class="update-status" id="status-qigong"></div>
+          </div>
+          <button class="update-btn" onclick="updatePlan('qigong')">Обновить</button>
+        </div>
+      </div>
+      <div class="section-title">Обновление тестов</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">Список показателей</div>
+            <div class="settings-item-desc">plans/tests.json</div>
+            <div class="update-status" id="status-tests"></div>
+          </div>
+          <button class="update-btn" onclick="updatePlan('tests')">Обновить</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -194,285 +238,13 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     Прогресс
   </button>
+  <div class="tab-divider"></div>
+  <button class="settings-btn" id="settings-btn" onclick="showTab('settings',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
 </nav>
 
-<script>
-firebase.initializeApp({
-  apiKey:'AIzaSyB0898njk5wWWEZgTYdQcg0Rv_loFIcH2c',
-  authDomain:'spring-tracker.firebaseapp.com',
-  projectId:'spring-tracker',
-  storageBucket:'spring-tracker.firebasestorage.app',
-  messagingSenderId:'192640819831',
-  appId:'1:192640819831:web:34ecfca0a22434f0271c72'
-});
-var db = firebase.firestore();
-db.enablePersistence().catch(function(){});
-
-var TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest',wc:'b-wc',qi:'b-qi'};
-var DAY_NAMES = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
-
-// week offsets per section
-var weekOffset = 0;
-
-// in-memory: section -> dateKey -> {plan: [...], checks: {name: bool}}
-var cache = {strength:{}, wingchun:{}, qigong:{}};
-
-// plans loaded from Firebase
-var plans = {strength:null, wingchun:null, qigong:null};
-
-var history = [];
-
-function dateKey(date) {
-  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
-}
-
-function getWeekDates(offset) {
-  var now = new Date();
-  var mon = new Date(now);
-  mon.setDate(now.getDate() - now.getDay() + 1 + offset * 7);
-  var dates = [];
-  for(var i=0;i<7;i++) {
-    var d = new Date(mon);
-    d.setDate(mon.getDate()+i);
-    dates.push(d);
-  }
-  return dates;
-}
-
-function getWeekLabel(offset) {
-  var dates = getWeekDates(offset);
-  var f = function(d){return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');};
-  return f(dates[0])+' — '+f(dates[6]);
-}
-
-function loadPlan(section) {
-  return db.collection('plan').doc(section).get().then(function(s) {
-    if(s.exists) plans[section] = s.data().days;
-  }).catch(function(){});
-}
-
-function getDayPlan(section, date) {
-  var plan = plans[section];
-  if(!plan) return null;
-  var dow = date.getDay(); // 0=sun, 1=mon...
-  var idx = dow === 0 ? 6 : dow - 1; // mon=0..sun=6
-  return plan[idx] || null;
-}
-
-function loadDayData(section, date) {
-  var dk = dateKey(date);
-  if(cache[section][dk]) return Promise.resolve(cache[section][dk]);
-  return db.collection(section).doc(dk).get().then(function(s) {
-    var dayPlan = getDayPlan(section, date);
-    if(s.exists) {
-      var data = s.data();
-      cache[section][dk] = {
-        plan: data.plan || (dayPlan ? dayPlan.exercises : []),
-        type: data.type || (dayPlan ? dayPlan.type : 'rest'),
-        label: data.label || (dayPlan ? dayPlan.label : ''),
-        checks: data.checks || {}
-      };
-    } else {
-      cache[section][dk] = {
-        plan: dayPlan ? dayPlan.exercises : [],
-        type: dayPlan ? dayPlan.type : 'rest',
-        label: dayPlan ? dayPlan.label : '',
-        checks: {}
-      };
-    }
-    return cache[section][dk];
-  }).catch(function() {
-    var dayPlan = getDayPlan(section, date);
-    cache[section][dk] = {
-      plan: dayPlan ? dayPlan.exercises : [],
-      type: dayPlan ? dayPlan.type : 'rest',
-      label: dayPlan ? dayPlan.label : '',
-      checks: {}
-    };
-    return cache[section][dk];
-  });
-}
-
-function saveDayData(section, date) {
-  var dk = dateKey(date);
-  var data = cache[section][dk];
-  if(!data) return;
-  return db.collection(section).doc(dk).set({
-    plan: data.plan,
-    type: data.type,
-    label: data.label,
-    checks: data.checks
-  }).catch(function(){});
-}
-
-function renderSection(section, keepOpen) {
-  document.getElementById(section+'-week-label').textContent = 'Неделя '+getWeekLabel(weekOffset);
-  var dates = getWeekDates(weekOffset);
-  var container = document.getElementById(section+'-days');
-  container.innerHTML = '<div class="loading">Загрузка...</div>';
-
-  var promises = dates.map(function(d) { return loadDayData(section, d); });
-  Promise.all(promises).then(function(results) {
-    var doneDays=0, doneEx=0, totalEx=0;
-    results.forEach(function(r) { if(r.type!=='rest') totalEx+=r.plan.length; });
-    container.innerHTML = '';
-    results.forEach(function(dayData, i) {
-      var date = dates[i];
-      var dk = dateKey(date);
-      var checks = dayData.checks || {};
-      var exs = dayData.plan || [];
-      var done = exs.filter(function(ex){ return checks[ex.name]; }).length;
-      var total = exs.length;
-      if(done===total&&total>0&&dayData.type!=='rest') doneDays++;
-      if(dayData.type!=='rest') doneEx+=done;
-      var pct = total>0?Math.round(done/total*100):0;
-      var isComplete = done===total&&total>0&&dayData.type!=='rest';
-      var isPartial = done>0&&done<total&&dayData.type!=='rest';
-      var markBg = isComplete?'#1D9E75':isPartial?'#FAC775':'transparent';
-      var markInner = (isComplete||isPartial)?'<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';
-      var dayName = DAY_NAMES[date.getDay()];
-      var card = document.createElement('div');
-      card.className = 'day-card';
-      card.dataset.dk = dk;
-      card.dataset.section = section;
-      card.innerHTML =
-        '<div class="day-header" onclick="toggleDay(this)">'+
-          '<div class="day-left">'+
-            '<span class="day-badge '+TC[dayData.type]+'">'+dayData.label+'</span>'+
-            '<span class="day-name">'+dayName+'</span>'+
-          '</div>'+
-          '<div class="day-right">'+
-            '<div class="done-mark" style="background:'+markBg+'">'+markInner+'</div>'+
-            '<span class="day-count">'+done+'/'+total+'</span>'+
-            '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'+
-          '</div>'+
-        '</div>'+
-        '<div class="day-body">'+
-          '<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div>'+
-          '<div class="ex-list">'+exs.map(function(ex){
-            return '<div class="ex-item">'+
-              '<input type="checkbox" class="ex-check" '+(checks[ex.name]?'checked':'')+' onchange="toggleCheck(\''+section+'\',\''+dk+'\',\''+ex.name.replace(/'/g,"\\'")+'\',this)">'+
-              '<div class="ex-info">'+
-                '<div class="ex-name">'+ex.name+'</div>'+
-                '<div class="ex-desc">'+ex.desc+'</div>'+
-                (ex.note?'<div class="ex-note">'+ex.note+'</div>':'')+
-              '</div>'+
-            '</div>';
-          }).join('')+'</div>'+
-        '</div>';
-      container.appendChild(card);
-    });
-    var tp = totalEx>0?Math.round(doneEx/totalEx*100):0;
-    document.getElementById(section+'-s-days').textContent = doneDays;
-    document.getElementById(section+'-s-ex').textContent = doneEx;
-    document.getElementById(section+'-s-pct').textContent = tp+'%';
-    if(keepOpen) restoreOpenCards(section, keepOpen);
-  });
-}
-
-function getOpenCards(section) {
-  var open = [];
-  document.querySelectorAll('#'+section+'-days .day-card').forEach(function(c,i){
-    if(c.classList.contains('open')) open.push(i);
-  });
-  return open;
-}
-function restoreOpenCards(section, open) {
-  var cards = document.querySelectorAll('#'+section+'-days .day-card');
-  open.forEach(function(i){ if(cards[i]) cards[i].classList.add('open'); });
-}
-
-function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
-
-function toggleCheck(section, dk, exName, el) {
-  if(!cache[section][dk]) return;
-  cache[section][dk].checks[exName] = el.checked;
-  var date = new Date(dk+'T12:00:00');
-  saveDayData(section, date);
-  var open = getOpenCards(section);
-  renderSection(section, open);
-}
-
-function changeWeek(section, d) {
-  weekOffset += d;
-  renderSection('strength');
-  renderSection('wingchun');
-  renderSection('qigong');
-}
-
-function loadHistory() {
-  return db.collection('tracker').doc('history').get().then(function(s){
-    history = s.exists?(s.data().entries||[]):[];
-  }).catch(function(){history=[];});
-}
-function saveHistoryDb() {
-  return db.collection('tracker').doc('history').set({entries:history}).catch(function(){});
-}
-
-function saveTest() {
-  var ids=['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12'];
-  var vals=ids.map(function(id){var v=document.getElementById(id).value;return v===''?null:parseInt(v);});
-  history.push({date:new Date().toLocaleDateString('ru'),vals:vals});
-  saveHistoryDb();
-  document.getElementById('saved-msg').style.display='block';
-  setTimeout(function(){document.getElementById('saved-msg').style.display='none';},2000);
-  ids.forEach(function(id){document.getElementById(id).value='';});
-  renderHistory();
-}
-
-function renderHistory() {
-  var c = document.getElementById('history-container');
-  if(!history.length){c.innerHTML='<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>';return;}
-  var labels=['2 ноги','Прав.','Лев.','Бал.П','Бал.Л','Отжим.','Подтяг.','Пл.Л','Пл.П','Дерево','Всадник','Стульчик'];
-  var html='<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
-  labels.forEach(function(l){html+='<th>'+l+'</th>';});
-  html+='</tr></thead><tbody>';
-  history.forEach(function(e,i){
-    html+='<tr><td>'+e.date+'</td>';
-    e.vals.forEach(function(v,vi){
-      var delta='';
-      if(i>0&&v!==null&&history[i-1].vals[vi]!==null){
-        var diff=v-history[i-1].vals[vi];
-        if(diff>0)delta='<span class="delta up">+'+diff+'</span>';
-        else if(diff<0)delta='<span class="delta down">'+diff+'</span>';
-      }
-      html+='<td>'+(v!==null?v:'—')+delta+'</td>';
-    });
-    html+='</tr>';
-  });
-  html+='</tbody></table></div>';
-  c.innerHTML=html;
-}
-
-function showTab(name,btn){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById(name).classList.add('active');
-  btn.classList.add('active');
-  document.getElementById('sub-tabs').style.visibility = name==='plan'?'visible':'hidden';
-  if(name==='progress') renderHistory();
-}
-
-function showSubTab(name,btn){
-  document.querySelectorAll('.sub-screen').forEach(function(s){s.classList.remove('active');});
-  document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.remove('active');});
-  document.getElementById(name).classList.add('active');
-  btn.classList.add('active');
-}
-
-function init(){
-  Promise.all([
-    loadPlan('strength'),
-    loadPlan('wingchun'),
-    loadPlan('qigong'),
-    loadHistory()
-  ]).then(function(){
-    renderSection('strength');
-    renderSection('wingchun');
-    renderSection('qigong');
-  });
-}
-init();
-</script>
+<script src="./js/main.js"></script>
+<script src="./js/settings.js"></script>
 </body>
 </html>
