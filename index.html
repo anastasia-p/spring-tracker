@@ -228,6 +228,29 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
           <span id="tree-label-right"></span>
         </div>
       </div>
+      <div class="section-title">Стойка горы</div>
+      <div class="tree-card">
+        <div class="tree-header">
+          <div class="tree-title-wrap">
+            <div class="tree-icon" style="background:#EEEDFE">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 21h20L12 3z" fill="#7F77DD" opacity="0.3"/><path d="M12 3L2 21h20L12 3z" stroke="#534AB7" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 21v-6h10v6" stroke="#534AB7" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <div class="tree-level-name" id="mountain-level-name">Загрузка...</div>
+              <div class="tree-hours" id="mountain-hours"></div>
+            </div>
+          </div>
+          <button class="tree-q-btn" onclick="showMountainLevels()">?</button>
+        </div>
+        <div class="tree-progress-wrap">
+          <div class="tree-progress-bar" id="mountain-progress-bar" style="width:0%;background:#7F77DD"></div>
+        </div>
+        <div class="tree-progress-labels">
+          <span id="mountain-label-left"></span>
+          <span id="mountain-progress-pct"></span>
+          <span id="mountain-label-right"></span>
+        </div>
+      </div>
       <div class="section-title">Тесты</div>
       <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
     </div>
@@ -312,6 +335,19 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
     <div class="levels-scroll">
       <div id="levels-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Mountain levels popup -->
+<div class="popup-overlay" id="mountain-levels-popup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title">Стойка горы — уровни</span>
+      <button class="popup-close" onclick="closeMountainLevelsPopup()">×</button>
+    </div>
+    <div class="levels-scroll">
+      <div id="mountain-levels-list"></div>
     </div>
   </div>
 </div>

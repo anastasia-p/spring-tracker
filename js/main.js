@@ -28,11 +28,27 @@ var TREE_LEVELS = [
   { level: 9, name: 'Иггдрасиль',     hours: 10000, desc: 'Соединяешь миры' },
 ];
 
+var MOUNTAIN_LEVELS = [
+  { level: 0, name: 'Ватные ноги',      hours: 0,     desc: 'Ноги ещё не знают стойки' },
+  { level: 1, name: 'Деревянные ноги',  hours: 10,    desc: 'Первые часы под нагрузкой' },
+  { level: 2, name: 'Каменные ноги',    hours: 30,    desc: 'Стойка начинает держать' },
+  { level: 3, name: 'Бронзовые ноги',   hours: 60,    desc: 'Закалка идёт полным ходом' },
+  { level: 4, name: 'Железные ноги',    hours: 100,   desc: 'Ноги превращаются в опору' },
+  { level: 5, name: 'Стальные ноги',    hours: 300,   desc: 'Гора начинает узнавать тебя' },
+  { level: 6, name: 'Мифриловые ноги',  hours: 600,   desc: 'Лёгкость и твёрдость слились' },
+  { level: 7, name: 'Алмазные ноги',    hours: 1000,  desc: 'Ничто не сдвинет с места' },
+  { level: 8, name: 'Адамантовые ноги', hours: 5000,  desc: 'Ты и есть гора' },
+  { level: 9, name: 'Метеоритные ноги', hours: 10000, desc: 'Пришёл из космоса, врос в землю' },
+];
+
+var STANCE_EXERCISES = ['Всадник у стены', 'Стульчик', 'Мабу'];
+
 // State
 var weekOffset = 0;
 var cache = { strength: {}, wingchun: {}, qigong: {} };
 var plans = { strength: null, wingchun: null, qigong: null, tests: null };
 var treeTotalMinutes = 0;
+var mountainTotalSeconds = 0;
 
 // Popup state
 var pendingCheck = null; // {section, dk, exName, el}
@@ -133,6 +149,29 @@ function saveDayData(section, date) {
   }).catch(function() {});
 }
 
+// --- Mountain seconds ---
+
+function loadMountainSeconds() {
+  return db.collection('tracker').doc('iron_legs').get().then(function(s) {
+    mountainTotalSeconds = s.exists ? (s.data().totalSeconds || 0) : 0;
+  }).catch(function() { mountainTotalSeconds = 0; });
+}
+
+function recalcMountainSeconds() {
+  db.collection('wingchun').get().then(function(snap) {
+    var total = 0;
+    snap.forEach(function(doc) {
+      var values = doc.data().values || {};
+      STANCE_EXERCISES.forEach(function(name) {
+        if (values[name]) total += values[name];
+      });
+    });
+    mountainTotalSeconds = total;
+    db.collection('tracker').doc('iron_legs').set({ totalSeconds: total }).catch(function() {});
+    renderMountainProgress();
+  }).catch(function() {});
+}
+
 // --- Tree minutes ---
 
 function loadTreeMinutes() {
@@ -178,6 +217,34 @@ function getTreeProgress(totalMinutes) {
   var hours = totalMinutes / 60;
   var current = getTreeLevel(totalMinutes);
   var next = getNextLevel(totalMinutes);
+  if (!next) return 100;
+  var range = next.hours - current.hours;
+  var done = hours - current.hours;
+  return Math.round(done / range * 100);
+}
+
+function getMountainLevel(totalSeconds) {
+  var hours = totalSeconds / 3600;
+  var current = MOUNTAIN_LEVELS[0];
+  for (var i = 0; i < MOUNTAIN_LEVELS.length; i++) {
+    if (hours >= MOUNTAIN_LEVELS[i].hours) current = MOUNTAIN_LEVELS[i];
+    else break;
+  }
+  return current;
+}
+
+function getMountainNextLevel(totalSeconds) {
+  var hours = totalSeconds / 3600;
+  for (var i = 0; i < MOUNTAIN_LEVELS.length; i++) {
+    if (hours < MOUNTAIN_LEVELS[i].hours) return MOUNTAIN_LEVELS[i];
+  }
+  return null;
+}
+
+function getMountainProgress(totalSeconds) {
+  var hours = totalSeconds / 3600;
+  var current = getMountainLevel(totalSeconds);
+  var next = getMountainNextLevel(totalSeconds);
   if (!next) return 100;
   var range = next.hours - current.hours;
   var done = hours - current.hours;
@@ -318,6 +385,7 @@ function handleExCheck(section, dk, exName, unit, el) {
     cache[section][dk].values[exName] = 0;
     saveDayData(section, new Date(dk + 'T12:00:00'));
     if (exName === 'Дерево') recalcTreeMinutes();
+    if (STANCE_EXERCISES.indexOf(exName) !== -1) recalcMountainSeconds();
     var open = getOpenCards(section);
     renderSection(section, open);
   }
@@ -422,6 +490,42 @@ function renderTreeProgress() {
   document.getElementById('tree-label-right').textContent = next ? next.hours + ' ч' : '—';
 }
 
+function renderMountainProgress() {
+  var current = getMountainLevel(mountainTotalSeconds);
+  var next = getMountainNextLevel(mountainTotalSeconds);
+  var pct = getMountainProgress(mountainTotalSeconds);
+  var hours = (mountainTotalSeconds / 3600).toFixed(1);
+  document.getElementById('mountain-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('mountain-hours').textContent = hours + ' ч';
+  document.getElementById('mountain-progress-bar').style.width = pct + '%';
+  document.getElementById('mountain-progress-pct').textContent = pct + '%';
+  document.getElementById('mountain-label-left').textContent = current.hours + ' ч';
+  document.getElementById('mountain-label-right').textContent = next ? next.hours + ' ч' : '—';
+}
+
+function showMountainLevels() {
+  var html = MOUNTAIN_LEVELS.map(function(lvl) {
+    var current = getMountainLevel(mountainTotalSeconds);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + lvl.hours + ' ч</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('mountain-levels-list').innerHTML = html;
+  document.getElementById('mountain-levels-popup').style.display = 'flex';
+}
+
+function closeMountainLevelsPopup() {
+  document.getElementById('mountain-levels-popup').style.display = 'none';
+}
+
 function showTreeLevels() {
   var html = TREE_LEVELS.map(function(lvl) {
     var current = getTreeLevel(treeTotalMinutes);
@@ -455,7 +559,7 @@ function showTab(name, btn) {
   if (btn.classList.contains('tab-btn')) btn.classList.add('active');
   else btn.style.color = 'var(--green)';
   document.getElementById('sub-tabs').style.visibility = name === 'plan' ? 'visible' : 'hidden';
-  if (name === 'progress') { loadAndRenderHistory(); renderTreeProgress(); }
+  if (name === 'progress') { loadAndRenderHistory(); renderTreeProgress(); renderMountainProgress(); }
 }
 
 function showSubTab(name, btn) {
@@ -474,10 +578,12 @@ function init() {
     loadPlanFromFirebase('qigong'),
     loadPlanFromFirebase('tests'),
     loadTreeMinutes(),
+    loadMountainSeconds(),
   ]).then(function() {
     SECTIONS.forEach(function(s) { renderSection(s); });
     renderTestForm();
     renderTreeProgress();
+    renderMountainProgress();
   });
 }
 
