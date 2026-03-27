@@ -212,7 +212,7 @@ var TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest',wc:'b-wc',qi:'b-qi'};
 var DAY_NAMES = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
 
 // week offsets per section
-var weekOffsets = {strength:0, wingchun:0, qigong:0};
+var weekOffset = 0;
 
 // in-memory: section -> dateKey -> {plan: [...], checks: {name: bool}}
 var cache = {strength:{}, wingchun:{}, qigong:{}};
@@ -306,9 +306,8 @@ function saveDayData(section, date) {
 }
 
 function renderSection(section, keepOpen) {
-  var offset = weekOffsets[section];
-  document.getElementById(section+'-week-label').textContent = 'Неделя '+getWeekLabel(offset);
-  var dates = getWeekDates(offset);
+  document.getElementById(section+'-week-label').textContent = 'Неделя '+getWeekLabel(weekOffset);
+  var dates = getWeekDates(weekOffset);
   var container = document.getElementById(section+'-days');
   container.innerHTML = '<div class="loading">Загрузка...</div>';
 
@@ -395,8 +394,10 @@ function toggleCheck(section, dk, exName, el) {
 }
 
 function changeWeek(section, d) {
-  weekOffsets[section] += d;
-  renderSection(section);
+  weekOffset += d;
+  renderSection('strength');
+  renderSection('wingchun');
+  renderSection('qigong');
 }
 
 function loadHistory() {
