@@ -20,39 +20,27 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .app{max-width:680px;margin:0 auto;padding:0 0 80px}
-
-/* Header - always same height */
-.app-header{background:#FBEAF0;border-bottom:1px solid rgba(0,0,0,0.1)}
+.app-header{background:#FBEAF0;border-bottom:1px solid var(--border)}
 .header-top{display:flex;align-items:center;gap:10px;padding:16px 16px 12px}
 .header-top h1{font-size:20px;font-weight:600;color:var(--text)}
-.sub-tabs{display:flex;padding:0 16px;border-bottom:none}
+.sub-tabs{display:flex;padding:0 16px}
 .sub-tab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border:none;background:none;font-family:'Onest',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .sub-tab.active{color:var(--green);border-bottom:2px solid var(--green)}
-
-/* Screens */
 .screen{display:none;padding:0}
 .screen.active{display:block}
 .sub-screen{display:none;padding:0 16px}
 .sub-screen.active{display:block}
-
-/* Bottom nav */
 .tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:'Onest',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
 .tab-btn.active{color:var(--green)}
 .tab-btn svg{width:20px;height:20px}
-
-/* Week nav */
 .week-nav{display:flex;align-items:center;gap:8px;padding:16px 0 0}
 .week-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;font-size:16px;color:var(--text);display:flex;align-items:center;justify-content:center}
 .week-nav span{flex:1;text-align:center;font-size:14px;font-weight:500}
-
-/* Summary */
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}
 .summary-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;text-align:center;border:1px solid var(--border)}
 .summary-num{font-size:24px;font-weight:600}
 .summary-lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
-
-/* Day cards */
 .day-card{background:var(--card);border-radius:var(--radius);margin-bottom:10px;border:1px solid var(--border);overflow:hidden}
 .day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
 .day-left{display:flex;align-items:center;gap:10px}
@@ -82,8 +70,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .ex-name{font-size:14px;font-weight:500}
 .ex-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
 .ex-note{font-size:12px;color:var(--green-dark);margin-top:3px;font-style:italic}
-
-/* Test */
 .test-section{padding:16px 16px 0}
 .section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
 .test-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
@@ -94,8 +80,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .save-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'Onest',sans-serif;cursor:pointer;transition:background .15s}
 .save-btn:hover{background:var(--green-dark)}
 .saved-msg{text-align:center;color:var(--green);font-size:13px;margin-top:8px;display:none}
-
-/* Progress */
 .progress-section{padding:16px 16px 0}
 .history-wrap{overflow-x:auto}
 .history-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -106,6 +90,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .up{color:var(--green)}
 .down{color:#E24B4A}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:14px;line-height:1.6}
+.loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -135,7 +120,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
         <div class="summary-card"><div class="summary-num" id="strength-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
         <div class="summary-card"><div class="summary-num" id="strength-s-pct">—</div><div class="summary-lbl">прогресс</div></div>
       </div>
-      <div id="strength-days"></div>
+      <div id="strength-days"><div class="loading">Загрузка...</div></div>
     </div>
     <div id="wingchun" class="sub-screen">
       <div class="week-nav">
@@ -148,7 +133,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
         <div class="summary-card"><div class="summary-num" id="wingchun-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
         <div class="summary-card"><div class="summary-num" id="wingchun-s-pct">—</div><div class="summary-lbl">прогресс</div></div>
       </div>
-      <div id="wingchun-days"></div>
+      <div id="wingchun-days"><div class="loading">Загрузка...</div></div>
     </div>
     <div id="qigong" class="sub-screen">
       <div class="week-nav">
@@ -161,7 +146,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
         <div class="summary-card"><div class="summary-num" id="qigong-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
         <div class="summary-card"><div class="summary-num" id="qigong-s-pct">—</div><div class="summary-lbl">прогресс</div></div>
       </div>
-      <div id="qigong-days"></div>
+      <div id="qigong-days"><div class="loading">Загрузка...</div></div>
     </div>
   </div>
 
@@ -212,69 +197,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 </nav>
 
 <script>
-var HIP = {name:'Растяжка сгибателей бедра',desc:'Выпад на колене, таз подворачивается вниз, вес вперед',note:'60 сек каждую сторону, нездоровую дольше'};
-var LEGS = [
-  {name:'Шарик — подошва',desc:'Медленно катать по всей подошве, на болезненных точках задержаться',note:'2–3 мин каждой ногой'},
-  {name:'Роллер — IT-банда',desc:'Внешняя поверхность бедра, от колена вверх',note:'1–2 мин каждой ногой'},
-  {name:'Step down',desc:'Ступенька 10 см, у стены, контроль колена над 2-м пальцем',note:'3×10 каждой ногой'},
-  {name:'Перенос веса с покачиванием',desc:'На одной ноге, корпус вперед, спина прямая',note:'3×10 каждой ногой'},
-  {name:'Боковые шаги',desc:'Небольшой присед, голова на одном уровне, расстояние между ногами сохраняется',note:'3×10 в каждую сторону'},
-  {name:'Cat-cow',desc:'Движение от копчика волной вверх',note:'2×10'},
-  {name:'90/90 растяжка таза',desc:'Сидя на полу, ноги в 90°, наклоны',note:'1 мин каждую сторону'},
-  HIP,
-  {name:'Глютовый мост',desc:'Лежа, медленный подъем таза позвонок за позвонком',note:'3×15'},
-];
-var UPPER = [
-  {name:'Отжимания',desc:'Средняя постановка рук, локти не разъезжаются',note:'3 подхода, запиши кол-во'},
-  {name:'Подтягивания',desc:'Или негативные — медленный спуск 3–4 сек',note:'3 подхода'},
-  {name:'Планка на предплечьях',desc:'Спина прямая, плечи от ушей',note:'3×40 сек'},
-  {name:'Боковая планка',desc:'Левая сторона первой, затем правая',note:'3 подхода каждую сторону'},
-  {name:'Планка с касанием плеч',desc:'На прямых руках, таз не крутится, движение медленное',note:'3×10 каждой рукой'},
-  HIP,
-];
-var STRENGTH_PLAN = [
-  {day:'Понедельник',type:'legs',label:'Ноги + таз',exs:LEGS},
-  {day:'Вторник',type:'upper',label:'Верх + кор',exs:UPPER},
-  {day:'Среда',type:'legs',label:'Ноги + таз',exs:LEGS},
-  {day:'Четверг',type:'upper',label:'Верх + кор',exs:UPPER},
-  {day:'Пятница',type:'legs',label:'Ноги + таз',exs:LEGS},
-  {day:'Суббота',type:'upper',label:'Верх + кор',exs:UPPER},
-  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[{name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''}]},
-];
-
-var ISO = {name:'Изометрия плеч',desc:'Руки горизонтально вперед, локти к полу, держать',note:'3×60 сек'};
-var VSADNIK = {name:'Всадник у стены',desc:'Ноги шире плеч, носки наружу, спина у стены',note:'3×60 сек'};
-var STULCHIK = {name:'Стульчик',desc:'Угол 90° в колене, спина у стены',note:'3×60 сек'};
-var UDARY = {name:'Удары ногами',desc:'Отработка ударов ногами',note:''};
-var WINGCHUN_PLAN = [
-  {day:'Понедельник',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},UDARY,{name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},ISO,{name:'Манекен',desc:'Работа на деревянном манекене',note:''}]},
-  {day:'Вторник',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},UDARY,{name:'Дорожка с блоками',desc:'Дорожка с добавлением блоков',note:''},{name:'Руки змеи',desc:'Отработка рук змеи',note:''}]},
-  {day:'Среда',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},UDARY,{name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},ISO,{name:'Ши Сан Сы',desc:'Тринадцать форм',note:''}]},
-  {day:'Четверг',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},UDARY,{name:'Ноги Чам Кью',desc:'Работа ног из второй формы',note:''},{name:'Руки змеи',desc:'Отработка рук змеи',note:''}]},
-  {day:'Пятница',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Сиу Лим Тау',desc:'Первая форма Вин Чун',note:''},UDARY,{name:'Дорожка',desc:'Прямой шаг + шаг змеи',note:''},ISO,{name:'Дуилянь',desc:'Парная работа / спарринг упражнения',note:''}]},
-  {day:'Суббота',type:'wc',label:'Вин Чун',exs:[VSADNIK,STULCHIK,{name:'Чам Кью',desc:'Вторая форма Вин Чун',note:''},UDARY,{name:'Палки',desc:'Работа с палками',note:''},{name:'Руки змеи',desc:'Отработка рук змеи',note:''}]},
-  {day:'Воскресенье',type:'rest',label:'Отдых + тест',exs:[{name:'Провести еженедельный тест',desc:'Перейди во вкладку Тест и запиши результаты',note:''}]},
-];
-var QI_EXS = [
-  {name:'Дерево',desc:'Стояние в позиции, концентрация на даньтянь',note:'Начни с 5 мин, добавляй 2–3 мин в неделю'},
-  {name:'Ичжичань',desc:'Комплекс цигун школы Ши Янбина',note:'15–20 мин'},
-];
-var QIGONG_PLAN = [
-  {day:'Понедельник',type:'qi',label:'Цигун',exs:QI_EXS},
-  {day:'Вторник',type:'qi',label:'Цигун',exs:QI_EXS},
-  {day:'Среда',type:'qi',label:'Цигун',exs:QI_EXS},
-  {day:'Четверг',type:'qi',label:'Цигун',exs:QI_EXS},
-  {day:'Пятница',type:'qi',label:'Цигун',exs:QI_EXS},
-  {day:'Суббота',type:'qi',label:'Цигун',exs:QI_EXS},
-  {day:'Воскресенье',type:'qi',label:'Цигун',exs:QI_EXS},
-];
-var PLANS = {strength:STRENGTH_PLAN,wingchun:WINGCHUN_PLAN,qigong:QIGONG_PLAN};
-var TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest',wc:'b-wc',qi:'b-qi'};
-var weeks = {strength:0,wingchun:0,qigong:0};
-var checksData = {strength:{},wingchun:{},qigong:{}};
-var history = [];
-var db;
-
 firebase.initializeApp({
   apiKey:'AIzaSyB0898njk5wWWEZgTYdQcg0Rv_loFIcH2c',
   authDomain:'spring-tracker.firebaseapp.com',
@@ -283,114 +205,210 @@ firebase.initializeApp({
   messagingSenderId:'192640819831',
   appId:'1:192640819831:web:34ecfca0a22434f0271c72'
 });
-db = firebase.firestore();
+var db = firebase.firestore();
 db.enablePersistence().catch(function(){});
 
-function weekKey(w){return 'week_'+w;}
-function getWeekLabel(o){
-  var now=new Date(),mon=new Date(now);
-  mon.setDate(now.getDate()-now.getDay()+1+o*7);
-  var sun=new Date(mon);sun.setDate(mon.getDate()+6);
-  var f=function(d){return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');};
-  return f(mon)+' — '+f(sun);
-}
-function loadChecks(section){
-  var w=weeks[section];
-  return db.collection(section).doc(weekKey(w)).get().then(function(s){
-    checksData[section][w]=s.exists?(s.data().checks||{}):{};
-  }).catch(function(){checksData[section][w]={};});
-}
-function saveChecks(section){
-  var w=weeks[section];
-  return db.collection(section).doc(weekKey(w)).set({checks:checksData[section][w]||{}}).catch(function(){});
-}
-function loadHistory(){
-  return db.collection('tracker').doc('history').get().then(function(s){
-    history=s.exists?(s.data().entries||[]):[];
-  }).catch(function(){history=[];});
-}
-function saveHistoryDb(){
-  return db.collection('tracker').doc('history').set({entries:history}).catch(function(){});
-}
-function getChecks(section){return checksData[section][weeks[section]]||{};}
+var TC = {legs:'b-legs',upper:'b-upper',rest:'b-rest',wc:'b-wc',qi:'b-qi'};
+var DAY_NAMES = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
 
-function renderSection(section){
-  var plan=PLANS[section],w=weeks[section],checks=getChecks(section);
-  document.getElementById(section+'-week-label').textContent='Неделя '+getWeekLabel(w);
-  var doneDays=0,doneEx=0,totalEx=0;
-  plan.forEach(function(d){if(d.type!=='rest')totalEx+=d.exs.length;});
-  var c=document.getElementById(section+'-days');c.innerHTML='';
-  plan.forEach(function(day,di){
-    var dc=checks[di]||{};
-    var done=day.exs.filter(function(_,ei){return dc[ei];}).length,total=day.exs.length;
-    if(done===total&&total>0&&day.type!=='rest')doneDays++;
-    if(day.type!=='rest')doneEx+=done;
-    var pct=total>0?Math.round(done/total*100):0;
-    var isComplete=done===total&&total>0&&day.type!=='rest';
-    var isPartial=done>0&&done<total&&day.type!=='rest';
-    var markBg=isComplete?'#1D9E75':isPartial?'#FAC775':'transparent';
-    var markInner=isComplete||isPartial?'<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';
-    var card=document.createElement('div');
-    card.className='day-card';
-    card.innerHTML=
-      '<div class="day-header" onclick="toggleDay(this)">'+
-        '<div class="day-left">'+
-          '<span class="day-badge '+TC[day.type]+'">'+day.label+'</span>'+
-          '<span class="day-name">'+day.day+'</span>'+
-        '</div>'+
-        '<div class="day-right">'+
-          '<div class="done-mark" style="background:'+markBg+'">'+markInner+'</div>'+
-          '<span class="day-count">'+done+'/'+total+'</span>'+
-          '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'+
-        '</div>'+
-      '</div>'+
-      '<div class="day-body">'+
-        '<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div>'+
-        '<div class="ex-list">'+day.exs.map(function(ex,ei){
-          return '<div class="ex-item">'+
-            '<input type="checkbox" class="ex-check" '+(dc[ei]?'checked':'')+' onchange="toggleCheck(\''+section+'\','+di+','+ei+',this)">'+
-            '<div class="ex-info">'+
-              '<div class="ex-name">'+ex.name+'</div>'+
-              '<div class="ex-desc">'+ex.desc+'</div>'+
-              (ex.note?'<div class="ex-note">'+ex.note+'</div>':'')+
-            '</div>'+
-          '</div>';
-        }).join('')+'</div>'+
-      '</div>';
-    c.appendChild(card);
+// week offsets per section
+var weekOffsets = {strength:0, wingchun:0, qigong:0};
+
+// in-memory: section -> dateKey -> {plan: [...], checks: {name: bool}}
+var cache = {strength:{}, wingchun:{}, qigong:{}};
+
+// plans loaded from Firebase
+var plans = {strength:null, wingchun:null, qigong:null};
+
+var history = [];
+
+function dateKey(date) {
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+}
+
+function getWeekDates(offset) {
+  var now = new Date();
+  var mon = new Date(now);
+  mon.setDate(now.getDate() - now.getDay() + 1 + offset * 7);
+  var dates = [];
+  for(var i=0;i<7;i++) {
+    var d = new Date(mon);
+    d.setDate(mon.getDate()+i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+function getWeekLabel(offset) {
+  var dates = getWeekDates(offset);
+  var f = function(d){return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');};
+  return f(dates[0])+' — '+f(dates[6]);
+}
+
+function loadPlan(section) {
+  return db.collection('plan').doc(section).get().then(function(s) {
+    if(s.exists) plans[section] = s.data().days;
+  }).catch(function(){});
+}
+
+function getDayPlan(section, date) {
+  var plan = plans[section];
+  if(!plan) return null;
+  var dow = date.getDay(); // 0=sun, 1=mon...
+  var idx = dow === 0 ? 6 : dow - 1; // mon=0..sun=6
+  return plan[idx] || null;
+}
+
+function loadDayData(section, date) {
+  var dk = dateKey(date);
+  if(cache[section][dk]) return Promise.resolve(cache[section][dk]);
+  return db.collection(section).doc(dk).get().then(function(s) {
+    var dayPlan = getDayPlan(section, date);
+    if(s.exists) {
+      var data = s.data();
+      cache[section][dk] = {
+        plan: data.plan || (dayPlan ? dayPlan.exercises : []),
+        type: data.type || (dayPlan ? dayPlan.type : 'rest'),
+        label: data.label || (dayPlan ? dayPlan.label : ''),
+        checks: data.checks || {}
+      };
+    } else {
+      cache[section][dk] = {
+        plan: dayPlan ? dayPlan.exercises : [],
+        type: dayPlan ? dayPlan.type : 'rest',
+        label: dayPlan ? dayPlan.label : '',
+        checks: {}
+      };
+    }
+    return cache[section][dk];
+  }).catch(function() {
+    var dayPlan = getDayPlan(section, date);
+    cache[section][dk] = {
+      plan: dayPlan ? dayPlan.exercises : [],
+      type: dayPlan ? dayPlan.type : 'rest',
+      label: dayPlan ? dayPlan.label : '',
+      checks: {}
+    };
+    return cache[section][dk];
   });
-  var tp=totalEx>0?Math.round(doneEx/totalEx*100):0;
-  document.getElementById(section+'-s-days').textContent=doneDays;
-  document.getElementById(section+'-s-ex').textContent=doneEx;
-  document.getElementById(section+'-s-pct').textContent=tp+'%';
 }
 
-function getOpenDays(section){
-  var open=[];
-  document.querySelectorAll('#'+section+'-days .day-card').forEach(function(card,i){if(card.classList.contains('open'))open.push(i);});
+function saveDayData(section, date) {
+  var dk = dateKey(date);
+  var data = cache[section][dk];
+  if(!data) return;
+  return db.collection(section).doc(dk).set({
+    plan: data.plan,
+    type: data.type,
+    label: data.label,
+    checks: data.checks
+  }).catch(function(){});
+}
+
+function renderSection(section) {
+  var offset = weekOffsets[section];
+  document.getElementById(section+'-week-label').textContent = 'Неделя '+getWeekLabel(offset);
+  var dates = getWeekDates(offset);
+  var container = document.getElementById(section+'-days');
+  container.innerHTML = '<div class="loading">Загрузка...</div>';
+
+  var promises = dates.map(function(d) { return loadDayData(section, d); });
+  Promise.all(promises).then(function(results) {
+    var doneDays=0, doneEx=0, totalEx=0;
+    results.forEach(function(r) { if(r.type!=='rest') totalEx+=r.plan.length; });
+    container.innerHTML = '';
+    results.forEach(function(dayData, i) {
+      var date = dates[i];
+      var dk = dateKey(date);
+      var checks = dayData.checks || {};
+      var exs = dayData.plan || [];
+      var done = exs.filter(function(ex){ return checks[ex.name]; }).length;
+      var total = exs.length;
+      if(done===total&&total>0&&dayData.type!=='rest') doneDays++;
+      if(dayData.type!=='rest') doneEx+=done;
+      var pct = total>0?Math.round(done/total*100):0;
+      var isComplete = done===total&&total>0&&dayData.type!=='rest';
+      var isPartial = done>0&&done<total&&dayData.type!=='rest';
+      var markBg = isComplete?'#1D9E75':isPartial?'#FAC775':'transparent';
+      var markInner = (isComplete||isPartial)?'<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';
+      var dayName = DAY_NAMES[date.getDay()];
+      var card = document.createElement('div');
+      card.className = 'day-card';
+      card.dataset.dk = dk;
+      card.dataset.section = section;
+      card.innerHTML =
+        '<div class="day-header" onclick="toggleDay(this)">'+
+          '<div class="day-left">'+
+            '<span class="day-badge '+TC[dayData.type]+'">'+dayData.label+'</span>'+
+            '<span class="day-name">'+dayName+'</span>'+
+          '</div>'+
+          '<div class="day-right">'+
+            '<div class="done-mark" style="background:'+markBg+'">'+markInner+'</div>'+
+            '<span class="day-count">'+done+'/'+total+'</span>'+
+            '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'+
+          '</div>'+
+        '</div>'+
+        '<div class="day-body">'+
+          '<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div>'+
+          '<div class="ex-list">'+exs.map(function(ex){
+            return '<div class="ex-item">'+
+              '<input type="checkbox" class="ex-check" '+(checks[ex.name]?'checked':'')+' onchange="toggleCheck(\''+section+'\',\''+dk+'\',\''+ex.name.replace(/'/g,"\\'")+'\',this)">'+
+              '<div class="ex-info">'+
+                '<div class="ex-name">'+ex.name+'</div>'+
+                '<div class="ex-desc">'+ex.desc+'</div>'+
+                (ex.note?'<div class="ex-note">'+ex.note+'</div>':'')+
+              '</div>'+
+            '</div>';
+          }).join('')+'</div>'+
+        '</div>';
+      container.appendChild(card);
+    });
+    var tp = totalEx>0?Math.round(doneEx/totalEx*100):0;
+    document.getElementById(section+'-s-days').textContent = doneDays;
+    document.getElementById(section+'-s-ex').textContent = doneEx;
+    document.getElementById(section+'-s-pct').textContent = tp+'%';
+  });
+}
+
+function getOpenCards(section) {
+  var open = [];
+  document.querySelectorAll('#'+section+'-days .day-card').forEach(function(c,i){
+    if(c.classList.contains('open')) open.push(i);
+  });
   return open;
 }
-function restoreOpenDays(section,open){
-  var cards=document.querySelectorAll('#'+section+'-days .day-card');
-  open.forEach(function(i){if(cards[i])cards[i].classList.add('open');});
-}
-function toggleDay(el){el.closest('.day-card').classList.toggle('open');}
-function toggleCheck(section,di,ei,el){
-  var w=weeks[section];
-  if(!checksData[section][w])checksData[section][w]={};
-  if(!checksData[section][w][di])checksData[section][w][di]={};
-  checksData[section][w][di][ei]=el.checked;
-  saveChecks(section);
-  var open=getOpenDays(section);
-  renderSection(section);
-  restoreOpenDays(section,open);
-}
-function changeWeek(section,d){
-  weeks[section]+=d;
-  loadChecks(section).then(function(){renderSection(section);});
+function restoreOpenCards(section, open) {
+  var cards = document.querySelectorAll('#'+section+'-days .day-card');
+  open.forEach(function(i){ if(cards[i]) cards[i].classList.add('open'); });
 }
 
-function saveTest(){
+function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
+
+function toggleCheck(section, dk, exName, el) {
+  if(!cache[section][dk]) return;
+  cache[section][dk].checks[exName] = el.checked;
+  var date = new Date(dk+'T12:00:00');
+  saveDayData(section, date);
+  var open = getOpenCards(section);
+  renderSection(section);
+  restoreOpenCards(section, open);
+}
+
+function changeWeek(section, d) {
+  weekOffsets[section] += d;
+  renderSection(section);
+}
+
+function loadHistory() {
+  return db.collection('tracker').doc('history').get().then(function(s){
+    history = s.exists?(s.data().entries||[]):[];
+  }).catch(function(){history=[];});
+}
+function saveHistoryDb() {
+  return db.collection('tracker').doc('history').set({entries:history}).catch(function(){});
+}
+
+function saveTest() {
   var ids=['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12'];
   var vals=ids.map(function(id){var v=document.getElementById(id).value;return v===''?null:parseInt(v);});
   history.push({date:new Date().toLocaleDateString('ru'),vals:vals});
@@ -401,8 +419,8 @@ function saveTest(){
   renderHistory();
 }
 
-function renderHistory(){
-  var c=document.getElementById('history-container');
+function renderHistory() {
+  var c = document.getElementById('history-container');
   if(!history.length){c.innerHTML='<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>';return;}
   var labels=['2 ноги','Прав.','Лев.','Бал.П','Бал.Л','Отжим.','Подтяг.','Пл.Л','Пл.П','Дерево','Всадник','Стульчик'];
   var html='<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
@@ -430,8 +448,8 @@ function showTab(name,btn){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById(name).classList.add('active');
   btn.classList.add('active');
-  document.getElementById('sub-tabs').style.visibility=name==='plan'?'visible':'hidden';
-  if(name==='progress')renderHistory();
+  document.getElementById('sub-tabs').style.visibility = name==='plan'?'visible':'hidden';
+  if(name==='progress') renderHistory();
 }
 
 function showSubTab(name,btn){
@@ -442,7 +460,12 @@ function showSubTab(name,btn){
 }
 
 function init(){
-  Promise.all([loadChecks('strength'),loadChecks('wingchun'),loadChecks('qigong'),loadHistory()]).then(function(){
+  Promise.all([
+    loadPlan('strength'),
+    loadPlan('wingchun'),
+    loadPlan('qigong'),
+    loadHistory()
+  ]).then(function(){
     renderSection('strength');
     renderSection('wingchun');
     renderSection('qigong');
