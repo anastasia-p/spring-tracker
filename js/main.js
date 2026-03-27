@@ -87,10 +87,12 @@ function loadDayData(section, date) {
   if (cache[section][dk]) return Promise.resolve(cache[section][dk]);
   return db.collection(section).doc(dk).get().then(function(s) {
     var dayPlan = getDayPlan(section, date);
+    var todayDk = dateKey(new Date());
+    var isToday = dk >= todayDk;
     if (s.exists) {
       var data = s.data();
       cache[section][dk] = {
-        plan: data.plan || (dayPlan ? dayPlan.exercises : []),
+        plan: isToday ? (dayPlan ? dayPlan.exercises : (data.plan || [])) : (data.plan || (dayPlan ? dayPlan.exercises : [])),
         type: data.type || (dayPlan ? dayPlan.type : 'rest'),
         label: data.label || (dayPlan ? dayPlan.label : ''),
         checks: data.checks || {},
