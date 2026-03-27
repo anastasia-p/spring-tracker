@@ -305,7 +305,7 @@ function saveDayData(section, date) {
   }).catch(function(){});
 }
 
-function renderSection(section) {
+function renderSection(section, keepOpen) {
   var offset = weekOffsets[section];
   document.getElementById(section+'-week-label').textContent = 'Неделя '+getWeekLabel(offset);
   var dates = getWeekDates(offset);
@@ -367,6 +367,7 @@ function renderSection(section) {
     document.getElementById(section+'-s-days').textContent = doneDays;
     document.getElementById(section+'-s-ex').textContent = doneEx;
     document.getElementById(section+'-s-pct').textContent = tp+'%';
+    if(keepOpen) restoreOpenCards(section, keepOpen);
   });
 }
 
@@ -390,8 +391,7 @@ function toggleCheck(section, dk, exName, el) {
   var date = new Date(dk+'T12:00:00');
   saveDayData(section, date);
   var open = getOpenCards(section);
-  renderSection(section);
-  restoreOpenCards(section, open);
+  renderSection(section, open);
 }
 
 function changeWeek(section, d) {
