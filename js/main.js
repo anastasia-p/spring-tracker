@@ -271,6 +271,7 @@ function savePopupValue() {
   cache[p.section][p.dk].values[p.exName] = val;
   saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
   if (p.exName === 'Дерево') recalcTreeMinutes();
+  if (STANCE_EXERCISES.indexOf(p.exName) !== -1) recalcMountainSeconds();
   closePopup();
   var open = getOpenCards(p.section);
   renderSection(p.section, open);
@@ -477,6 +478,7 @@ function loadAndRenderHistory() {
 // --- Tree progress ---
 
 function renderTreeProgress() {
+  if (!document.getElementById('tree-level-name')) return;
   var current = getTreeLevel(treeTotalMinutes);
   var next = getNextLevel(treeTotalMinutes);
   var pct = getTreeProgress(treeTotalMinutes);
@@ -491,11 +493,13 @@ function renderTreeProgress() {
 }
 
 function renderMountainProgress() {
+  var el = document.getElementById('mountain-level-name');
+  if (!el) return;
   var current = getMountainLevel(mountainTotalSeconds);
   var next = getMountainNextLevel(mountainTotalSeconds);
   var pct = getMountainProgress(mountainTotalSeconds);
   var hours = (mountainTotalSeconds / 3600).toFixed(1);
-  document.getElementById('mountain-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  el.textContent = 'Ур. ' + current.level + ' — ' + current.name;
   document.getElementById('mountain-hours').textContent = hours + ' ч';
   document.getElementById('mountain-progress-bar').style.width = pct + '%';
   document.getElementById('mountain-progress-pct').textContent = pct + '%';
