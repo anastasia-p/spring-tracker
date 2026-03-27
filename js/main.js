@@ -414,15 +414,12 @@ function renderTreeProgress() {
   var pct = getTreeProgress(treeTotalMinutes);
   var hours = (treeTotalMinutes / 60).toFixed(1);
 
-  var nextLabel = next
-    ? 'до ур. ' + next.level + ' — ' + next.name + ' (' + next.hours + ' ч)'
-    : 'Максимальный уровень достигнут';
-
   document.getElementById('tree-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
   document.getElementById('tree-hours').textContent = hours + ' ч';
   document.getElementById('tree-progress-bar').style.width = pct + '%';
   document.getElementById('tree-progress-pct').textContent = pct + '%';
-  document.getElementById('tree-next-label').textContent = nextLabel;
+  document.getElementById('tree-label-left').textContent = current.hours + ' ч';
+  document.getElementById('tree-label-right').textContent = next ? next.hours + ' ч' : '—';
 }
 
 function showTreeLevels() {
