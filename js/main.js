@@ -16,7 +16,7 @@ var DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторн
 var SECTIONS = ['strength', 'wingchun', 'qigong'];
 
 var TREE_LEVELS = [
-  { level: 0, name: 'Спящее семя',    hours: 0,     desc: 'Ещё не началось' },
+  { level: 0, name: 'Спящее семя',    hours: 0,     desc: 'Пора проснуться' },
   { level: 1, name: 'Семя',           hours: 10,    desc: 'Зерно посажено' },
   { level: 2, name: 'Росток',         hours: 30,    desc: 'Пробился сквозь землю' },
   { level: 3, name: 'Саженец',        hours: 60,    desc: 'Корни уходят вглубь' },
@@ -437,7 +437,7 @@ function showTreeLevels() {
         '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
         '<div class="level-desc">' + lvl.desc + '</div>' +
       '</div>' +
-      '<div class="level-hours">' + (lvl.hours > 0 ? lvl.hours + ' ч' : '—') + '</div>' +
+      '<div class="level-hours">' + lvl.hours + ' ч</div>' +
     '</div>';
   }).join('');
   document.getElementById('levels-list').innerHTML = html;
