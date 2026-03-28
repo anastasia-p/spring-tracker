@@ -124,9 +124,10 @@ function clearAuthError() {
 
 function getAuthErrorMessage(code) {
   var messages = {
-    'auth/user-not-found': 'Пользователь не найден',
-    'auth/wrong-password': 'Неверный пароль',
+    'auth/user-not-found': 'Неверный email или пароль',
+    'auth/wrong-password': 'Неверный email или пароль',
     'auth/invalid-credential': 'Неверный email или пароль',
+    'auth/internal-error': 'Неверный email или пароль',
     'auth/email-already-in-use': 'Email уже используется',
     'auth/invalid-email': 'Неверный формат email',
     'auth/too-many-requests': 'Слишком много попыток. Попробуй позже',
