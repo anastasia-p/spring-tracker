@@ -1,0 +1,119 @@
+// Tree, Mountain stance progress and level popups
+
+var treeTotalMinutes = 0;
+var mountainTotalSeconds = 0;
+var pendingCheck = null;
+
+// --- Value input popup ---
+
+function showValuePopup(section, dk, exName, unit, el) {
+  pendingCheck = { section: section, dk: dk, exName: exName, unit: unit, el: el };
+  document.getElementById('popup-unit').textContent = unit;
+  document.getElementById('popup-ex-name').textContent = exName;
+  document.getElementById('popup-value').value = '';
+  document.getElementById('value-popup').style.display = 'flex';
+  setTimeout(function() { document.getElementById('popup-value').focus(); }, 100);
+}
+
+function savePopupValue() {
+  if (!pendingCheck) return;
+  var val = parseInt(document.getElementById('popup-value').value) || 0;
+  var p = pendingCheck;
+  if (!cache[p.section][p.dk]) return;
+  cache[p.section][p.dk].checks[p.exName] = true;
+  cache[p.section][p.dk].values[p.exName] = val;
+  saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
+  if (p.exName === 'Дерево') recalcTreeMinutes();
+  if (STANCE_EXERCISES.indexOf(p.exName) !== -1) recalcMountainSeconds();
+  closePopup();
+  var open = getOpenCards(p.section);
+  renderSection(p.section, open);
+}
+
+function cancelPopup() {
+  if (pendingCheck && pendingCheck.el) pendingCheck.el.checked = false;
+  closePopup();
+}
+
+function closePopup() {
+  document.getElementById('value-popup').style.display = 'none';
+  pendingCheck = null;
+}
+
+// --- Tree progress ---
+
+function renderTreeProgress() {
+  if (!document.getElementById('tree-level-name')) return;
+  var current = getTreeLevel(treeTotalMinutes);
+  var next = getTreeNextLevel(treeTotalMinutes);
+  var pct = getTreeProgress(treeTotalMinutes);
+  var hours = (treeTotalMinutes / 60).toFixed(1);
+  document.getElementById('tree-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('tree-hours').textContent = hours + ' ч';
+  document.getElementById('tree-progress-bar').style.width = pct + '%';
+  document.getElementById('tree-progress-pct').textContent = pct + '%';
+  document.getElementById('tree-label-left').textContent = current.hours + ' ч';
+  document.getElementById('tree-label-right').textContent = next ? next.hours + ' ч' : '—';
+}
+
+function showTreeLevels() {
+  var html = TREE_LEVELS.map(function(lvl) {
+    var current = getTreeLevel(treeTotalMinutes);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + lvl.hours + ' ч</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('levels-list').innerHTML = html;
+  document.getElementById('levels-popup').style.display = 'flex';
+}
+
+function closeLevelsPopup() {
+  document.getElementById('levels-popup').style.display = 'none';
+}
+
+// --- Mountain progress ---
+
+function renderMountainProgress() {
+  if (!document.getElementById('mountain-level-name')) return;
+  var current = getMountainLevel(mountainTotalSeconds);
+  var next = getMountainNextLevel(mountainTotalSeconds);
+  var pct = getMountainProgress(mountainTotalSeconds);
+  var hours = (mountainTotalSeconds / 3600).toFixed(1);
+  document.getElementById('mountain-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('mountain-hours').textContent = hours + ' ч';
+  document.getElementById('mountain-progress-bar').style.width = pct + '%';
+  document.getElementById('mountain-progress-pct').textContent = pct + '%';
+  document.getElementById('mountain-label-left').textContent = current.hours + ' ч';
+  document.getElementById('mountain-label-right').textContent = next ? next.hours + ' ч' : '—';
+}
+
+function showMountainLevels() {
+  var html = MOUNTAIN_LEVELS.map(function(lvl) {
+    var current = getMountainLevel(mountainTotalSeconds);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + lvl.hours + ' ч</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('mountain-levels-list').innerHTML = html;
+  document.getElementById('mountain-levels-popup').style.display = 'flex';
+}
+
+function closeMountainLevelsPopup() {
+  document.getElementById('mountain-levels-popup').style.display = 'none';
+}
