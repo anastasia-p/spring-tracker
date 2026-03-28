@@ -69,12 +69,13 @@ function startApp(sections) {
 function doLogin() {
   var email = document.getElementById('login-email').value.trim();
   var password = document.getElementById('login-password').value;
-  if (!email || !password) return;
+  if (!email) { showAuthError('Введите email', 'login'); return; }
+  if (!password) { showAuthError('Введите пароль', 'login'); return; }
   setAuthLoading(true);
   firebase.auth().signInWithEmailAndPassword(email, password)
     .catch(function(e) {
       setAuthLoading(false);
-      showAuthError(getAuthErrorMessage(e.code));
+      showAuthError(getAuthErrorMessage(e.code), 'login');
     });
 }
 
@@ -82,14 +83,15 @@ function doRegister() {
   var email = document.getElementById('reg-email').value.trim();
   var password = document.getElementById('reg-password').value;
   var password2 = document.getElementById('reg-password2').value;
-  if (!email || !password) return;
-  if (password !== password2) { showAuthError('Пароли не совпадают'); return; }
-  if (password.length < 6) { showAuthError('Пароль минимум 6 символов'); return; }
+  if (!email) { showAuthError('Введите email', 'register'); return; }
+  if (!password) { showAuthError('Введите пароль', 'register'); return; }
+  if (password !== password2) { showAuthError('Пароли не совпадают', 'register'); return; }
+  if (password.length < 6) { showAuthError('Пароль минимум 6 символов', 'register'); return; }
   setAuthLoading(true);
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .catch(function(e) {
       setAuthLoading(false);
-      showAuthError(getAuthErrorMessage(e.code));
+      showAuthError(getAuthErrorMessage(e.code), 'register');
     });
 }
 
@@ -99,11 +101,11 @@ function doLogout() {
 
 function doResetPassword() {
   var email = document.getElementById('login-email').value.trim();
-  if (!email) { showAuthError('Введи email для восстановления пароля'); return; }
+  if (!email) { showAuthError('Введите email для восстановления пароля', 'login'); return; }
   firebase.auth().sendPasswordResetEmail(email).then(function() {
-    showAuthError('Письмо отправлено на ' + email);
+    showAuthError('Письмо отправлено на ' + email, 'login');
   }).catch(function(e) {
-    showAuthError(getAuthErrorMessage(e.code));
+    showAuthError(getAuthErrorMessage(e.code), 'login');
   });
 }
 
@@ -112,16 +114,17 @@ function setAuthLoading(loading) {
   btns.forEach(function(b) { b.disabled = loading; });
 }
 
-function showAuthError(msg) {
-  var el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.style.display = 'block';
+function showAuthError(msg, form) {
+  var id = form === 'register' ? 'auth-error-register' : 'auth-error-login';
+  var el = document.getElementById(id);
+  if (el) el.textContent = msg;
 }
 
 function clearAuthError() {
-  var el = document.getElementById('auth-error');
-  el.textContent = '';
-  el.style.display = 'none';
+  var login = document.getElementById('auth-error-login');
+  var reg = document.getElementById('auth-error-register');
+  if (login) login.textContent = '​';
+  if (reg) reg.textContent = '​';
 }
 
 function getAuthErrorMessage(code) {

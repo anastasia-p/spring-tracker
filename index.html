@@ -107,7 +107,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .auth-btn:disabled{opacity:0.6;cursor:not-allowed}
 .auth-link{font-size:13px;color:var(--text-muted);text-align:center;margin-top:16px}
 .auth-link a{color:var(--green);cursor:pointer;text-decoration:none;font-weight:500}
-.auth-error{font-size:13px;color:#E24B4A;text-align:center;margin-top:10px;display:none}
+.auth-error{font-size:13px;color:#E24B4A;margin-bottom:8px;min-height:18px;display:block}
 .onboard-overlay{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
 .onboard-box{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:32px 28px;width:100%;max-width:360px}
 .onboard-title{font-size:18px;font-weight:600;margin-bottom:8px;text-align:center}
@@ -399,6 +399,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="auth-field"><label>Email</label><input class="auth-input" type="email" id="reg-email" placeholder="your@email.com"></div>
       <div class="auth-field"><label>Пароль</label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="reg-password" placeholder=""><button class="eye-btn" type="button" onclick="togglePassword('reg-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div class="auth-field"><label>Повтори пароль</label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="reg-password2" placeholder="" onkeydown="if(event.key==='Enter')doRegister()"><button class="eye-btn" type="button" onclick="togglePassword('reg-password2',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <div class="auth-error" id="auth-error-register">&#8203;</div>
       <button class="auth-btn" onclick="doRegister()">Зарегистрироваться</button>
       <div class="auth-link">Уже есть аккаунт? <a onclick="showLoginForm()">Войти</a></div>
     </div>
