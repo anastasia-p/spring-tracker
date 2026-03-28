@@ -3,9 +3,11 @@
 var currentUser = null;
 
 var SECTION_TEMPLATES = [
-  { id: 'strength', label: 'Силовые',  planFile: 'strength.json' },
-  { id: 'wingchun', label: 'Вин Чун',  planFile: 'wingchun.json' },
-  { id: 'qigong',   label: 'Цигун',    planFile: 'qigong.json'   },
+  { id: 'strength', label: 'Силовые',   planFile: 'strength.json' },
+  { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun.json' },
+  { id: 'qigong',   label: 'Цигун',     planFile: 'qigong.json'   },
+  { id: 'stretch',  label: 'Растяжка',  planFile: 'stretch.json'  },
+  { id: 'brain',    label: 'Мозг',      planFile: 'brain.json'    },
 ];
 
 // --- Auth state ---
@@ -174,13 +176,20 @@ function saveUserConfig(sections) {
 
 function renderOnboarding() {
   var html = SECTION_TEMPLATES.map(function(s) {
-    var checked = s.id === 'strength' ? 'checked disabled' : '';
     return '<label class="onboard-item">' +
-      '<input type="checkbox" class="onboard-check" value="' + s.id + '" ' + checked + '>' +
+      '<input type="checkbox" class="onboard-check" value="' + s.id + '" onchange="updateOnboardingBtn()">' +
       '<span>' + s.label + '</span>' +
     '</label>';
   }).join('');
   document.getElementById('onboarding-list').innerHTML = html;
+  updateOnboardingBtn();
+}
+
+function updateOnboardingBtn() {
+  var checked = document.querySelectorAll('.onboard-check:checked').length;
+  var btn = document.getElementById('onboarding-btn');
+  btn.disabled = checked === 0;
+  btn.style.opacity = checked === 0 ? '0.5' : '1';
 }
 
 function finishOnboarding() {
