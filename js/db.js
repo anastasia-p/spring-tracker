@@ -32,7 +32,7 @@ function getDayPlan(section, date) {
 function loadDayData(section, date) {
   var dk = dateKey(date);
   if (cache[section][dk]) return Promise.resolve(cache[section][dk]);
-  return db.collection(section).doc(dk).get().then(function(s) {
+  return userCol(section).doc(dk).get().then(function(s) {
     var todayDk = dateKey(new Date());
     var isToday = dk >= todayDk;
     var dayPlan = getDayPlan(section, date);
@@ -71,7 +71,7 @@ function loadDayData(section, date) {
 function saveDayData(section, date) {
   var dk = dateKey(date), data = cache[section][dk];
   if (!data) return;
-  db.collection(section).doc(dk).set({
+  userCol(section).doc(dk).set({
     plan: data.plan,
     type: data.type,
     label: data.label,
