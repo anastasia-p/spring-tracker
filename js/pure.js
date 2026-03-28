@@ -115,12 +115,93 @@ function getDayPlanIndex(date) {
   return dow === 0 ? 6 : dow - 1;
 }
 
+
+
+var PUSHUP_LEVELS = [
+  { level: 0, name: 'Ватные руки',      reps: 0,       desc: 'Руки еще не знают отжиманий' },
+  { level: 1, name: 'Деревянные руки',  reps: 100,     desc: 'Первые повторения' },
+  { level: 2, name: 'Каменные руки',    reps: 500,     desc: 'Руки начинают твердеть' },
+  { level: 3, name: 'Бронзовые руки',   reps: 1000,    desc: 'Закалка идет полным ходом' },
+  { level: 4, name: 'Железные руки',    reps: 5000,    desc: 'Руки превращаются в оружие' },
+  { level: 5, name: 'Стальные руки',    reps: 10000,   desc: 'Ничто не сломит' },
+  { level: 6, name: 'Мифриловые руки',  reps: 50000,   desc: 'Легкость и мощь слились' },
+  { level: 7, name: 'Алмазные руки',    reps: 100000,  desc: 'Тверже любого металла' },
+  { level: 8, name: 'Адамантовые руки', reps: 500000,  desc: 'За пределами человеческого' },
+  { level: 9, name: 'Руки титана',      reps: 1000000, desc: 'Легенда' },
+];
+
+var PULLUP_LEVELS = [
+  { level: 0, name: 'Прикован к земле',       reps: 0,      desc: 'Земля не отпускает' },
+  { level: 1, name: 'Первый шаг',              reps: 50,     desc: 'Начало пути вверх' },
+  { level: 2, name: 'Подножие горы',           reps: 200,    desc: 'Путь только начинается' },
+  { level: 3, name: 'Середина склона',         reps: 500,    desc: 'Полпути позади' },
+  { level: 4, name: 'Вершина горы',            reps: 2000,   desc: 'Земля осталась внизу' },
+  { level: 5, name: 'Выше горизонта',          reps: 5000,   desc: 'Видно край земли' },
+  { level: 6, name: 'Между мирами',            reps: 20000,  desc: 'Ни земля, ни небо' },
+  { level: 7, name: 'Парить в облаках',        reps: 50000,  desc: 'Облака под ногами' },
+  { level: 8, name: 'Прикоснуться к звезде',  reps: 200000, desc: 'Рука дотянулась до света' },
+  { level: 9, name: 'Девятое небо',            reps: 500000, desc: 'Высшая из высот' },
+];
+
+function getPushupLevel(totalReps) {
+  var current = PUSHUP_LEVELS[0];
+  for (var i = 0; i < PUSHUP_LEVELS.length; i++) {
+    if (totalReps >= PUSHUP_LEVELS[i].reps) current = PUSHUP_LEVELS[i];
+    else break;
+  }
+  return current;
+}
+
+function getPushupNextLevel(totalReps) {
+  for (var i = 0; i < PUSHUP_LEVELS.length; i++) {
+    if (totalReps < PUSHUP_LEVELS[i].reps) return PUSHUP_LEVELS[i];
+  }
+  return null;
+}
+
+function getPushupProgress(totalReps) {
+  var current = getPushupLevel(totalReps);
+  var next = getPushupNextLevel(totalReps);
+  if (!next) return 100;
+  var range = next.reps - current.reps;
+  var done = totalReps - current.reps;
+  return Math.round(done / range * 100);
+}
+
+function getPullupLevel(totalReps) {
+  var current = PULLUP_LEVELS[0];
+  for (var i = 0; i < PULLUP_LEVELS.length; i++) {
+    if (totalReps >= PULLUP_LEVELS[i].reps) current = PULLUP_LEVELS[i];
+    else break;
+  }
+  return current;
+}
+
+function getPullupNextLevel(totalReps) {
+  for (var i = 0; i < PULLUP_LEVELS.length; i++) {
+    if (totalReps < PULLUP_LEVELS[i].reps) return PULLUP_LEVELS[i];
+  }
+  return null;
+}
+
+function getPullupProgress(totalReps) {
+  var current = getPullupLevel(totalReps);
+  var next = getPullupNextLevel(totalReps);
+  if (!next) return 100;
+  var range = next.reps - current.reps;
+  var done = totalReps - current.reps;
+  return Math.round(done / range * 100);
+}
+
 // Node.js export for tests
 if (typeof module !== 'undefined') {
   module.exports = {
     getTreeLevel, getTreeNextLevel, getTreeProgress,
     getMountainLevel, getMountainNextLevel, getMountainProgress,
     dateKey, getWeekDates, getDayPlanIndex,
-    TREE_LEVELS, MOUNTAIN_LEVELS, STANCE_EXERCISES
+    TREE_LEVELS, MOUNTAIN_LEVELS, STANCE_EXERCISES,
+    PUSHUP_LEVELS, PULLUP_LEVELS,
+    getPushupLevel, getPushupNextLevel, getPushupProgress,
+    getPullupLevel, getPullupNextLevel, getPullupProgress,
   };
 }

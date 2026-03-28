@@ -123,3 +123,41 @@ function recalcMountainSeconds() {
     renderMountainProgress();
   }).catch(function() {});
 }
+
+function loadPushupReps() {
+  return db.collection('tracker').doc('pushups').get().then(function(s) {
+    pushupTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
+  }).catch(function() { pushupTotalReps = 0; });
+}
+
+function loadPullupReps() {
+  return db.collection('tracker').doc('pullups').get().then(function(s) {
+    pullupTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
+  }).catch(function() { pullupTotalReps = 0; });
+}
+
+function recalcPushupReps() {
+  db.collection('strength').get().then(function(snap) {
+    var total = 0;
+    snap.forEach(function(doc) {
+      var values = doc.data().values || {};
+      if (values['Отжимания']) total += values['Отжимания'];
+    });
+    pushupTotalReps = total;
+    db.collection('tracker').doc('pushups').set({ totalReps: total }).catch(function() {});
+    renderPushupProgress();
+  }).catch(function() {});
+}
+
+function recalcPullupReps() {
+  db.collection('strength').get().then(function(snap) {
+    var total = 0;
+    snap.forEach(function(doc) {
+      var values = doc.data().values || {};
+      if (values['Подтягивания']) total += values['Подтягивания'];
+    });
+    pullupTotalReps = total;
+    db.collection('tracker').doc('pullups').set({ totalReps: total }).catch(function() {});
+    renderPullupProgress();
+  }).catch(function() {});
+}

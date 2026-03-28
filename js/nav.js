@@ -12,6 +12,8 @@ function showTab(name, btn) {
     loadAndRenderHistory();
     renderTreeProgress();
     renderMountainProgress();
+    renderPushupProgress();
+    renderPullupProgress();
   }
 }
 
@@ -30,11 +32,15 @@ function init() {
     loadPlanFromFirebase('tests'),
     loadTreeMinutes(),
     loadMountainSeconds(),
+    loadPushupReps(),
+    loadPullupReps(),
   ]).then(function() {
     SECTIONS.forEach(function(s) { renderSection(s); });
     renderTestForm();
     renderTreeProgress();
     renderMountainProgress();
+    renderPushupProgress();
+    renderPullupProgress();
   });
 }
 

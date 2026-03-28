@@ -102,6 +102,8 @@ function handleExCheck(section, dk, exName, unit, el) {
     saveDayData(section, new Date(dk + 'T12:00:00'));
     if (exName === 'Дерево') recalcTreeMinutes();
     if (STANCE_EXERCISES.indexOf(exName) !== -1) recalcMountainSeconds();
+    if (exName === 'Отжимания') recalcPushupReps();
+    if (exName === 'Подтягивания') recalcPullupReps();
     var open = getOpenCards(section);
     renderSection(section, open);
   }

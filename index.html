@@ -251,6 +251,52 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
           <span id="mountain-label-right"></span>
         </div>
       </div>
+      <div class="section-title">Руки титана</div>
+      <div class="tree-card">
+        <div class="tree-header">
+          <div class="tree-title-wrap">
+            <div class="tree-icon" style="background:#FAECE7">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 12h12M6 12c0-2 1.5-4 4-4M6 12c0 2 1.5 4 4 4M18 12c0-2-1.5-4-4-4M18 12c0 2-1.5 4-4 4" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="4" r="2" fill="#D85A30"/><circle cx="12" cy="20" r="2" fill="#D85A30"/></svg>
+            </div>
+            <div>
+              <div class="tree-level-name" id="pushup-level-name">Загрузка...</div>
+              <div class="tree-hours" id="pushup-reps"></div>
+            </div>
+          </div>
+          <button class="tree-q-btn" onclick="showPushupLevels()">?</button>
+        </div>
+        <div class="tree-progress-wrap">
+          <div class="tree-progress-bar" id="pushup-progress-bar" style="width:0%;background:#D85A30"></div>
+        </div>
+        <div class="tree-progress-labels">
+          <span id="pushup-label-left"></span>
+          <span id="pushup-progress-pct"></span>
+          <span id="pushup-label-right"></span>
+        </div>
+      </div>
+      <div class="section-title">Восхождение к небесам</div>
+      <div class="tree-card">
+        <div class="tree-header">
+          <div class="tree-title-wrap">
+            <div class="tree-icon" style="background:#E6F1FB">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20V8" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="tree-level-name" id="pullup-level-name">Загрузка...</div>
+              <div class="tree-hours" id="pullup-reps"></div>
+            </div>
+          </div>
+          <button class="tree-q-btn" onclick="showPullupLevels()">?</button>
+        </div>
+        <div class="tree-progress-wrap">
+          <div class="tree-progress-bar" id="pullup-progress-bar" style="width:0%;background:#378ADD"></div>
+        </div>
+        <div class="tree-progress-labels">
+          <span id="pullup-label-left"></span>
+          <span id="pullup-progress-pct"></span>
+          <span id="pullup-label-right"></span>
+        </div>
+      </div>
       <div class="section-title">Тесты</div>
       <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
     </div>
@@ -335,6 +381,32 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
     <div class="levels-scroll">
       <div id="levels-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pushup levels popup -->
+<div class="popup-overlay" id="pushup-levels-popup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title">РУКИ ТИТАНА<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
+      <button class="popup-close" onclick="closePushupLevelsPopup()">×</button>
+    </div>
+    <div class="levels-scroll">
+      <div id="pushup-levels-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pullup levels popup -->
+<div class="popup-overlay" id="pullup-levels-popup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title">ВОСХОЖДЕНИЕ К НЕБЕСАМ<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
+      <button class="popup-close" onclick="closePullupLevelsPopup()">×</button>
+    </div>
+    <div class="levels-scroll">
+      <div id="pullup-levels-list"></div>
     </div>
   </div>
 </div>

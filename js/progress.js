@@ -25,6 +25,8 @@ function savePopupValue() {
   saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
   if (p.exName === 'Дерево') recalcTreeMinutes();
   if (STANCE_EXERCISES.indexOf(p.exName) !== -1) recalcMountainSeconds();
+  if (p.exName === 'Отжимания') recalcPushupReps();
+  if (p.exName === 'Подтягивания') recalcPullupReps();
   closePopup();
   var open = getOpenCards(p.section);
   renderSection(p.section, open);
@@ -116,4 +118,81 @@ function showMountainLevels() {
 
 function closeMountainLevelsPopup() {
   document.getElementById('mountain-levels-popup').style.display = 'none';
+}
+
+// --- Pushup / Pullup progress ---
+
+var pushupTotalReps = 0;
+var pullupTotalReps = 0;
+
+function renderPushupProgress() {
+  if (!document.getElementById('pushup-level-name')) return;
+  var current = getPushupLevel(pushupTotalReps);
+  var next = getPushupNextLevel(pushupTotalReps);
+  var pct = getPushupProgress(pushupTotalReps);
+  document.getElementById('pushup-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('pushup-reps').textContent = pushupTotalReps.toLocaleString('ru') + ' повт.';
+  document.getElementById('pushup-progress-bar').style.width = pct + '%';
+  document.getElementById('pushup-progress-pct').textContent = pct + '%';
+  document.getElementById('pushup-label-left').textContent = current.reps.toLocaleString('ru');
+  document.getElementById('pushup-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
+}
+
+function showPushupLevels() {
+  var html = PUSHUP_LEVELS.map(function(lvl) {
+    var current = getPushupLevel(pushupTotalReps);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + lvl.reps.toLocaleString('ru') + '</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('pushup-levels-list').innerHTML = html;
+  document.getElementById('pushup-levels-popup').style.display = 'flex';
+}
+
+function closePushupLevelsPopup() {
+  document.getElementById('pushup-levels-popup').style.display = 'none';
+}
+
+function renderPullupProgress() {
+  if (!document.getElementById('pullup-level-name')) return;
+  var current = getPullupLevel(pullupTotalReps);
+  var next = getPullupNextLevel(pullupTotalReps);
+  var pct = getPullupProgress(pullupTotalReps);
+  document.getElementById('pullup-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('pullup-reps').textContent = pullupTotalReps.toLocaleString('ru') + ' повт.';
+  document.getElementById('pullup-progress-bar').style.width = pct + '%';
+  document.getElementById('pullup-progress-pct').textContent = pct + '%';
+  document.getElementById('pullup-label-left').textContent = current.reps.toLocaleString('ru');
+  document.getElementById('pullup-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
+}
+
+function showPullupLevels() {
+  var html = PULLUP_LEVELS.map(function(lvl) {
+    var current = getPullupLevel(pullupTotalReps);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + lvl.reps.toLocaleString('ru') + '</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('pullup-levels-list').innerHTML = html;
+  document.getElementById('pullup-levels-popup').style.display = 'flex';
+}
+
+function closePullupLevelsPopup() {
+  document.getElementById('pullup-levels-popup').style.display = 'none';
 }
