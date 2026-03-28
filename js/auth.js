@@ -124,16 +124,20 @@ function clearAuthError() {
 
 function getAuthErrorMessage(code) {
   var messages = {
-    'auth/user-not-found': 'Неверный email или пароль',
-    'auth/wrong-password': 'Неверный email или пароль',
-    'auth/invalid-credential': 'Неверный email или пароль',
-    'auth/internal-error': 'Неверный email или пароль',
-    'auth/email-already-in-use': 'Email уже используется',
-    'auth/invalid-email': 'Неверный формат email',
-    'auth/too-many-requests': 'Слишком много попыток. Попробуй позже',
-    'auth/network-request-failed': 'Ошибка сети',
+    'auth/user-not-found':        'Неверный email или пароль',
+    'auth/wrong-password':        'Неверный email или пароль',
+    'auth/invalid-credential':    'Неверный email или пароль',
+    'auth/internal-error':        'Неверный email или пароль',
+    'auth/invalid-email':         'Неверный формат email',
+    'auth/email-already-in-use':  'Этот email уже зарегистрирован',
+    'auth/weak-password':         'Пароль слишком короткий — минимум 6 символов',
+    'auth/too-many-requests':     'Слишком много попыток. Попробуй позже',
+    'auth/network-request-failed':'Ошибка сети. Проверь подключение к интернету',
+    'auth/operation-not-allowed': 'Этот способ входа не разрешён',
+    'auth/requires-recent-login': 'Войди в аккаунт заново',
+    'auth/user-disabled':         'Аккаунт заблокирован',
   };
-  return messages[code] || 'Ошибка: ' + code;
+  return messages[code] || 'Что-то пошло не так. Попробуй ещё раз';
 }
 
 // --- User config ---
