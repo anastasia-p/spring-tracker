@@ -280,7 +280,7 @@
   },
   {
     "day": "Воскресенье",
-    "type": "rest",
+    "type": "test",
     "label": "Отдых + тест",
     "exercises": [
       {
