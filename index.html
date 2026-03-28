@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <style>
 :root{--green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;--blue-light:#E6F1FB;--blue-text:#0C447C;--purple-light:#EEEDFE;--purple-text:#3C3489;--gray-light:#F1EFE8;--gray-text:#444441;--amber-light:#FAEEDA;--amber-text:#633806;--bg:#F7F6F2;--card:#FFFFFF;--border:rgba(0,0,0,0.1);--text:#1a1a18;--text-muted:#888780;--text-hint:#B4B2A9;--radius:12px;--radius-sm:8px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -94,6 +95,29 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .down{color:#E24B4A}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:14px;line-height:1.6}
 .loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:14px}
+.auth-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
+.auth-box{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:32px 28px;width:100%;max-width:360px}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.auth-logo h1{font-size:20px;font-weight:600}
+.auth-subtitle{font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:16px;text-align:center}
+.auth-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.auth-field label{font-size:12px;color:var(--text-muted);font-weight:500}
+.auth-input{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:15px;font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);width:100%}
+.auth-btn{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;margin-top:4px}
+.auth-btn:disabled{opacity:0.6;cursor:not-allowed}
+.auth-link{font-size:13px;color:var(--text-muted);text-align:center;margin-top:16px}
+.auth-link a{color:var(--green);cursor:pointer;text-decoration:none;font-weight:500}
+.auth-error{font-size:13px;color:#E24B4A;text-align:center;margin-top:10px;display:none}
+.onboard-overlay{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
+.onboard-box{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:32px 28px;width:100%;max-width:360px}
+.onboard-title{font-size:18px;font-weight:600;margin-bottom:8px;text-align:center}
+.onboard-desc{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px}
+.onboard-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;font-size:15px;font-weight:500}
+.onboard-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+.logout-btn{border:none;background:none;cursor:pointer;color:var(--text-muted);font-size:12px;font-family:'Onest',sans-serif;padding:4px 8px}
+.user-info{display:flex;align-items:center;gap:8px;margin-left:auto}
+.user-email{font-size:11px;color:var(--text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 
 /* Tree card */
 .tree-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:16px}
@@ -150,12 +174,13 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 </style>
 </head>
 <body>
-<div class="app">
+<div id="main-app" style="display:none"><div class="app">
 
   <div class="app-header">
     <div class="header-top">
       <svg width="28" height="28" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
       <h1>Spring Tracker</h1>
+      <div class="user-info"><span class="user-email" id="user-email"></span><button class="logout-btn" onclick="doLogout()">Выйти</button></div>
     </div>
     <div class="sub-tabs" id="sub-tabs">
       <button class="sub-tab active" onclick="showSubTab('strength',this)">Силовые</button>
@@ -349,6 +374,46 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </nav>
+</div><!-- end main-app -->
+
+
+<!-- Auth screen -->
+<div id="auth-screen" class="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <svg width="32" height="32" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      <h1>Spring Tracker</h1>
+      <div class="user-info"><span class="user-email" id="user-email"></span><button class="logout-btn" onclick="doLogout()">Выйти</button></div>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div id="auth-login">
+      <div class="auth-subtitle">Войти в аккаунт</div>
+      <div class="auth-field"><label>Email</label><input class="auth-input" type="email" id="login-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="auth-field"><label>Пароль</label><input class="auth-input" type="password" id="login-password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="auth-btn" onclick="doLogin()">Войти</button>
+      <div class="auth-link"><a onclick="doResetPassword()">Забыли пароль?</a></div>
+      <div class="auth-link">Нет аккаунта? <a onclick="showRegisterForm()">Зарегистрироваться</a></div>
+    </div>
+    <div id="auth-register" style="display:none">
+      <div class="auth-subtitle">Создать аккаунт</div>
+      <div class="auth-field"><label>Email</label><input class="auth-input" type="email" id="reg-email" placeholder="your@email.com"></div>
+      <div class="auth-field"><label>Пароль</label><input class="auth-input" type="password" id="reg-password" placeholder="Минимум 6 символов"></div>
+      <div class="auth-field"><label>Повтори пароль</label><input class="auth-input" type="password" id="reg-password2" placeholder="••••••" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <button class="auth-btn" onclick="doRegister()">Зарегистрироваться</button>
+      <div class="auth-link">Уже есть аккаунт? <a onclick="showLoginForm()">Войти</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding screen -->
+<div id="onboarding-screen" class="onboard-overlay">
+  <div class="onboard-box">
+    <div class="onboard-title">Добро пожаловать!</div>
+    <div class="onboard-desc">Выбери разделы которые хочешь тренировать. Силовые включены всегда.</div>
+    <div id="onboarding-list"></div>
+    <button class="auth-btn" id="onboarding-btn" onclick="finishOnboarding()">Начать</button>
+  </div>
+</div>
 
 <!-- Value input popup -->
 <div class="popup-overlay" id="value-popup">
@@ -424,6 +489,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+<script src="./js/auth.js"></script>
 <script src="./js/pure.js"></script>
 <script src="./js/db.js"></script>
 <script src="./js/progress.js"></script>

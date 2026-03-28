@@ -24,18 +24,45 @@ function showSubTab(name, btn) {
   btn.classList.add('active');
 }
 
-function init() {
+function initWithSections(sections) {
+  // Update active sections
+  SECTIONS = sections;
+
+  // Show/hide sub-tabs
+  var subTabsEl = document.getElementById('sub-tabs');
+  subTabsEl.innerHTML = '';
+  sections.forEach(function(s, i) {
+    var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === s; });
+    if (!tmpl) return;
+    var btn = document.createElement('button');
+    btn.className = 'sub-tab' + (i === 0 ? ' active' : '');
+    btn.textContent = tmpl.label;
+    btn.onclick = function() { showSubTab(s, btn); };
+    subTabsEl.appendChild(btn);
+  });
+
+  // Show/hide sub-screens
+  document.querySelectorAll('.sub-screen').forEach(function(el) { el.classList.remove('active'); });
+  if (sections[0]) {
+    var first = document.getElementById(sections[0]);
+    if (first) first.classList.add('active');
+  }
+
+  // Show user email in header
+  if (currentUser) {
+    var emailEl = document.getElementById('user-email');
+    if (emailEl) emailEl.textContent = currentUser.email;
+  }
+
   Promise.all([
-    loadPlanFromFirebase('strength'),
-    loadPlanFromFirebase('wingchun'),
-    loadPlanFromFirebase('qigong'),
     loadPlanFromFirebase('tests'),
     loadTreeMinutes(),
     loadMountainSeconds(),
     loadPushupReps(),
     loadPullupReps(),
-  ]).then(function() {
-    SECTIONS.forEach(function(s) { renderSection(s); });
+  ].concat(sections.map(function(s) { return loadPlanFromFirebase(s); })))
+  .then(function() {
+    sections.forEach(function(s) { renderSection(s); });
     renderTestForm();
     renderTreeProgress();
     renderMountainProgress();
@@ -43,5 +70,3 @@ function init() {
     renderPullupProgress();
   });
 }
-
-init();

@@ -19,7 +19,7 @@ function updatePlan(section) {
       var field = section === 'tests' ? 'items' : 'days';
       var doc = { updatedAt: new Date().toISOString() };
       doc[field] = data;
-      return db.collection('plan').doc(section).set(doc);
+      return userCol('plan').doc(section).set(doc);
     })
     .then(function() {
       plans[section] = null;

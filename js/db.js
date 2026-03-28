@@ -12,6 +12,11 @@ firebase.initializeApp({
 var db = firebase.firestore();
 db.enablePersistence().catch(function() {});
 
+// Helper: returns subcollection scoped to current user
+function userCol(name) {
+  return db.collection('users').doc(currentUser.uid).collection(name);
+}
+
 
 // In-memory cache: section -> dateKey -> {plan, type, label, checks, values}
 var cache = { strength: {}, wingchun: {}, qigong: {} };
@@ -21,7 +26,7 @@ var plans = { strength: null, wingchun: null, qigong: null, tests: null };
 
 function loadPlanFromFirebase(section) {
   var field = section === 'tests' ? 'items' : 'days';
-  return db.collection('plan').doc(section).get().then(function(s) {
+  return userDoc().collection('plan').doc(section).get().then(function(s) {
     if (s.exists) plans[section] = s.data()[field];
   }).catch(function() {});
 }
@@ -85,26 +90,26 @@ function saveDayData(section, date) {
 }
 
 function loadTreeMinutes() {
-  return db.collection('tracker').doc('tree').get().then(function(s) {
+  return userCol('tracker').doc('tree').get().then(function(s) {
     treeTotalMinutes = s.exists ? (s.data().totalMinutes || 0) : 0;
   }).catch(function() { treeTotalMinutes = 0; });
 }
 
 function loadMountainSeconds() {
-  return db.collection('tracker').doc('iron_legs').get().then(function(s) {
+  return userCol('tracker').doc('iron_legs').get().then(function(s) {
     mountainTotalSeconds = s.exists ? (s.data().totalSeconds || 0) : 0;
   }).catch(function() { mountainTotalSeconds = 0; });
 }
 
 function recalcTreeMinutes() {
-  db.collection('qigong').get().then(function(snap) {
+  userCol('qigong').get().then(function(snap) {
     var total = 0;
     snap.forEach(function(doc) {
       var values = doc.data().values || {};
       if (values['Дерево']) total += values['Дерево'];
     });
     treeTotalMinutes = total;
-    db.collection('tracker').doc('tree').set({ totalMinutes: total }).catch(function() {});
+    userCol('tracker').doc('tree').set({ totalMinutes: total }).catch(function() {});
     renderTreeProgress();
   }).catch(function() {});
 }
@@ -112,8 +117,8 @@ function recalcTreeMinutes() {
 function recalcMountainSeconds() {
   var total = 0;
   Promise.all([
-    db.collection('wingchun').get(),
-    db.collection('tests').get()
+    userCol('wingchun').get(),
+    userCol('tests').get()
   ]).then(function(snaps) {
     snaps[0].forEach(function(doc) {
       var values = doc.data().values || {};
@@ -128,19 +133,19 @@ function recalcMountainSeconds() {
       if (data['Мабу']) total += data['Мабу'];
     });
     mountainTotalSeconds = total;
-    db.collection('tracker').doc('iron_legs').set({ totalSeconds: total }).catch(function() {});
+    userCol('tracker').doc('iron_legs').set({ totalSeconds: total }).catch(function() {});
     renderMountainProgress();
   }).catch(function() {});
 }
 
 function loadPushupReps() {
-  return db.collection('tracker').doc('pushups').get().then(function(s) {
+  return userCol('tracker').doc('pushups').get().then(function(s) {
     pushupTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
   }).catch(function() { pushupTotalReps = 0; });
 }
 
 function loadPullupReps() {
-  return db.collection('tracker').doc('pullups').get().then(function(s) {
+  return userCol('tracker').doc('pullups').get().then(function(s) {
     pullupTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
   }).catch(function() { pullupTotalReps = 0; });
 }
@@ -148,8 +153,8 @@ function loadPullupReps() {
 function recalcPushupReps() {
   var total = 0;
   Promise.all([
-    db.collection('strength').get(),
-    db.collection('tests').get()
+    userCol('strength').get(),
+    userCol('tests').get()
   ]).then(function(snaps) {
     snaps.forEach(function(snap) {
       snap.forEach(function(doc) {
@@ -160,7 +165,7 @@ function recalcPushupReps() {
       });
     });
     pushupTotalReps = total;
-    db.collection('tracker').doc('pushups').set({ totalReps: total }).catch(function() {});
+    userCol('tracker').doc('pushups').set({ totalReps: total }).catch(function() {});
     renderPushupProgress();
   }).catch(function() {});
 }
@@ -168,8 +173,8 @@ function recalcPushupReps() {
 function recalcPullupReps() {
   var total = 0;
   Promise.all([
-    db.collection('strength').get(),
-    db.collection('tests').get()
+    userCol('strength').get(),
+    userCol('tests').get()
   ]).then(function(snaps) {
     snaps.forEach(function(snap) {
       snap.forEach(function(doc) {
@@ -180,7 +185,7 @@ function recalcPullupReps() {
       });
     });
     pullupTotalReps = total;
-    db.collection('tracker').doc('pullups').set({ totalReps: total }).catch(function() {});
+    userCol('tracker').doc('pullups').set({ totalReps: total }).catch(function() {});
     renderPullupProgress();
   }).catch(function() {});
 }
