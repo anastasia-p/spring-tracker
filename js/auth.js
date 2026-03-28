@@ -13,6 +13,7 @@ var SECTION_TEMPLATES = [
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     currentUser = user;
+    setAuthLoading(false);
     document.getElementById('auth-screen').style.display = 'none';
     loadUserConfig().then(function(config) {
       if (!config) {
@@ -20,6 +21,8 @@ firebase.auth().onAuthStateChanged(function(user) {
       } else {
         startApp(config.sections || ['strength']);
       }
+    }).catch(function() {
+      showOnboarding();
     });
   } else {
     currentUser = null;
@@ -67,6 +70,7 @@ function startApp(sections) {
 // --- Auth actions ---
 
 function doLogin() {
+  clearAuthError();
   var email = document.getElementById('login-email').value.trim();
   var password = document.getElementById('login-password').value;
   if (!email) { showAuthError('Введите email', 'login'); return; }
@@ -80,6 +84,7 @@ function doLogin() {
 }
 
 function doRegister() {
+  clearAuthError();
   var email = document.getElementById('reg-email').value.trim();
   var password = document.getElementById('reg-password').value;
   var password2 = document.getElementById('reg-password2').value;
@@ -89,6 +94,10 @@ function doRegister() {
   if (password.length < 6) { showAuthError('Пароль минимум 6 символов', 'register'); return; }
   setAuthLoading(true);
   firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(function() {
+      // onAuthStateChanged will handle navigation
+      // just show loading state
+    })
     .catch(function(e) {
       setAuthLoading(false);
       showAuthError(getAuthErrorMessage(e.code), 'register');
