@@ -2,6 +2,14 @@
 
 var currentUser = null;
 
+function hideSplash() {
+  var el = document.getElementById('splash-screen');
+  if (el) {
+    el.classList.add('hidden');
+    setTimeout(function() { el.style.display = 'none'; }, 400);
+  }
+}
+
 var SECTION_TEMPLATES = [
   { id: 'strength', label: 'Силовые',   planFile: 'strength.json' },
   { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun.json' },
@@ -33,6 +41,7 @@ firebase.auth().onAuthStateChanged(function(user) {
 // --- Show/hide screens ---
 
 function showAuthScreen() {
+  hideSplash();
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('onboarding-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'none';
@@ -54,6 +63,7 @@ function showRegisterForm() {
 }
 
 function showOnboarding() {
+  hideSplash();
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('onboarding-screen').style.display = 'flex';
   document.getElementById('main-app').style.display = 'none';
@@ -61,6 +71,7 @@ function showOnboarding() {
 }
 
 function startApp(sections) {
+  hideSplash();
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('onboarding-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
