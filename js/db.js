@@ -210,3 +210,41 @@ function recalcPullupReps() {
     renderPullupProgress();
   }).catch(function() {});
 }
+
+function loadSltReps() {
+  return userCol('tracker').doc('slt').get().then(function(s) {
+    sltTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
+  }).catch(function() { sltTotalReps = 0; });
+}
+
+function loadCkReps() {
+  return userCol('tracker').doc('ck').get().then(function(s) {
+    ckTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
+  }).catch(function() { ckTotalReps = 0; });
+}
+
+function recalcSltReps() {
+  userCol('wingchun').get().then(function(snap) {
+    var total = 0;
+    snap.forEach(function(doc) {
+      var values = doc.data().values || {};
+      if (values['Сиу Лим Тау']) total += values['Сиу Лим Тау'];
+    });
+    sltTotalReps = total;
+    userCol('tracker').doc('slt').set({ totalReps: total }).catch(function() {});
+    renderSltProgress();
+  }).catch(function() {});
+}
+
+function recalcCkReps() {
+  userCol('wingchun').get().then(function(snap) {
+    var total = 0;
+    snap.forEach(function(doc) {
+      var values = doc.data().values || {};
+      if (values['Чам Кью']) total += values['Чам Кью'];
+    });
+    ckTotalReps = total;
+    userCol('tracker').doc('ck').set({ totalReps: total }).catch(function() {});
+    renderCkProgress();
+  }).catch(function() {});
+}

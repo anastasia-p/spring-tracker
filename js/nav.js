@@ -14,6 +14,8 @@ function showTab(name, btn) {
     renderMountainProgress();
     renderPushupProgress();
     renderPullupProgress();
+    renderSltProgress();
+    renderCkProgress();
   }
 }
 
@@ -61,6 +63,8 @@ function initWithSections(sections) {
     loadMountainSeconds(),
     loadPushupReps(),
     loadPullupReps(),
+    loadSltReps(),
+    loadCkReps(),
   ].concat(sections.map(function(s) { return loadPlanFromFirebase(s); })))
   .then(function() {
     sections.forEach(function(s) { renderSection(s); });
@@ -69,5 +73,7 @@ function initWithSections(sections) {
     renderMountainProgress();
     renderPushupProgress();
     renderPullupProgress();
+    renderSltProgress();
+    renderCkProgress();
   });
 }

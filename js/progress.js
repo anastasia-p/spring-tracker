@@ -196,3 +196,70 @@ function showPullupLevels() {
 function closePullupLevelsPopup() {
   document.getElementById('pullup-levels-popup').style.display = 'none';
 }
+
+// --- Сиу Лим Тау / Чам Кью progress ---
+
+var sltTotalReps = 0;
+var ckTotalReps = 0;
+
+function renderSltProgress() {
+  if (!document.getElementById('slt-level-name')) return;
+  var current = getFormsLevel(sltTotalReps);
+  var next = getFormsNextLevel(sltTotalReps);
+  var pct = getFormsProgress(sltTotalReps);
+  document.getElementById('slt-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('slt-reps').textContent = sltTotalReps.toLocaleString('ru') + ' повт.';
+  document.getElementById('slt-progress-bar').style.width = pct + '%';
+  document.getElementById('slt-progress-pct').textContent = pct + '%';
+  document.getElementById('slt-label-left').textContent = current.reps.toLocaleString('ru');
+  document.getElementById('slt-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
+}
+
+function showSltLevels() {
+  renderFormsLevelsPopup('slt-levels-list', sltTotalReps);
+  document.getElementById('slt-levels-popup').style.display = 'flex';
+}
+
+function closeSltLevelsPopup() {
+  document.getElementById('slt-levels-popup').style.display = 'none';
+}
+
+function renderCkProgress() {
+  if (!document.getElementById('ck-level-name')) return;
+  var current = getFormsLevel(ckTotalReps);
+  var next = getFormsNextLevel(ckTotalReps);
+  var pct = getFormsProgress(ckTotalReps);
+  document.getElementById('ck-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+  document.getElementById('ck-reps').textContent = ckTotalReps.toLocaleString('ru') + ' повт.';
+  document.getElementById('ck-progress-bar').style.width = pct + '%';
+  document.getElementById('ck-progress-pct').textContent = pct + '%';
+  document.getElementById('ck-label-left').textContent = current.reps.toLocaleString('ru');
+  document.getElementById('ck-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
+}
+
+function showCkLevels() {
+  renderFormsLevelsPopup('ck-levels-list', ckTotalReps);
+  document.getElementById('ck-levels-popup').style.display = 'flex';
+}
+
+function closeCkLevelsPopup() {
+  document.getElementById('ck-levels-popup').style.display = 'none';
+}
+
+function renderFormsLevelsPopup(listId, totalReps) {
+  var html = FORMS_LEVELS.map(function(lvl) {
+    var current = getFormsLevel(totalReps);
+    var isCur = lvl.level === current.level;
+    var isPast = lvl.level < current.level;
+    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
+    return '<div class="level-row" style="opacity:' + opacity + '">' +
+      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+      '<div class="level-info">' +
+        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
+        '<div class="level-desc">' + lvl.desc + '</div>' +
+      '</div>' +
+      '<div class="level-hours">' + lvl.reps.toLocaleString('ru') + '</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById(listId).innerHTML = html;
+}

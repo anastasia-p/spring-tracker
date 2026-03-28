@@ -104,6 +104,8 @@ function handleExCheck(section, dk, exName, unit, el) {
     if (STANCE_EXERCISES.indexOf(exName) !== -1) recalcMountainSeconds();
     if (exName === 'Отжимания') recalcPushupReps();
     if (exName === 'Подтягивания') recalcPullupReps();
+    if (exName === 'Сиу Лим Тау') recalcSltReps();
+    if (exName === 'Чам Кью') recalcCkReps();
     var open = getOpenCards(section);
     renderSection(section, open);
   }

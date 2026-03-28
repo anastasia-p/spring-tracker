@@ -203,5 +203,47 @@ if (typeof module !== 'undefined') {
     PUSHUP_LEVELS, PULLUP_LEVELS,
     getPushupLevel, getPushupNextLevel, getPushupProgress,
     getPullupLevel, getPullupNextLevel, getPullupProgress,
+    FORMS_LEVELS,
+    getFormsLevel, getFormsNextLevel, getFormsProgress,
   };
 }
+
+var FORMS_LEVELS = [
+  { level: 0, name: 'Незнакомец',      reps: 0,      desc: 'Форма ещё не знает тебя' },
+  { level: 1, name: 'Ученик',          reps: 100,    desc: 'Первые шаги по пути' },
+  { level: 2, name: 'Практикующий',    reps: 500,    desc: 'Тело начинает запоминать' },
+  { level: 3, name: 'Последователь',   reps: 1000,   desc: 'Форма входит в привычку' },
+  { level: 4, name: 'Боец',            reps: 3000,   desc: 'Движения становятся точнее' },
+  { level: 5, name: 'Воин',            reps: 6000,   desc: 'Форма течет без усилий' },
+  { level: 6, name: 'Мастер форм',     reps: 10000,  desc: 'Тело и форма — одно' },
+  { level: 7, name: 'Страж традиции',  reps: 25000,  desc: 'Передаешь через движение' },
+  { level: 8, name: 'Хранитель пути',  reps: 50000,  desc: 'Форма живет в тебе' },
+  { level: 9, name: 'Живая форма',     reps: 100000, desc: 'Ты и есть форма' },
+];
+
+function getFormsLevel(totalReps) {
+  var current = FORMS_LEVELS[0];
+  for (var i = 0; i < FORMS_LEVELS.length; i++) {
+    if (totalReps >= FORMS_LEVELS[i].reps) current = FORMS_LEVELS[i];
+    else break;
+  }
+  return current;
+}
+
+function getFormsNextLevel(totalReps) {
+  for (var i = 0; i < FORMS_LEVELS.length; i++) {
+    if (totalReps < FORMS_LEVELS[i].reps) return FORMS_LEVELS[i];
+  }
+  return null;
+}
+
+function getFormsProgress(totalReps) {
+  var current = getFormsLevel(totalReps);
+  var next = getFormsNextLevel(totalReps);
+  if (!next) return 100;
+  var range = next.reps - current.reps;
+  var done = totalReps - current.reps;
+  return Math.round(done / range * 100);
+}
+
+
