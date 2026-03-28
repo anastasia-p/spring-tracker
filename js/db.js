@@ -110,13 +110,22 @@ function recalcTreeMinutes() {
 }
 
 function recalcMountainSeconds() {
-  db.collection('wingchun').get().then(function(snap) {
-    var total = 0;
-    snap.forEach(function(doc) {
+  var total = 0;
+  Promise.all([
+    db.collection('wingchun').get(),
+    db.collection('tests').get()
+  ]).then(function(snaps) {
+    snaps[0].forEach(function(doc) {
       var values = doc.data().values || {};
       STANCE_EXERCISES.forEach(function(name) {
         if (values[name]) total += values[name];
       });
+    });
+    snaps[1].forEach(function(doc) {
+      var data = doc.data();
+      if (data['Всадник у стены']) total += data['Всадник у стены'];
+      if (data['Стульчик у стены']) total += data['Стульчик у стены'];
+      if (data['Мабу']) total += data['Мабу'];
     });
     mountainTotalSeconds = total;
     db.collection('tracker').doc('iron_legs').set({ totalSeconds: total }).catch(function() {});
@@ -137,11 +146,18 @@ function loadPullupReps() {
 }
 
 function recalcPushupReps() {
-  db.collection('strength').get().then(function(snap) {
-    var total = 0;
-    snap.forEach(function(doc) {
-      var values = doc.data().values || {};
-      if (values['Отжимания']) total += values['Отжимания'];
+  var total = 0;
+  Promise.all([
+    db.collection('strength').get(),
+    db.collection('tests').get()
+  ]).then(function(snaps) {
+    snaps.forEach(function(snap) {
+      snap.forEach(function(doc) {
+        var values = doc.data().values || {};
+        var data = doc.data();
+        if (values['Отжимания']) total += values['Отжимания'];
+        if (data['Отжимания']) total += data['Отжимания'];
+      });
     });
     pushupTotalReps = total;
     db.collection('tracker').doc('pushups').set({ totalReps: total }).catch(function() {});
@@ -150,11 +166,18 @@ function recalcPushupReps() {
 }
 
 function recalcPullupReps() {
-  db.collection('strength').get().then(function(snap) {
-    var total = 0;
-    snap.forEach(function(doc) {
-      var values = doc.data().values || {};
-      if (values['Подтягивания']) total += values['Подтягивания'];
+  var total = 0;
+  Promise.all([
+    db.collection('strength').get(),
+    db.collection('tests').get()
+  ]).then(function(snaps) {
+    snaps.forEach(function(snap) {
+      snap.forEach(function(doc) {
+        var values = doc.data().values || {};
+        var data = doc.data();
+        if (values['Подтягивания']) total += values['Подтягивания'];
+        if (data['Подтягивания']) total += data['Подтягивания'];
+      });
     });
     pullupTotalReps = total;
     db.collection('tracker').doc('pullups').set({ totalReps: total }).catch(function() {});
