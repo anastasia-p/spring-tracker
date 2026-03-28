@@ -33,6 +33,8 @@ function showAuthScreen() {
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('onboarding-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'none';
+  var userInfo = document.getElementById('user-info');
+  if (userInfo) userInfo.style.display = 'none';
   showLoginForm();
 }
 
