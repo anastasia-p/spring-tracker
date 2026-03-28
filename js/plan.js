@@ -1,6 +1,6 @@
 // Plan rendering and interaction
 
-var TC = { legs: 'b-legs', upper: 'b-upper', rest: 'b-rest', wc: 'b-wc', qi: 'b-qi' };
+// TC is now loaded from plans/day-types.json via db.js
 var DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 var SECTIONS = ['strength', 'wingchun', 'qigong'];
 
@@ -38,7 +38,7 @@ function renderSection(section, keepOpen) {
       card.innerHTML =
         '<div class="day-header" onclick="toggleDay(this)">' +
           '<div class="day-left">' +
-            '<span class="day-badge ' + TC[dayData.type] + '">' + dayData.label + '</span>' +
+            '<span class="day-badge ' + getDayTypeCSS(dayData.type) + '">' + getDayTypeLabel(dayData.type) + '</span>' +
             '<span class="day-name">' + DAY_NAMES[date.getDay()] + '</span>' +
           '</div>' +
           '<div class="day-right">' +

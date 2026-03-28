@@ -9,6 +9,36 @@ function userCol(name) {
 }
 
 
+// Day types loaded from day-types.json
+var dayTypes = [];
+
+function loadDayTypes() {
+  var baseUrl = location.origin + location.pathname.replace('index.html', '');
+  return fetch(baseUrl + 'plans/day-types.json?v=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) { dayTypes = data; })
+    .catch(function() {
+      dayTypes = [
+        { type: 'legs',    label: 'Ноги + таз',   css: 'b-legs'   },
+        { type: 'upper',   label: 'Верх + кор',   css: 'b-upper'  },
+        { type: 'rest',    label: 'Отдых',         css: 'b-rest'   },
+        { type: 'test',    label: 'Отдых + тест',  css: 'b-rest'   },
+        { type: 'wc',      label: 'Вин Чун',       css: 'b-wc'     },
+        { type: 'qi',      label: 'Цигун',         css: 'b-qi'     },
+      ];
+    });
+}
+
+function getDayTypeCSS(type) {
+  var found = dayTypes.find(function(t) { return t.type === type; });
+  return found ? found.css : 'b-rest';
+}
+
+function getDayTypeLabel(type) {
+  var found = dayTypes.find(function(t) { return t.type === type; });
+  return found ? found.label : type;
+}
+
 // In-memory cache: section -> dateKey -> {plan, type, label, checks, values}
 var cache = { strength: {}, wingchun: {}, qigong: {} };
 

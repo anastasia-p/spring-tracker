@@ -1,0 +1,14 @@
+[
+  { "type": "legs",    "label": "Ноги + таз",   "css": "b-legs"    },
+  { "type": "legs2",   "label": "Ноги",          "css": "b-legs"    },
+  { "type": "upper",   "label": "Верх + кор",   "css": "b-upper"   },
+  { "type": "upper2",  "label": "Верх тела",     "css": "b-upper"   },
+  { "type": "full",    "label": "Полное тело",   "css": "b-full"    },
+  { "type": "cardio",  "label": "Кардио",        "css": "b-cardio"  },
+  { "type": "stretch", "label": "Растяжка",      "css": "b-stretch" },
+  { "type": "yoga",    "label": "Йога",          "css": "b-yoga"    },
+  { "type": "wc",      "label": "Вин Чун",       "css": "b-wc"      },
+  { "type": "qi",      "label": "Цигун",         "css": "b-qi"      },
+  { "type": "rest",    "label": "Отдых",         "css": "b-rest"    },
+  { "type": "test",    "label": "Отдых + тест",  "css": "b-rest"    }
+]

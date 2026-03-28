@@ -55,6 +55,7 @@ function initWithSections(sections) {
   }
 
   Promise.all([
+    loadDayTypes(),
     loadPlanFromFirebase('tests'),
     loadTreeMinutes(),
     loadMountainSeconds(),
