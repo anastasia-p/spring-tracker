@@ -385,11 +385,11 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <h1>Spring Tracker</h1>
       <div class="user-info" id="user-info" style="display:none"><span class="user-email" id="user-email"></span><button class="logout-btn" onclick="doLogout()">Выйти</button></div>
     </div>
-    <div id="auth-error" class="auth-error"></div>
     <div id="auth-login">
       <div class="auth-subtitle">Войти в аккаунт</div>
       <div class="auth-field"><label>Email</label><input class="auth-input" type="email" id="login-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="auth-field"><label>Пароль</label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="login-password" placeholder="" onkeydown="if(event.key==='Enter')doLogin()"><button class="eye-btn" type="button" onclick="togglePassword('login-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <div class="auth-error" id="auth-error-login">&#8203;</div>
       <button class="auth-btn" onclick="doLogin()">Войти</button>
       <div class="auth-link"><a onclick="doResetPassword()">Забыли пароль?</a></div>
       <div class="auth-link">Нет аккаунта? <a onclick="showRegisterForm()">Зарегистрироваться</a></div>
