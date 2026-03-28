@@ -6,8 +6,6 @@ var SECTION_TEMPLATES = [
   { id: 'strength', label: 'Силовые',   planFile: 'strength.json' },
   { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun.json' },
   { id: 'qigong',   label: 'Цигун',     planFile: 'qigong.json'   },
-  { id: 'stretch',  label: 'Растяжка',  planFile: 'stretch.json'  },
-  { id: 'brain',    label: 'Мозг',      planFile: 'brain.json'    },
 ];
 
 // --- Auth state ---
