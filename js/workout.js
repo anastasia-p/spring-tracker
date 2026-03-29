@@ -6,7 +6,7 @@ function renderTestForm() {
   if (!items.length) { grid.innerHTML = '<div class="loading">Загрузка теста...</div>'; return; }
   grid.innerHTML = items.map(function(item, i) {
     return '<div class="test-item">' +
-      '<div class="test-label">' + item.name + '</div>' +
+      '<div class="test-label">' + item.name + (item.note ? '<span style="color:var(--text-hint);font-size:10px;display:block">' + item.note + '</span>' : '') + '</div>' +
       '<input class="test-input" type="number" id="ti_' + i + '" placeholder="—">' +
       '<div class="test-unit">' + item.unit + '</div>' +
     '</div>';
@@ -23,7 +23,7 @@ function saveTest() {
     if (v && v.value !== '') { data[item.name] = parseInt(v.value); hasVal = true; }
   });
   if (!hasVal) return;
-  db.collection('tests').doc(dk).set(data).catch(function() {});
+  userCol('tests').doc(dk).set(data).catch(function() {});
   document.getElementById('saved-msg').style.display = 'block';
   setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
   items.forEach(function(_, i) { var v = document.getElementById('ti_' + i); if (v) v.value = ''; });
@@ -33,7 +33,7 @@ function saveTest() {
 function loadAndRenderHistory() {
   var c = document.getElementById('history-container');
   c.innerHTML = '<div class="loading">Загрузка...</div>';
-  db.collection('tests').get().then(function(snap) {
+  userCol('tests').get().then(function(snap) {
     var entries = [];
     snap.forEach(function(doc) { entries.push({ dk: doc.id, data: doc.data() }); });
     entries.sort(function(a, b) { return a.dk < b.dk ? -1 : 1; });
