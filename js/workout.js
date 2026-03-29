@@ -24,12 +24,14 @@ function saveTest() {
   });
   if (!hasVal) return;
   userCol('tests').doc(dk).set(data).then(function() {
-    // Пересчитываем навыки которые используют тесты как источник
-    SKILLS.forEach(function(skill) {
-      if (skill.sourceExtra && skill.sourceExtra.collection === 'tests') {
-        recalcSkill(skill);
-      }
-    });
+    // Даём Firebase время зафиксировать запись, потом пересчитываем
+    setTimeout(function() {
+      SKILLS.forEach(function(skill) {
+        if (skill.sourceExtra && skill.sourceExtra.collection === 'tests') {
+          recalcSkill(skill);
+        }
+      });
+    }, 1000);
   }).catch(function() {});
   document.getElementById('saved-msg').style.display = 'block';
   setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
