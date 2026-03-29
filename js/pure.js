@@ -193,6 +193,113 @@ function getPullupProgress(totalReps) {
   return Math.round(done / range * 100);
 }
 
+
+// --- SKILLS config ---
+// Единое место описания всех навыков.
+// section — раздел пользователя (strength / wingchun / qigong)
+// source.collection — коллекция Firebase откуда суммируем значения
+// source.field — имя упражнения в values{}
+// tracker — документ в users/uid/tracker/
+// trackerField — поле в документе tracker
+// valueType — 'minutes' | 'seconds' | 'reps'
+// levels — шкала уровней из pure.js
+
+var SKILLS = [
+  {
+    id: 'tree',
+    name: 'Дерево',
+    section: 'qigong',
+    color: '#1D9E75',
+    bgColor: '#EEEDFE',
+    valueType: 'minutes',
+    source: { collection: 'qigong', field: 'Дерево' },
+    tracker: 'tree',
+    trackerField: 'totalMinutes',
+    levels: null, // заполняется ниже после объявления TREE_LEVELS
+  },
+  {
+    id: 'mountain',
+    name: 'Стойка горы',
+    section: 'wingchun',
+    color: '#7F77DD',
+    bgColor: '#EEEDFE',
+    valueType: 'seconds',
+    source: { collection: 'wingchun', fields: ['Всадник у стены', 'Стульчик', 'Мабу'] },
+    sourceExtra: { collection: 'tests', fields: ['Всадник у стены', 'Стульчик у стены', 'Мабу'] },
+    tracker: 'iron_legs',
+    trackerField: 'totalSeconds',
+    levels: null,
+  },
+  {
+    id: 'pushups',
+    name: 'Руки титана',
+    section: 'strength',
+    color: '#D85A30',
+    bgColor: '#FAECE7',
+    valueType: 'reps',
+    source: { collection: 'strength', field: 'Отжимания' },
+    sourceExtra: { collection: 'tests', field: 'Отжимания' },
+    tracker: 'pushups',
+    trackerField: 'totalReps',
+    levels: null,
+  },
+  {
+    id: 'pullups',
+    name: 'Восхождение к небесам',
+    section: 'strength',
+    color: '#378ADD',
+    bgColor: '#E6F1FB',
+    valueType: 'reps',
+    source: { collection: 'strength', field: 'Подтягивания' },
+    sourceExtra: { collection: 'tests', field: 'Подтягивания' },
+    tracker: 'pullups',
+    trackerField: 'totalReps',
+    levels: null,
+  },
+  {
+    id: 'slt',
+    name: 'Сиу Лим Тау',
+    section: 'wingchun',
+    color: '#7F77DD',
+    bgColor: '#EEEDFE',
+    valueType: 'reps',
+    source: { collection: 'wingchun', field: 'Сиу Лим Тау' },
+    tracker: 'slt',
+    trackerField: 'totalReps',
+    levels: null,
+  },
+  {
+    id: 'ck',
+    name: 'Чам Кью',
+    section: 'wingchun',
+    color: '#534AB7',
+    bgColor: '#EEEDFE',
+    valueType: 'reps',
+    source: { collection: 'wingchun', field: 'Чам Кью' },
+    tracker: 'ck',
+    trackerField: 'totalReps',
+    levels: null,
+  },
+];
+
+// Привязываем уровни после их объявления
+function initSkillLevels() {
+  SKILLS[0].levels = TREE_LEVELS;
+  SKILLS[1].levels = MOUNTAIN_LEVELS;
+  SKILLS[2].levels = PUSHUP_LEVELS;
+  SKILLS[3].levels = PULLUP_LEVELS;
+  SKILLS[4].levels = FORMS_LEVELS;
+  SKILLS[5].levels = FORMS_LEVELS;
+}
+
+function getSkillById(id) {
+  return SKILLS.find(function(s) { return s.id === id; }) || null;
+}
+
+function getSkillsBySection(section) {
+  return SKILLS.filter(function(s) { return s.section === section; });
+}
+
 // Node.js export for tests
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -205,6 +312,7 @@ if (typeof module !== 'undefined') {
     getPullupLevel, getPullupNextLevel, getPullupProgress,
     FORMS_LEVELS,
     getFormsLevel, getFormsNextLevel, getFormsProgress,
+    SKILLS, initSkillLevels, getSkillById, getSkillsBySection,
   };
 }
 
