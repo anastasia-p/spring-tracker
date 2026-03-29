@@ -1,7 +1,14 @@
-// Tree, Mountain stance progress and level popups
+// Progress screen — skill cards and level popups
 
-var treeTotalMinutes = 0;
+// --- State variables (synced by db.js syncLegacyVar) ---
+var treeTotalMinutes    = 0;
 var mountainTotalSeconds = 0;
+var pushupTotalReps     = 0;
+var pullupTotalReps     = 0;
+var sltTotalReps        = 0;
+var ckTotalReps         = 0;
+
+// Value input popup state
 var pendingCheck = null;
 
 // --- Value input popup ---
@@ -23,10 +30,13 @@ function savePopupValue() {
   cache[p.section][p.dk].checks[p.exName] = true;
   cache[p.section][p.dk].values[p.exName] = val;
   saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
-  if (p.exName === 'Дерево') recalcTreeMinutes();
-  if (STANCE_EXERCISES.indexOf(p.exName) !== -1) recalcMountainSeconds();
-  if (p.exName === 'Отжимания') recalcPushupReps();
-  if (p.exName === 'Подтягивания') recalcPullupReps();
+  // Recalc relevant skill
+  var skill = SKILLS.find(function(s) {
+    var src = s.source;
+    var fields = src.fields || (src.field ? [src.field] : []);
+    return fields.indexOf(p.exName) !== -1 && src.collection === p.section;
+  });
+  if (skill) recalcSkill(skill);
   closePopup();
   var open = getOpenCards(p.section);
   renderSection(p.section, open);
@@ -42,26 +52,109 @@ function closePopup() {
   pendingCheck = null;
 }
 
-// --- Tree progress ---
+// --- Universal level helpers ---
 
-function renderTreeProgress() {
-  if (!document.getElementById('tree-level-name')) return;
-  var current = getTreeLevel(treeTotalMinutes);
-  var next = getTreeNextLevel(treeTotalMinutes);
-  var pct = getTreeProgress(treeTotalMinutes);
-  var hours = (treeTotalMinutes / 60).toFixed(1);
-  document.getElementById('tree-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
-  document.getElementById('tree-hours').textContent = hours + ' ч';
-  document.getElementById('tree-progress-bar').style.width = pct + '%';
-  document.getElementById('tree-progress-pct').textContent = pct + '%';
-  document.getElementById('tree-label-left').textContent = current.hours + ' ч';
-  document.getElementById('tree-label-right').textContent = next ? next.hours + ' ч' : '—';
+// Конвертируем суммарное значение в единицу шкалы (часы или повторения)
+function skillValueToScale(skill, total) {
+  if (skill.valueType === 'minutes') return total / 60;
+  if (skill.valueType === 'seconds') return total / 3600;
+  return total; // reps
 }
 
-function showTreeLevels() {
-  var html = TREE_LEVELS.map(function(lvl) {
-    var current = getTreeLevel(treeTotalMinutes);
-    var isCur = lvl.level === current.level;
+// Поле в объекте уровня: hours или reps
+function levelField(skill) {
+  return skill.valueType === 'reps' ? 'reps' : 'hours';
+}
+
+function getLevelForSkill(skill, total) {
+  var levels  = skill.levels;
+  var field   = levelField(skill);
+  var scaled  = skillValueToScale(skill, total);
+  var current = levels[0];
+  for (var i = 0; i < levels.length; i++) {
+    if (scaled >= levels[i][field]) current = levels[i];
+    else break;
+  }
+  return current;
+}
+
+function getNextLevelForSkill(skill, total) {
+  var levels = skill.levels;
+  var field  = levelField(skill);
+  var scaled = skillValueToScale(skill, total);
+  for (var i = 0; i < levels.length; i++) {
+    if (scaled < levels[i][field]) return levels[i];
+  }
+  return null;
+}
+
+function getProgressForSkill(skill, total) {
+  var field   = levelField(skill);
+  var scaled  = skillValueToScale(skill, total);
+  var current = getLevelForSkill(skill, total);
+  var next    = getNextLevelForSkill(skill, total);
+  if (!next) return 100;
+  var range = next[field] - current[field];
+  var done  = scaled - current[field];
+  return Math.round(done / range * 100);
+}
+
+// --- Universal render ---
+
+// Map skill.id -> element prefix (handles pushups->pushup, pullups->pullup)
+function getElemPrefix(skillId) {
+  var map = { pushups: 'pushup', pullups: 'pullup' };
+  return map[skillId] || skillId;
+}
+
+// Get current total for a skill
+function getSkillTotal(skill) {
+  return skillTotals[skill.id] || 0;
+}
+
+function formatSkillValue(skill, total) {
+  if (skill.valueType === 'minutes') return (total / 60).toFixed(1) + ' ч';
+  if (skill.valueType === 'seconds') return (total / 3600).toFixed(1) + ' ч';
+  return total.toLocaleString('ru') + ' повт.';
+}
+
+function formatLevelThreshold(skill, lvl) {
+  var field = lvl.hours !== undefined ? 'hours' : 'reps';
+  if (field === 'hours') return lvl.hours + ' ч';
+  return lvl.reps.toLocaleString('ru');
+}
+
+function renderSkillCard(skill) {
+  var prefix = getElemPrefix(skill.id);
+  var el = document.getElementById(prefix + '-level-name');
+  if (!el) return;
+
+  var total   = getSkillTotal(skill);
+  var levels  = skill.levels;
+  var current = getLevelForSkill(skill, total);
+  var next    = getNextLevelForSkill(skill, total);
+  var pct     = getProgressForSkill(skill, total);
+
+  document.getElementById(prefix + '-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
+
+  var valueEl = document.getElementById(prefix + '-hours') || document.getElementById(prefix + '-reps');
+  if (valueEl) valueEl.textContent = formatSkillValue(skill, total);
+
+  document.getElementById(prefix + '-progress-bar').style.width = pct + '%';
+  document.getElementById(prefix + '-progress-pct').textContent = pct + '%';
+  document.getElementById(prefix + '-label-left').textContent = formatLevelThreshold(skill, current);
+  document.getElementById(prefix + '-label-right').textContent = next ? formatLevelThreshold(skill, next) : '—';
+}
+
+function renderSkillLevelsPopup(skill) {
+  var prefix = getElemPrefix(skill.id);
+  var listEl = document.getElementById(prefix + '-levels-list');
+  if (!listEl) return;
+  var total  = getSkillTotal(skill);
+  var levels = skill.levels;
+  var current = getLevelForSkill(skill, total);
+  var html = levels.map(function(lvl) {
+    var isCur  = lvl.level === current.level;
     var isPast = lvl.level < current.level;
     var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
     return '<div class="level-row" style="opacity:' + opacity + '">' +
@@ -70,206 +163,32 @@ function showTreeLevels() {
         '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
         '<div class="level-desc">' + lvl.desc + '</div>' +
       '</div>' +
-      '<div class="level-hours">' + lvl.hours + ' ч</div>' +
+      '<div class="level-hours">' + formatLevelThreshold(skill, lvl) + '</div>' +
     '</div>';
   }).join('');
-  document.getElementById('levels-list').innerHTML = html;
-  document.getElementById('levels-popup').style.display = 'flex';
+  listEl.innerHTML = html;
+  document.getElementById(prefix + '-levels-popup').style.display = 'flex';
 }
 
-function closeLevelsPopup() {
-  document.getElementById('levels-popup').style.display = 'none';
+function closeSkillLevelsPopup(skillId) {
+  var prefix = getElemPrefix(skillId);
+  var el = document.getElementById(prefix + '-levels-popup');
+  if (el) el.style.display = 'none';
 }
 
-// --- Mountain progress ---
-
-function renderMountainProgress() {
-  if (!document.getElementById('mountain-level-name')) return;
-  var current = getMountainLevel(mountainTotalSeconds);
-  var next = getMountainNextLevel(mountainTotalSeconds);
-  var pct = getMountainProgress(mountainTotalSeconds);
-  var hours = (mountainTotalSeconds / 3600).toFixed(1);
-  document.getElementById('mountain-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
-  document.getElementById('mountain-hours').textContent = hours + ' ч';
-  document.getElementById('mountain-progress-bar').style.width = pct + '%';
-  document.getElementById('mountain-progress-pct').textContent = pct + '%';
-  document.getElementById('mountain-label-left').textContent = current.hours + ' ч';
-  document.getElementById('mountain-label-right').textContent = next ? next.hours + ' ч' : '—';
-}
-
-function showMountainLevels() {
-  var html = MOUNTAIN_LEVELS.map(function(lvl) {
-    var current = getMountainLevel(mountainTotalSeconds);
-    var isCur = lvl.level === current.level;
-    var isPast = lvl.level < current.level;
-    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
-    return '<div class="level-row" style="opacity:' + opacity + '">' +
-      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
-      '<div class="level-info">' +
-        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
-        '<div class="level-desc">' + lvl.desc + '</div>' +
-      '</div>' +
-      '<div class="level-hours">' + lvl.hours + ' ч</div>' +
-    '</div>';
-  }).join('');
-  document.getElementById('mountain-levels-list').innerHTML = html;
-  document.getElementById('mountain-levels-popup').style.display = 'flex';
-}
-
-function closeMountainLevelsPopup() {
-  document.getElementById('mountain-levels-popup').style.display = 'none';
-}
-
-// --- Pushup / Pullup progress ---
-
-var pushupTotalReps = 0;
-var pullupTotalReps = 0;
-
-function renderPushupProgress() {
-  if (!document.getElementById('pushup-level-name')) return;
-  var current = getPushupLevel(pushupTotalReps);
-  var next = getPushupNextLevel(pushupTotalReps);
-  var pct = getPushupProgress(pushupTotalReps);
-  document.getElementById('pushup-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
-  document.getElementById('pushup-reps').textContent = pushupTotalReps.toLocaleString('ru') + ' повт.';
-  document.getElementById('pushup-progress-bar').style.width = pct + '%';
-  document.getElementById('pushup-progress-pct').textContent = pct + '%';
-  document.getElementById('pushup-label-left').textContent = current.reps.toLocaleString('ru');
-  document.getElementById('pushup-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
-}
-
-function showPushupLevels() {
-  var html = PUSHUP_LEVELS.map(function(lvl) {
-    var current = getPushupLevel(pushupTotalReps);
-    var isCur = lvl.level === current.level;
-    var isPast = lvl.level < current.level;
-    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
-    return '<div class="level-row" style="opacity:' + opacity + '">' +
-      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
-      '<div class="level-info">' +
-        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
-        '<div class="level-desc">' + lvl.desc + '</div>' +
-      '</div>' +
-      '<div class="level-hours">' + lvl.reps.toLocaleString('ru') + '</div>' +
-    '</div>';
-  }).join('');
-  document.getElementById('pushup-levels-list').innerHTML = html;
-  document.getElementById('pushup-levels-popup').style.display = 'flex';
-}
-
-function closePushupLevelsPopup() {
-  document.getElementById('pushup-levels-popup').style.display = 'none';
-}
-
-function renderPullupProgress() {
-  if (!document.getElementById('pullup-level-name')) return;
-  var current = getPullupLevel(pullupTotalReps);
-  var next = getPullupNextLevel(pullupTotalReps);
-  var pct = getPullupProgress(pullupTotalReps);
-  document.getElementById('pullup-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
-  document.getElementById('pullup-reps').textContent = pullupTotalReps.toLocaleString('ru') + ' повт.';
-  document.getElementById('pullup-progress-bar').style.width = pct + '%';
-  document.getElementById('pullup-progress-pct').textContent = pct + '%';
-  document.getElementById('pullup-label-left').textContent = current.reps.toLocaleString('ru');
-  document.getElementById('pullup-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
-}
-
-function showPullupLevels() {
-  var html = PULLUP_LEVELS.map(function(lvl) {
-    var current = getPullupLevel(pullupTotalReps);
-    var isCur = lvl.level === current.level;
-    var isPast = lvl.level < current.level;
-    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
-    return '<div class="level-row" style="opacity:' + opacity + '">' +
-      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
-      '<div class="level-info">' +
-        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
-        '<div class="level-desc">' + lvl.desc + '</div>' +
-      '</div>' +
-      '<div class="level-hours">' + lvl.reps.toLocaleString('ru') + '</div>' +
-    '</div>';
-  }).join('');
-  document.getElementById('pullup-levels-list').innerHTML = html;
-  document.getElementById('pullup-levels-popup').style.display = 'flex';
-}
-
-function closePullupLevelsPopup() {
-  document.getElementById('pullup-levels-popup').style.display = 'none';
-}
-
-// --- Сиу Лим Тау / Чам Кью progress ---
-
-var sltTotalReps = 0;
-var ckTotalReps = 0;
-
-function renderSltProgress() {
-  if (!document.getElementById('slt-level-name')) return;
-  var current = getFormsLevel(sltTotalReps);
-  var next = getFormsNextLevel(sltTotalReps);
-  var pct = getFormsProgress(sltTotalReps);
-  document.getElementById('slt-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
-  document.getElementById('slt-reps').textContent = sltTotalReps.toLocaleString('ru') + ' повт.';
-  document.getElementById('slt-progress-bar').style.width = pct + '%';
-  document.getElementById('slt-progress-pct').textContent = pct + '%';
-  document.getElementById('slt-label-left').textContent = current.reps.toLocaleString('ru');
-  document.getElementById('slt-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
-}
-
-function showSltLevels() {
-  renderFormsLevelsPopup('slt-levels-list', sltTotalReps);
-  document.getElementById('slt-levels-popup').style.display = 'flex';
-}
-
-function closeSltLevelsPopup() {
-  document.getElementById('slt-levels-popup').style.display = 'none';
-}
-
-function renderCkProgress() {
-  if (!document.getElementById('ck-level-name')) return;
-  var current = getFormsLevel(ckTotalReps);
-  var next = getFormsNextLevel(ckTotalReps);
-  var pct = getFormsProgress(ckTotalReps);
-  document.getElementById('ck-level-name').textContent = 'Ур. ' + current.level + ' — ' + current.name;
-  document.getElementById('ck-reps').textContent = ckTotalReps.toLocaleString('ru') + ' повт.';
-  document.getElementById('ck-progress-bar').style.width = pct + '%';
-  document.getElementById('ck-progress-pct').textContent = pct + '%';
-  document.getElementById('ck-label-left').textContent = current.reps.toLocaleString('ru');
-  document.getElementById('ck-label-right').textContent = next ? next.reps.toLocaleString('ru') : '—';
-}
-
-function showCkLevels() {
-  renderFormsLevelsPopup('ck-levels-list', ckTotalReps);
-  document.getElementById('ck-levels-popup').style.display = 'flex';
-}
-
-function closeCkLevelsPopup() {
-  document.getElementById('ck-levels-popup').style.display = 'none';
-}
-
-function renderFormsLevelsPopup(listId, totalReps) {
-  var html = FORMS_LEVELS.map(function(lvl) {
-    var current = getFormsLevel(totalReps);
-    var isCur = lvl.level === current.level;
-    var isPast = lvl.level < current.level;
-    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
-    return '<div class="level-row" style="opacity:' + opacity + '">' +
-      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
-      '<div class="level-info">' +
-        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
-        '<div class="level-desc">' + lvl.desc + '</div>' +
-      '</div>' +
-      '<div class="level-hours">' + lvl.reps.toLocaleString('ru') + '</div>' +
-    '</div>';
-  }).join('');
-  document.getElementById(listId).innerHTML = html;
-}
-
-// Universal render router — вызывается из recalcSkill
+// Universal render router (called from db.js recalcSkill)
 function renderSkillById(id) {
-  if (id === 'tree')     renderTreeProgress();
-  if (id === 'mountain') renderMountainProgress();
-  if (id === 'pushups')  renderPushupProgress();
-  if (id === 'pullups')  renderPullupProgress();
-  if (id === 'slt')      renderSltProgress();
-  if (id === 'ck')       renderCkProgress();
+  var skill = getSkillById(id);
+  if (skill) renderSkillCard(skill);
 }
+
+// --- Legacy wrappers for index.html onclick handlers ---
+
+function renderTreeProgress()     { renderSkillCard(getSkillById('tree')); }
+function renderMountainProgress() { renderSkillCard(getSkillById('mountain')); }
+function renderPushupProgress()   { renderSkillCard(getSkillById('pushups')); }
+function renderPullupProgress()   { renderSkillCard(getSkillById('pullups')); }
+function renderSltProgress()      { renderSkillCard(getSkillById('slt')); }
+function renderCkProgress()       { renderSkillCard(getSkillById('ck')); }
+
+// Popup functions moved to nav.js showSkillLevels()

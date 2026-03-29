@@ -189,7 +189,20 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 </style>
 </head>
 <body>
-<div id="main-app" style="display:none"><div class="app">
+
+<!-- Splash screen -->
+<div id="splash-screen" class="splash">
+  <svg width="72" height="72" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0" stroke="#F4C0D1" stroke-width="1"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
+  <div style="font-size:18px;font-weight:600;color:#1a1a18;font-family:'Onest',sans-serif">Spring Tracker</div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
+
+
+<div class="app">
 
   <div class="app-header">
     <div class="header-top">
@@ -244,149 +257,8 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 
   <div id="progress" class="screen">
-    <div class="section-pad">
-      <div class="section-title">Дерево</div>
-      <div class="tree-card">
-        <div class="tree-header">
-          <div class="tree-title-wrap">
-            <div class="tree-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 20v-8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q13 6 19 4 Q18 11 12 12Z" fill="#1D9E75"/><path d="M12 15 Q11 9 5 8 Q6 14 12 15Z" fill="#5DCAA5"/></svg>
-            </div>
-            <div>
-              <div class="tree-level-name" id="tree-level-name">Загрузка...</div>
-              <div class="tree-hours" id="tree-hours"></div>
-            </div>
-          </div>
-          <button class="tree-q-btn" onclick="showTreeLevels()">?</button>
-        </div>
-        <div class="tree-progress-wrap">
-          <div class="tree-progress-bar" id="tree-progress-bar" style="width:0%"></div>
-        </div>
-        <div class="tree-progress-labels">
-          <span id="tree-label-left"></span>
-          <span id="tree-progress-pct"></span>
-          <span id="tree-label-right"></span>
-        </div>
-      </div>
-      <div class="section-title">Стойка горы</div>
-      <div class="tree-card">
-        <div class="tree-header">
-          <div class="tree-title-wrap">
-            <div class="tree-icon" style="background:#EEEDFE">
-              <svg width="20" height="20" viewBox="0 0 30 30" fill="none"><path d="M3 25 L15 5 L27 25 Z" fill="#7F77DD"/><path d="M8 25 L15 13 L22 25 Z" fill="#534AB7"/><path d="M12 9 L15 5 L18 9 L15 12 Z" fill="white"/></svg>
-            </div>
-            <div>
-              <div class="tree-level-name" id="mountain-level-name">Загрузка...</div>
-              <div class="tree-hours" id="mountain-hours"></div>
-            </div>
-          </div>
-          <button class="tree-q-btn" onclick="showMountainLevels()">?</button>
-        </div>
-        <div class="tree-progress-wrap">
-          <div class="tree-progress-bar" id="mountain-progress-bar" style="width:0%;background:#7F77DD"></div>
-        </div>
-        <div class="tree-progress-labels">
-          <span id="mountain-label-left"></span>
-          <span id="mountain-progress-pct"></span>
-          <span id="mountain-label-right"></span>
-        </div>
-      </div>
-      <div class="section-title">Руки титана</div>
-      <div class="tree-card">
-        <div class="tree-header">
-          <div class="tree-title-wrap">
-            <div class="tree-icon" style="background:#FAECE7">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 12h12M6 12c0-2 1.5-4 4-4M6 12c0 2 1.5 4 4 4M18 12c0-2-1.5-4-4-4M18 12c0 2-1.5 4-4 4" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="4" r="2" fill="#D85A30"/><circle cx="12" cy="20" r="2" fill="#D85A30"/></svg>
-            </div>
-            <div>
-              <div class="tree-level-name" id="pushup-level-name">Загрузка...</div>
-              <div class="tree-hours" id="pushup-reps"></div>
-            </div>
-          </div>
-          <button class="tree-q-btn" onclick="showPushupLevels()">?</button>
-        </div>
-        <div class="tree-progress-wrap">
-          <div class="tree-progress-bar" id="pushup-progress-bar" style="width:0%;background:#D85A30"></div>
-        </div>
-        <div class="tree-progress-labels">
-          <span id="pushup-label-left"></span>
-          <span id="pushup-progress-pct"></span>
-          <span id="pushup-label-right"></span>
-        </div>
-      </div>
-      <div class="section-title">Восхождение к небесам</div>
-      <div class="tree-card">
-        <div class="tree-header">
-          <div class="tree-title-wrap">
-            <div class="tree-icon" style="background:#E6F1FB">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20V8" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-            <div>
-              <div class="tree-level-name" id="pullup-level-name">Загрузка...</div>
-              <div class="tree-hours" id="pullup-reps"></div>
-            </div>
-          </div>
-          <button class="tree-q-btn" onclick="showPullupLevels()">?</button>
-        </div>
-        <div class="tree-progress-wrap">
-          <div class="tree-progress-bar" id="pullup-progress-bar" style="width:0%;background:#378ADD"></div>
-        </div>
-        <div class="tree-progress-labels">
-          <span id="pullup-label-left"></span>
-          <span id="pullup-progress-pct"></span>
-          <span id="pullup-label-right"></span>
-        </div>
-      </div>
-      <div class="section-title">Сиу Лим Тау</div>
-      <div class="tree-card">
-        <div class="tree-header">
-          <div class="tree-title-wrap">
-            <div class="tree-icon" style="background:#EEEDFE">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4 L12 20" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><path d="M8 8 Q12 4 16 8" stroke="#7F77DD" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M7 12 Q12 7 17 12" stroke="#7F77DD" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M6 16 Q12 10 18 16" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
-            </div>
-            <div>
-              <div class="tree-level-name" id="slt-level-name">Загрузка...</div>
-              <div class="tree-hours" id="slt-reps"></div>
-            </div>
-          </div>
-          <button class="tree-q-btn" onclick="showSltLevels()">?</button>
-        </div>
-        <div class="tree-progress-wrap">
-          <div class="tree-progress-bar" id="slt-progress-bar" style="width:0%;background:#7F77DD"></div>
-        </div>
-        <div class="tree-progress-labels">
-          <span id="slt-label-left"></span>
-          <span id="slt-progress-pct"></span>
-          <span id="slt-label-right"></span>
-        </div>
-      </div>
-      <div class="section-title">Чам Кью</div>
-      <div class="tree-card">
-        <div class="tree-header">
-          <div class="tree-title-wrap">
-            <div class="tree-icon" style="background:#EEEDFE">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4 L12 20" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><path d="M7 8 L12 12 L17 8" stroke="#7F77DD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M7 14 L12 18 L17 14" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-            </div>
-            <div>
-              <div class="tree-level-name" id="ck-level-name">Загрузка...</div>
-              <div class="tree-hours" id="ck-reps"></div>
-            </div>
-          </div>
-          <button class="tree-q-btn" onclick="showCkLevels()">?</button>
-        </div>
-        <div class="tree-progress-wrap">
-          <div class="tree-progress-bar" id="ck-progress-bar" style="width:0%;background:#534AB7"></div>
-        </div>
-        <div class="tree-progress-labels">
-          <span id="ck-label-left"></span>
-          <span id="ck-progress-pct"></span>
-          <span id="ck-label-right"></span>
-        </div>
-      </div>
-      <div class="section-title">Тесты</div>
-      <div id="history-container"><div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div></div>
-    </div>
-  </div>
+    <div class="sub-tabs" id="progress-tabs" style="padding:0 16px;border-bottom:1px solid var(--border)"></div>
+    <div id="progress-content" class="section-pad"></div>
 
   <div id="settings" class="screen">
     <div class="section-pad">
@@ -437,17 +309,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 </nav>
 </div><!-- end main-app -->
 
-
-<!-- Splash screen -->
-<div id="splash-screen" class="splash">
-  <svg width="72" height="72" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0" stroke="#F4C0D1" stroke-width="1"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
-  <div style="font-size:18px;font-weight:600;color:#1a1a18;font-family:'Onest',sans-serif">Spring Tracker</div>
-  <div class="splash-dots">
-    <div class="splash-dot"></div>
-    <div class="splash-dot"></div>
-    <div class="splash-dot"></div>
-  </div>
-</div>
 
 <!-- Auth screen -->
 <div id="auth-screen" class="auth-overlay">
@@ -513,6 +374,28 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+<!-- Value input popup -->
+<div class="popup-overlay" id="value-popup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title">Введи значение</span>
+      <button class="popup-close" onclick="cancelPopup()">×</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-ex" id="popup-ex-name"></div>
+      <div class="popup-input-row">
+        <input class="popup-input" type="number" id="popup-value" min="0" placeholder="0"
+          onkeydown="if(event.key==='Enter') savePopupValue()">
+        <span class="popup-unit-label" id="popup-unit"></span>
+      </div>
+      <div class="popup-actions">
+        <button class="btn-cancel" onclick="cancelPopup()">Отмена</button>
+        <button class="btn-save" onclick="savePopupValue()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Levels popup -->
 <div class="popup-overlay" id="levels-popup">
   <div class="popup-box">
@@ -526,50 +409,38 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
-<!-- SLT levels popup -->
-<div class="popup-overlay" id="slt-levels-popup">
+
+<!-- Value input popup -->
+<div class="popup-overlay" id="value-popup">
   <div class="popup-box">
     <div class="popup-header">
-      <span class="popup-title">СИУ ЛИМ ТАУ<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closeSltLevelsPopup()">×</button>
+      <span class="popup-title">Введи значение</span>
+      <button class="popup-close" onclick="cancelPopup()">×</button>
     </div>
-    <div class="levels-scroll"><div id="slt-levels-list"></div></div>
+    <div class="popup-body">
+      <div class="popup-ex" id="popup-ex-name"></div>
+      <div class="popup-input-row">
+        <input class="popup-input" type="number" id="popup-value" min="0" placeholder="0"
+          onkeydown="if(event.key==='Enter') savePopupValue()">
+        <span class="popup-unit-label" id="popup-unit"></span>
+      </div>
+      <div class="popup-actions">
+        <button class="btn-cancel" onclick="cancelPopup()">Отмена</button>
+        <button class="btn-save" onclick="savePopupValue()">Сохранить</button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- CK levels popup -->
-<div class="popup-overlay" id="ck-levels-popup">
+<!-- Levels popup -->
+<div class="popup-overlay" id="levels-popup">
   <div class="popup-box">
     <div class="popup-header">
-      <span class="popup-title">ЧАМ КЬЮ<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closeCkLevelsPopup()">×</button>
-    </div>
-    <div class="levels-scroll"><div id="ck-levels-list"></div></div>
-  </div>
-</div>
-
-<!-- Pushup levels popup -->
-<div class="popup-overlay" id="pushup-levels-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">РУКИ ТИТАНА<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closePushupLevelsPopup()">×</button>
+      <span class="popup-title">ДЕРЕВО<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
+      <button class="popup-close" onclick="closeLevelsPopup()">×</button>
     </div>
     <div class="levels-scroll">
-      <div id="pushup-levels-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Pullup levels popup -->
-<div class="popup-overlay" id="pullup-levels-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">ВОСХОЖДЕНИЕ К НЕБЕСАМ<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closePullupLevelsPopup()">×</button>
-    </div>
-    <div class="levels-scroll">
-      <div id="pullup-levels-list"></div>
+      <div id="levels-list"></div>
     </div>
   </div>
 </div>
