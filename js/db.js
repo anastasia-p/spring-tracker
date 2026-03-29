@@ -18,12 +18,12 @@ function loadDayTypes() {
     .then(function(data) { dayTypes = data; })
     .catch(function() {
       dayTypes = [
-        { type: 'legs',    label: 'Ноги + таз',   css: 'b-legs'   },
-        { type: 'upper',   label: 'Верх + кор',   css: 'b-upper'  },
-        { type: 'rest',    label: 'Отдых',         css: 'b-rest'   },
-        { type: 'test',    label: 'Отдых + тест',  css: 'b-rest'   },
-        { type: 'wc',      label: 'Вин Чун',       css: 'b-wc'     },
-        { type: 'qi',      label: 'Цигун',         css: 'b-qi'     },
+        { type: 'legs',    label: 'Ноги + таз',  css: 'b-legs'  },
+        { type: 'upper',   label: 'Верх + кор',  css: 'b-upper' },
+        { type: 'rest',    label: 'Отдых',        css: 'b-rest'  },
+        { type: 'test',    label: 'Отдых + тест', css: 'b-rest'  },
+        { type: 'wc',      label: 'Вин Чун',      css: 'b-wc'    },
+        { type: 'qi',      label: 'Цигун',        css: 'b-qi'    },
       ];
     });
 }
@@ -38,13 +38,13 @@ function getDayTypeLabel(type) {
   return found ? found.label : type;
 }
 
-// In-memory cache: section -> dateKey -> {plan, type, label, checks, values}
+// In-memory cache
 var cache = { strength: {}, wingchun: {}, qigong: {} };
 
 // Current plans loaded from Firebase
 var plans = { strength: null, wingchun: null, qigong: null, tests: null };
 
-// Skill totals state — keyed by skill id
+// Skill totals — keyed by skill id
 var skillTotals = {};
 
 function loadPlanFromFirebase(section) {
@@ -117,34 +117,21 @@ function saveDayData(section, date) {
 function loadSkill(skill) {
   return userCol('tracker').doc(skill.tracker).get().then(function(s) {
     skillTotals[skill.id] = s.exists ? (s.data()[skill.trackerField] || 0) : 0;
-    // sync legacy vars for backward compat with progress.js
-    syncLegacyVar(skill);
   }).catch(function() {
     skillTotals[skill.id] = 0;
-    syncLegacyVar(skill);
   });
-}
-
-function syncLegacyVar(skill) {
-  if (skill.id === 'tree')     treeTotalMinutes    = skillTotals[skill.id];
-  if (skill.id === 'mountain') mountainTotalSeconds = skillTotals[skill.id];
-  if (skill.id === 'pushups')  pushupTotalReps      = skillTotals[skill.id];
-  if (skill.id === 'pullups')  pullupTotalReps      = skillTotals[skill.id];
-  if (skill.id === 'slt')      sltTotalReps         = skillTotals[skill.id];
-  if (skill.id === 'ck')       ckTotalReps          = skillTotals[skill.id];
 }
 
 function recalcSkill(skill) {
   var sources = [];
 
-  // Primary source
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
   sources.push(userCol(src.collection).get().then(function(snap) {
     var total = 0;
     snap.forEach(function(doc) {
       var values = doc.data().values || {};
-      var data   = doc.data();
+      var data = doc.data();
       fields.forEach(function(f) {
         if (values[f]) total += values[f];
         else if (data[f]) total += data[f];
@@ -153,7 +140,6 @@ function recalcSkill(skill) {
     return total;
   }));
 
-  // Extra source (tests etc.)
   if (skill.sourceExtra) {
     var ext = skill.sourceExtra;
     var extFields = ext.fields || (ext.field ? [ext.field] : []);
@@ -170,30 +156,24 @@ function recalcSkill(skill) {
   Promise.all(sources).then(function(totals) {
     var total = totals.reduce(function(a, b) { return a + b; }, 0);
     skillTotals[skill.id] = total;
-    syncLegacyVar(skill);
-    userCol('tracker').doc(skill.tracker).set({ [skill.trackerField]: total }).catch(function() {});
+    var doc = {};
+    doc[skill.trackerField] = total;
+    userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
     renderSkillById(skill.id);
   }).catch(function() {});
+}
+
+// Find skill by exercise name (used in plan.js)
+function findSkillByExercise(exName, collection) {
+  return SKILLS.find(function(s) {
+    var src = s.source;
+    if (src.collection !== collection) return false;
+    var fields = src.fields || (src.field ? [src.field] : []);
+    return fields.indexOf(exName) !== -1;
+  }) || null;
 }
 
 function loadAllSkills() {
   initSkillLevels();
   return Promise.all(SKILLS.map(function(skill) { return loadSkill(skill); }));
 }
-
-// --- Legacy wrappers (used by plan.js onchange handlers) ---
-
-function recalcTreeMinutes()     { recalcSkill(getSkillById('tree')); }
-function recalcMountainSeconds() { recalcSkill(getSkillById('mountain')); }
-function recalcPushupReps()      { recalcSkill(getSkillById('pushups')); }
-function recalcPullupReps()      { recalcSkill(getSkillById('pullups')); }
-function recalcSltReps()         { recalcSkill(getSkillById('slt')); }
-function recalcCkReps()          { recalcSkill(getSkillById('ck')); }
-
-// Legacy load wrappers (used by nav.js until step 4)
-function loadTreeMinutes()     { return loadSkill(getSkillById('tree')); }
-function loadMountainSeconds() { return loadSkill(getSkillById('mountain')); }
-function loadPushupReps()      { return loadSkill(getSkillById('pushups')); }
-function loadPullupReps()      { return loadSkill(getSkillById('pullups')); }
-function loadSltReps()         { return loadSkill(getSkillById('slt')); }
-function loadCkReps()          { return loadSkill(getSkillById('ck')); }

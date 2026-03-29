@@ -100,12 +100,8 @@ function handleExCheck(section, dk, exName, unit, el) {
     cache[section][dk].checks[exName] = false;
     cache[section][dk].values[exName] = 0;
     saveDayData(section, new Date(dk + 'T12:00:00'));
-    if (exName === 'Дерево') recalcTreeMinutes();
-    if (STANCE_EXERCISES.indexOf(exName) !== -1) recalcMountainSeconds();
-    if (exName === 'Отжимания') recalcPushupReps();
-    if (exName === 'Подтягивания') recalcPullupReps();
-    if (exName === 'Сиу Лим Тау') recalcSltReps();
-    if (exName === 'Чам Кью') recalcCkReps();
+    var skill = findSkillByExercise(exName, section);
+    if (skill) recalcSkill(skill);
     var open = getOpenCards(section);
     renderSection(section, open);
   }
