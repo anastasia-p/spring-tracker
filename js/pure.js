@@ -224,7 +224,7 @@ var SKILLS = [
     color: '#7F77DD',
     bgColor: '#EEEDFE',
     valueType: 'seconds',
-    source: { collection: 'wingchun', fields: ['Всадник у стены', 'Стульчик', 'Мабу'] },
+    source: { collection: 'wingchun', fields: ['Всадник у стены', 'Стульчик у стены', 'Мабу'] },
     sourceExtra: { collection: 'tests', fields: ['Всадник у стены', 'Стульчик у стены', 'Мабу'] },
     tracker: 'iron_legs',
     trackerField: 'totalSeconds',
