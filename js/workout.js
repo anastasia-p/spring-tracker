@@ -24,14 +24,21 @@ function saveTest() {
   });
   if (!hasVal) return;
   userCol('tests').doc(dk).set(data).then(function() {
-    // Даём Firebase время зафиксировать запись, потом пересчитываем
-    setTimeout(function() {
-      SKILLS.forEach(function(skill) {
-        if (skill.sourceExtra && skill.sourceExtra.collection === 'tests') {
-          recalcSkill(skill);
-        }
-      });
-    }, 1000);
+    // Обновляем навыки локально — берём текущий total и добавляем значения нового теста
+    SKILLS.forEach(function(skill) {
+      if (!skill.sourceExtra || skill.sourceExtra.collection !== 'tests') return;
+      var extFields = skill.sourceExtra.fields || (skill.sourceExtra.field ? [skill.sourceExtra.field] : []);
+      var delta = 0;
+      extFields.forEach(function(f) { if (data[f]) delta += data[f]; });
+      if (delta > 0) {
+        var newTotal = (skillTotals[skill.id] || 0) + delta;
+        skillTotals[skill.id] = newTotal;
+        var doc = {};
+        doc[skill.trackerField] = newTotal;
+        userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
+        renderSkillById(skill.id);
+      }
+    });
   }).catch(function() {});
   document.getElementById('saved-msg').style.display = 'block';
   setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
