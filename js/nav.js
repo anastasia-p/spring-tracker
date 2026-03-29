@@ -9,9 +9,17 @@ function showTab(name, btn) {
   document.getElementById(name).classList.add('active');
   if (btn && btn.classList && btn.classList.contains('tab-btn')) btn.classList.add('active');
   else if (btn) btn.style.color = 'var(--green)';
-  document.getElementById('sub-tabs').style.visibility = name === 'plan' ? 'visible' : 'hidden';
-  if (name === 'progress') {
+
+  var subTabs = document.getElementById('sub-tabs');
+  if (name === 'plan') {
+    renderPlanTabs();
+    subTabs.style.visibility = 'visible';
+  } else if (name === 'progress') {
+    renderProgressTabs(userSections);
+    subTabs.style.visibility = 'visible';
     showProgressTab(userSections[0] || 'tests');
+  } else {
+    subTabs.style.visibility = 'hidden';
   }
 }
 
@@ -20,6 +28,28 @@ function showSubTab(name, btn) {
   document.querySelectorAll('.sub-tab').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById(name).classList.add('active');
   btn.classList.add('active');
+}
+
+// --- Plan tabs ---
+
+function renderPlanTabs() {
+  var subTabsEl = document.getElementById('sub-tabs');
+  subTabsEl.innerHTML = '';
+  userSections.forEach(function(s, i) {
+    var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === s; });
+    if (!tmpl) return;
+    var btn = document.createElement('button');
+    btn.className = 'sub-tab' + (i === 0 ? ' active' : '');
+    btn.textContent = tmpl.label;
+    btn.onclick = function() { showSubTab(s, btn); };
+    subTabsEl.appendChild(btn);
+  });
+  // Activate first sub-screen
+  document.querySelectorAll('.sub-screen').forEach(function(el) { el.classList.remove('active'); });
+  if (userSections[0]) {
+    var first = document.getElementById(userSections[0]);
+    if (first) first.classList.add('active');
+  }
 }
 
 // --- Progress tabs ---
@@ -31,7 +61,7 @@ var SECTION_LABELS = {
 };
 
 function renderProgressTabs(sections) {
-  var tabsEl = document.getElementById('progress-tabs');
+  var tabsEl = document.getElementById('sub-tabs');
   tabsEl.innerHTML = '';
   sections.forEach(function(s, i) {
     var btn = document.createElement('button');
@@ -52,11 +82,11 @@ function renderProgressTabs(sections) {
 
 function showProgressTab(section, btn) {
   // Update active tab button
-  document.querySelectorAll('#progress-tabs .sub-tab').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#sub-tabs .sub-tab').forEach(function(b) { b.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   else {
     // Activate by section name
-    document.querySelectorAll('#progress-tabs .sub-tab').forEach(function(b) {
+    document.querySelectorAll('#sub-tabs .sub-tab').forEach(function(b) {
       var label = SECTION_LABELS[section] || section;
       if (b.textContent === label || (section === 'tests' && b.textContent === 'Тесты')) {
         b.classList.add('active');
@@ -182,28 +212,8 @@ function initWithSections(sections) {
   SECTIONS = sections;
   initSkillLevels();
 
-  // Update plan sub-tabs
-  var subTabsEl = document.getElementById('sub-tabs');
-  subTabsEl.innerHTML = '';
-  sections.forEach(function(s, i) {
-    var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === s; });
-    if (!tmpl) return;
-    var btn = document.createElement('button');
-    btn.className = 'sub-tab' + (i === 0 ? ' active' : '');
-    btn.textContent = tmpl.label;
-    btn.onclick = function() { showSubTab(s, btn); };
-    subTabsEl.appendChild(btn);
-  });
-
-  // Show/hide sub-screens
-  document.querySelectorAll('.sub-screen').forEach(function(el) { el.classList.remove('active'); });
-  if (sections[0]) {
-    var first = document.getElementById(sections[0]);
-    if (first) first.classList.add('active');
-  }
-
-  // Render progress tabs
-  renderProgressTabs(sections);
+  // Render plan tabs (plan is default active screen)
+  renderPlanTabs();
 
   // Show user email
   if (currentUser) {
