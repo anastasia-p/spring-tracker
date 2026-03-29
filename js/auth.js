@@ -48,8 +48,6 @@ function showAuthScreen() {
   if (authEl) authEl.style.display = 'flex';
   if (onboardEl) onboardEl.style.display = 'none';
   if (mainEl) mainEl.style.display = 'none';
-  var userInfo = document.getElementById('user-info');
-  if (userInfo) userInfo.style.display = 'none';
   showLoginForm();
 }
 
