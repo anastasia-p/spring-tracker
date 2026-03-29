@@ -42,9 +42,12 @@ firebase.auth().onAuthStateChanged(function(user) {
 
 function showAuthScreen() {
   hideSplash();
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.getElementById('onboarding-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'none';
+  var authEl = document.getElementById('auth-screen');
+  var onboardEl = document.getElementById('onboarding-screen');
+  var mainEl = document.getElementById('main-app');
+  if (authEl) authEl.style.display = 'flex';
+  if (onboardEl) onboardEl.style.display = 'none';
+  if (mainEl) mainEl.style.display = 'none';
   var userInfo = document.getElementById('user-info');
   if (userInfo) userInfo.style.display = 'none';
   showLoginForm();
@@ -64,17 +67,23 @@ function showRegisterForm() {
 
 function showOnboarding() {
   hideSplash();
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('onboarding-screen').style.display = 'flex';
-  document.getElementById('main-app').style.display = 'none';
+  var authEl = document.getElementById('auth-screen');
+  var onboardEl = document.getElementById('onboarding-screen');
+  var mainEl = document.getElementById('main-app');
+  if (authEl) authEl.style.display = 'none';
+  if (onboardEl) onboardEl.style.display = 'flex';
+  if (mainEl) mainEl.style.display = 'none';
   renderOnboarding();
 }
 
 function startApp(sections) {
   hideSplash();
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('onboarding-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'block';
+  var authEl = document.getElementById('auth-screen');
+  var onboardEl = document.getElementById('onboarding-screen');
+  var mainEl = document.getElementById('main-app');
+  if (authEl) authEl.style.display = 'none';
+  if (onboardEl) onboardEl.style.display = 'none';
+  if (mainEl) mainEl.style.display = 'block';
   initWithSections(sections);
 }
 
