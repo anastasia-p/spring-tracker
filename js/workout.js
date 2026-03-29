@@ -23,7 +23,14 @@ function saveTest() {
     if (v && v.value !== '') { data[item.name] = parseInt(v.value); hasVal = true; }
   });
   if (!hasVal) return;
-  userCol('tests').doc(dk).set(data).catch(function() {});
+  userCol('tests').doc(dk).set(data).then(function() {
+    // Пересчитываем навыки которые используют тесты как источник
+    SKILLS.forEach(function(skill) {
+      if (skill.sourceExtra && skill.sourceExtra.collection === 'tests') {
+        recalcSkill(skill);
+      }
+    });
+  }).catch(function() {});
   document.getElementById('saved-msg').style.display = 'block';
   setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
   items.forEach(function(_, i) { var v = document.getElementById('ti_' + i); if (v) v.value = ''; });
