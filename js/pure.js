@@ -94,7 +94,7 @@ function dateKey(date) {
 function getWeekDates(offset) {
   var now = new Date();
   var mon = new Date(now);
-  mon.setDate(now.getDate() - now.getDay() + 1 + offset * 7);
+  mon.setDate(now.getDate() - (now.getDay() || 7) + 1 + offset * 7);
   var dates = [];
   for (var i = 0; i < 7; i++) {
     var d = new Date(mon);
