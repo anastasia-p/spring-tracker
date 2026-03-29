@@ -263,3 +263,13 @@ function renderFormsLevelsPopup(listId, totalReps) {
   }).join('');
   document.getElementById(listId).innerHTML = html;
 }
+
+// Universal render router — вызывается из recalcSkill
+function renderSkillById(id) {
+  if (id === 'tree')     renderTreeProgress();
+  if (id === 'mountain') renderMountainProgress();
+  if (id === 'pushups')  renderPushupProgress();
+  if (id === 'pullups')  renderPullupProgress();
+  if (id === 'slt')      renderSltProgress();
+  if (id === 'ck')       renderCkProgress();
+}

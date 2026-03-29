@@ -8,7 +8,6 @@ function userCol(name) {
   return db.collection('users').doc(currentUser.uid).collection(name);
 }
 
-
 // Day types loaded from day-types.json
 var dayTypes = [];
 
@@ -44,6 +43,9 @@ var cache = { strength: {}, wingchun: {}, qigong: {} };
 
 // Current plans loaded from Firebase
 var plans = { strength: null, wingchun: null, qigong: null, tests: null };
+
+// Skill totals state — keyed by skill id
+var skillTotals = {};
 
 function loadPlanFromFirebase(section) {
   var field = section === 'tests' ? 'items' : 'days';
@@ -110,141 +112,88 @@ function saveDayData(section, date) {
   }).catch(function() {});
 }
 
-function loadTreeMinutes() {
-  return userCol('tracker').doc('tree').get().then(function(s) {
-    treeTotalMinutes = s.exists ? (s.data().totalMinutes || 0) : 0;
-  }).catch(function() { treeTotalMinutes = 0; });
+// --- Universal skill load/recalc ---
+
+function loadSkill(skill) {
+  return userCol('tracker').doc(skill.tracker).get().then(function(s) {
+    skillTotals[skill.id] = s.exists ? (s.data()[skill.trackerField] || 0) : 0;
+    // sync legacy vars for backward compat with progress.js
+    syncLegacyVar(skill);
+  }).catch(function() {
+    skillTotals[skill.id] = 0;
+    syncLegacyVar(skill);
+  });
 }
 
-function loadMountainSeconds() {
-  return userCol('tracker').doc('iron_legs').get().then(function(s) {
-    mountainTotalSeconds = s.exists ? (s.data().totalSeconds || 0) : 0;
-  }).catch(function() { mountainTotalSeconds = 0; });
+function syncLegacyVar(skill) {
+  if (skill.id === 'tree')     treeTotalMinutes    = skillTotals[skill.id];
+  if (skill.id === 'mountain') mountainTotalSeconds = skillTotals[skill.id];
+  if (skill.id === 'pushups')  pushupTotalReps      = skillTotals[skill.id];
+  if (skill.id === 'pullups')  pullupTotalReps      = skillTotals[skill.id];
+  if (skill.id === 'slt')      sltTotalReps         = skillTotals[skill.id];
+  if (skill.id === 'ck')       ckTotalReps          = skillTotals[skill.id];
 }
 
-function recalcTreeMinutes() {
-  userCol('qigong').get().then(function(snap) {
+function recalcSkill(skill) {
+  var sources = [];
+
+  // Primary source
+  var src = skill.source;
+  var fields = src.fields || (src.field ? [src.field] : []);
+  sources.push(userCol(src.collection).get().then(function(snap) {
     var total = 0;
     snap.forEach(function(doc) {
       var values = doc.data().values || {};
-      if (values['Дерево']) total += values['Дерево'];
-    });
-    treeTotalMinutes = total;
-    userCol('tracker').doc('tree').set({ totalMinutes: total }).catch(function() {});
-    renderTreeProgress();
-  }).catch(function() {});
-}
-
-function recalcMountainSeconds() {
-  var total = 0;
-  Promise.all([
-    userCol('wingchun').get(),
-    userCol('tests').get()
-  ]).then(function(snaps) {
-    snaps[0].forEach(function(doc) {
-      var values = doc.data().values || {};
-      STANCE_EXERCISES.forEach(function(name) {
-        if (values[name]) total += values[name];
+      var data   = doc.data();
+      fields.forEach(function(f) {
+        if (values[f]) total += values[f];
+        else if (data[f]) total += data[f];
       });
     });
-    snaps[1].forEach(function(doc) {
-      var data = doc.data();
-      if (data['Всадник у стены']) total += data['Всадник у стены'];
-      if (data['Стульчик у стены']) total += data['Стульчик у стены'];
-      if (data['Мабу']) total += data['Мабу'];
-    });
-    mountainTotalSeconds = total;
-    userCol('tracker').doc('iron_legs').set({ totalSeconds: total }).catch(function() {});
-    renderMountainProgress();
-  }).catch(function() {});
-}
+    return total;
+  }));
 
-function loadPushupReps() {
-  return userCol('tracker').doc('pushups').get().then(function(s) {
-    pushupTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
-  }).catch(function() { pushupTotalReps = 0; });
-}
-
-function loadPullupReps() {
-  return userCol('tracker').doc('pullups').get().then(function(s) {
-    pullupTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
-  }).catch(function() { pullupTotalReps = 0; });
-}
-
-function recalcPushupReps() {
-  var total = 0;
-  Promise.all([
-    userCol('strength').get(),
-    userCol('tests').get()
-  ]).then(function(snaps) {
-    snaps.forEach(function(snap) {
+  // Extra source (tests etc.)
+  if (skill.sourceExtra) {
+    var ext = skill.sourceExtra;
+    var extFields = ext.fields || (ext.field ? [ext.field] : []);
+    sources.push(userCol(ext.collection).get().then(function(snap) {
+      var total = 0;
       snap.forEach(function(doc) {
-        var values = doc.data().values || {};
         var data = doc.data();
-        if (values['Отжимания']) total += values['Отжимания'];
-        if (data['Отжимания']) total += data['Отжимания'];
+        extFields.forEach(function(f) { if (data[f]) total += data[f]; });
       });
-    });
-    pushupTotalReps = total;
-    userCol('tracker').doc('pushups').set({ totalReps: total }).catch(function() {});
-    renderPushupProgress();
+      return total;
+    }));
+  }
+
+  Promise.all(sources).then(function(totals) {
+    var total = totals.reduce(function(a, b) { return a + b; }, 0);
+    skillTotals[skill.id] = total;
+    syncLegacyVar(skill);
+    userCol('tracker').doc(skill.tracker).set({ [skill.trackerField]: total }).catch(function() {});
+    renderSkillById(skill.id);
   }).catch(function() {});
 }
 
-function recalcPullupReps() {
-  var total = 0;
-  Promise.all([
-    userCol('strength').get(),
-    userCol('tests').get()
-  ]).then(function(snaps) {
-    snaps.forEach(function(snap) {
-      snap.forEach(function(doc) {
-        var values = doc.data().values || {};
-        var data = doc.data();
-        if (values['Подтягивания']) total += values['Подтягивания'];
-        if (data['Подтягивания']) total += data['Подтягивания'];
-      });
-    });
-    pullupTotalReps = total;
-    userCol('tracker').doc('pullups').set({ totalReps: total }).catch(function() {});
-    renderPullupProgress();
-  }).catch(function() {});
+function loadAllSkills() {
+  initSkillLevels();
+  return Promise.all(SKILLS.map(function(skill) { return loadSkill(skill); }));
 }
 
-function loadSltReps() {
-  return userCol('tracker').doc('slt').get().then(function(s) {
-    sltTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
-  }).catch(function() { sltTotalReps = 0; });
-}
+// --- Legacy wrappers (used by plan.js onchange handlers) ---
 
-function loadCkReps() {
-  return userCol('tracker').doc('ck').get().then(function(s) {
-    ckTotalReps = s.exists ? (s.data().totalReps || 0) : 0;
-  }).catch(function() { ckTotalReps = 0; });
-}
+function recalcTreeMinutes()     { recalcSkill(getSkillById('tree')); }
+function recalcMountainSeconds() { recalcSkill(getSkillById('mountain')); }
+function recalcPushupReps()      { recalcSkill(getSkillById('pushups')); }
+function recalcPullupReps()      { recalcSkill(getSkillById('pullups')); }
+function recalcSltReps()         { recalcSkill(getSkillById('slt')); }
+function recalcCkReps()          { recalcSkill(getSkillById('ck')); }
 
-function recalcSltReps() {
-  userCol('wingchun').get().then(function(snap) {
-    var total = 0;
-    snap.forEach(function(doc) {
-      var values = doc.data().values || {};
-      if (values['Сиу Лим Тау']) total += values['Сиу Лим Тау'];
-    });
-    sltTotalReps = total;
-    userCol('tracker').doc('slt').set({ totalReps: total }).catch(function() {});
-    renderSltProgress();
-  }).catch(function() {});
-}
-
-function recalcCkReps() {
-  userCol('wingchun').get().then(function(snap) {
-    var total = 0;
-    snap.forEach(function(doc) {
-      var values = doc.data().values || {};
-      if (values['Чам Кью']) total += values['Чам Кью'];
-    });
-    ckTotalReps = total;
-    userCol('tracker').doc('ck').set({ totalReps: total }).catch(function() {});
-    renderCkProgress();
-  }).catch(function() {});
-}
+// Legacy load wrappers (used by nav.js until step 4)
+function loadTreeMinutes()     { return loadSkill(getSkillById('tree')); }
+function loadMountainSeconds() { return loadSkill(getSkillById('mountain')); }
+function loadPushupReps()      { return loadSkill(getSkillById('pushups')); }
+function loadPullupReps()      { return loadSkill(getSkillById('pullups')); }
+function loadSltReps()         { return loadSkill(getSkillById('slt')); }
+function loadCkReps()          { return loadSkill(getSkillById('ck')); }
