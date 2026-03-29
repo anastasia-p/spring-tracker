@@ -317,7 +317,7 @@ if (typeof module !== 'undefined') {
 }
 
 var FORMS_LEVELS = [
-  { level: 0, name: 'Незнакомец',      reps: 0,      desc: 'Форма ещё не знает тебя' },
+  { level: 0, name: 'Незнакомец',      reps: 0,      desc: 'Форма еще не знает тебя' },
   { level: 1, name: 'Ученик',          reps: 100,    desc: 'Первые шаги по пути' },
   { level: 2, name: 'Практикующий',    reps: 500,    desc: 'Тело начинает запоминать' },
   { level: 3, name: 'Последователь',   reps: 1000,   desc: 'Форма входит в привычку' },
