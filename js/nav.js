@@ -227,6 +227,7 @@ function initWithSections(sections) {
   var loadPromises = [
     loadDayTypes(),
     loadPlanFromFirebase('tests'),
+    loadTestsCache(),
     loadAllSkills(),
   ].concat(sections.map(function(s) { return loadPlanFromFirebase(s); }));
 

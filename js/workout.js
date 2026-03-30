@@ -23,23 +23,12 @@ function saveTest() {
     if (v && v.value !== '') { data[item.name] = parseInt(v.value); hasVal = true; }
   });
   if (!hasVal) return;
-  userCol('tests').doc(dk).set(data).then(function() {
-    // Обновляем навыки локально — берём текущий total и добавляем значения нового теста
-    SKILLS.forEach(function(skill) {
-      if (!skill.sourceExtra || skill.sourceExtra.collection !== 'tests') return;
-      var extFields = skill.sourceExtra.fields || (skill.sourceExtra.field ? [skill.sourceExtra.field] : []);
-      var delta = 0;
-      extFields.forEach(function(f) { if (data[f]) delta += data[f]; });
-      if (delta > 0) {
-        var newTotal = (skillTotals[skill.id] || 0) + delta;
-        skillTotals[skill.id] = newTotal;
-        var doc = {};
-        doc[skill.trackerField] = newTotal;
-        userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
-        renderSkillById(skill.id);
-      }
-    });
-  }).catch(function() {});
+  saveTestData(dk, data);
+  SKILLS.forEach(function(skill) {
+    if (skill.sourceExtra && skill.sourceExtra.collection === 'tests') {
+      recalcSkill(skill);
+    }
+  });
   document.getElementById('saved-msg').style.display = 'block';
   setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
   items.forEach(function(_, i) { var v = document.getElementById('ti_' + i); if (v) v.value = ''; });
@@ -50,6 +39,7 @@ function loadAndRenderHistory() {
   var c = document.getElementById('history-container');
   c.innerHTML = '<div class="loading">Загрузка...</div>';
   userCol('tests').get().then(function(snap) {
+    snap.forEach(function(doc) { cache.tests[doc.id] = doc.data(); });
     var entries = [];
     snap.forEach(function(doc) { entries.push({ dk: doc.id, data: doc.data() }); });
     entries.sort(function(a, b) { return a.dk < b.dk ? -1 : 1; });

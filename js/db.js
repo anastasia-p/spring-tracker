@@ -39,7 +39,7 @@ function getDayTypeLabel(type) {
 }
 
 // In-memory cache
-var cache = { strength: {}, wingchun: {}, qigong: {} };
+var cache = { strength: {}, wingchun: {}, qigong: {}, tests: {} };
 
 // Current plans loaded from Firebase
 var plans = { strength: null, wingchun: null, qigong: null, tests: null };
@@ -112,6 +112,17 @@ function saveDayData(section, date) {
   }).catch(function() {});
 }
 
+function loadTestsCache() {
+  return userCol('tests').get().then(function(snap) {
+    snap.forEach(function(doc) { cache.tests[doc.id] = doc.data(); });
+  }).catch(function() {});
+}
+
+function saveTestData(dk, data) {
+  cache.tests[dk] = data;
+  userCol('tests').doc(dk).set(data).catch(function() {});
+}
+
 // --- Universal skill load/recalc ---
 
 function loadSkill(skill) {
@@ -143,14 +154,25 @@ function recalcSkill(skill) {
   if (skill.sourceExtra) {
     var ext = skill.sourceExtra;
     var extFields = ext.fields || (ext.field ? [ext.field] : []);
-    sources.push(userCol(ext.collection).get().then(function(snap) {
+    // Читаем из кеша если есть (как plan.js), иначе из Firebase
+    var cachedDocs = cache[ext.collection];
+    if (cachedDocs && Object.keys(cachedDocs).length > 0) {
       var total = 0;
-      snap.forEach(function(doc) {
-        var data = doc.data();
+      Object.keys(cachedDocs).forEach(function(dk) {
+        var data = cachedDocs[dk];
         extFields.forEach(function(f) { if (data[f]) total += data[f]; });
       });
-      return total;
-    }));
+      sources.push(Promise.resolve(total));
+    } else {
+      sources.push(userCol(ext.collection).get().then(function(snap) {
+        var total = 0;
+        snap.forEach(function(doc) {
+          var data = doc.data();
+          extFields.forEach(function(f) { if (data[f]) total += data[f]; });
+        });
+        return total;
+      }));
+    }
   }
 
   Promise.all(sources).then(function(totals) {
