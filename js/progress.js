@@ -18,6 +18,12 @@ function savePopupValue() {
   if (!pendingCheck) return;
   var val = parseInt(document.getElementById('popup-value').value) || 0;
   var p = pendingCheck;
+  if (p.section === 'tests') {
+    saveTestField(p.dk, p.exName, val);
+    closePopup();
+    renderTestForm();
+    return;
+  }
   if (!cache[p.section][p.dk]) return;
   cache[p.section][p.dk].checks[p.exName] = true;
   cache[p.section][p.dk].values[p.exName] = val;

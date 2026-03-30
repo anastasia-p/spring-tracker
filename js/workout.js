@@ -4,44 +4,65 @@ function renderTestForm() {
   var items = plans.tests || [];
   var grid = document.getElementById('test-grid');
   if (!items.length) { grid.innerHTML = '<div class="loading">Загрузка теста...</div>'; return; }
+  var dk = dateKey(new Date());
+  var saved = cache.tests[dk] || {};
   grid.innerHTML = items.map(function(item, i) {
+    var isChecked = !!saved[item.name];
+    var val = saved[item.name] || '';
     return '<div class="test-item">' +
-      '<div class="test-label">' + item.name + (item.note ? '<span style="color:var(--text-hint);font-size:10px;display:block">' + item.note + '</span>' : '') + '</div>' +
-      '<input class="test-input" type="number" id="ti_' + i + '" placeholder="—">' +
-      '<div class="test-unit">' + item.unit + '</div>' +
+      '<label class="ex-row">' +
+        '<input type="checkbox" class="ex-check" id="tc_' + i + '" ' + (isChecked ? 'checked' : '') +
+          ' onchange="handleTestCheck(\'' + item.name + '\', \'' + item.unit + '\', this)">' +
+        '<div class="ex-info">' +
+          '<div class="ex-name">' + item.name + (item.note ? '<span style="color:var(--text-hint);font-size:10px;display:block">' + item.note + '</span>' : '') + '</div>' +
+          (isChecked && val ? '<div class="ex-value">' + val + ' ' + item.unit + '</div>' : '') +
+        '</div>' +
+      '</label>' +
     '</div>';
   }).join('');
 }
 
-function saveTest() {
-  var items = plans.tests || [];
-  var now = new Date(), dk = dateKey(now);
-  var data = { date: now.toLocaleDateString('ru'), plan: items };
-  var hasVal = false;
-  items.forEach(function(item, i) {
-    var v = document.getElementById('ti_' + i);
-    if (v && v.value !== '') { data[item.name] = parseInt(v.value); hasVal = true; }
+function handleTestCheck(name, unit, el) {
+  if (el.checked) {
+    // Show value popup
+    var dk = dateKey(new Date());
+    showValuePopup('tests', dk, name, unit, el);
+  } else {
+    // Uncheck — remove value
+    var dk = dateKey(new Date());
+    saveTestField(dk, name, null);
+    renderTestForm();
+  }
+}
+
+function saveTestField(dk, name, value) {
+  if (!cache.tests[dk]) cache.tests[dk] = {};
+  if (value === null) {
+    delete cache.tests[dk][name];
+  } else {
+    cache.tests[dk][name] = value;
+  }
+  // Save to Firebase
+  userCol('tests').doc(dk).set(cache.tests[dk]).catch(function() {});
+  // Recalc relevant skills
+  var skill = SKILLS.find(function(s) {
+    if (!s.sourceExtra || s.sourceExtra.collection !== 'tests') return false;
+    var fields = s.sourceExtra.fields || (s.sourceExtra.field ? [s.sourceExtra.field] : []);
+    return fields.indexOf(name) !== -1;
   });
-  if (!hasVal) return;
-  saveTestData(dk, data);
-  SKILLS.forEach(function(skill) {
-    if (skill.sourceExtra && skill.sourceExtra.collection === 'tests') {
-      recalcSkill(skill);
-    }
-  });
-  document.getElementById('saved-msg').style.display = 'block';
-  setTimeout(function() { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
-  items.forEach(function(_, i) { var v = document.getElementById('ti_' + i); if (v) v.value = ''; });
-  loadAndRenderHistory();
+  if (skill) recalcSkill(skill);
 }
 
 function loadAndRenderHistory() {
   var c = document.getElementById('history-container');
+  if (!c) return;
   c.innerHTML = '<div class="loading">Загрузка...</div>';
   userCol('tests').get().then(function(snap) {
-    snap.forEach(function(doc) { cache.tests[doc.id] = doc.data(); });
     var entries = [];
-    snap.forEach(function(doc) { entries.push({ dk: doc.id, data: doc.data() }); });
+    snap.forEach(function(doc) {
+      cache.tests[doc.id] = doc.data();
+      entries.push({ dk: doc.id, data: doc.data() });
+    });
     entries.sort(function(a, b) { return a.dk < b.dk ? -1 : 1; });
     var items = plans.tests || [];
     if (!entries.length) {
