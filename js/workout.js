@@ -105,14 +105,20 @@ function renderTestHistory(container, items, entries) {
       var eprev = i > 0 ? entries[i-1].data[item.name] : null;
       var ediff = (v != null && eprev != null) ? v - eprev : null;
       var pct = (v != null && maxVal > 0) ? Math.round(v / maxVal * 100) : 0;
-      var diffHtml = ediff === null ? '' : (ediff > 0
-        ? '<span style="font-size:11px;color:#1D9E75;width:28px">+' + ediff + '</span>'
-        : (ediff < 0 ? '<span style="font-size:11px;color:#E24B4A;width:28px">' + ediff + '</span>'
-        : '<span style="font-size:11px;color:var(--text-muted);width:28px">0</span>'));
+      var isDown = ediff !== null && ediff < 0;
+      var isUp   = ediff !== null && ediff > 0;
+      var barColor = isDown ? '#F0997B' : '#1D9E75';
+      var valColor = isDown ? '#D85A30' : (i === entries.length - 1 ? '#1D9E75' : 'var(--text)');
+      var valWeight = i === entries.length - 1 ? '600' : '500';
+      var diffHtml = ediff === null ? '<span style="width:30px"></span>'
+        : (isUp   ? '<span style="font-size:11px;color:#1D9E75;width:30px">+' + ediff + '</span>'
+        : (isDown ? '<span style="font-size:11px;color:#D85A30;width:30px">' + ediff + '</span>'
+        :           '<span style="font-size:11px;color:var(--text-muted);width:30px">0</span>'));
+      var unit = item.unit && item.unit !== 'раз' ? '<span style="font-size:11px;color:var(--text-muted)"> ' + item.unit + '</span>' : '';
       histHtml += '<div class="t3-hist-row">' +
         '<div class="t3-hist-date">' + (e.data.date || e.dk) + '</div>' +
-        '<div class="t3-hist-val' + (i === entries.length-1 ? ' t3-hist-val-last' : '') + '">' + (v != null ? v : '—') + '</div>' +
-        '<div class="t3-bar-wrap"><div class="t3-bar-inner" style="width:' + pct + '%"></div></div>' +
+        '<div class="t3-bar-wrap"><div class="t3-bar-inner" style="width:' + pct + '%;background:' + barColor + '"></div></div>' +
+        '<div class="t3-hist-val" style="color:' + valColor + ';font-weight:' + valWeight + '">' + (v != null ? v : '—') + unit + '</div>' +
         diffHtml +
       '</div>';
     });
