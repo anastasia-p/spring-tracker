@@ -69,26 +69,76 @@ function loadAndRenderHistory() {
       c.innerHTML = '<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>';
       return;
     }
-    var html = '<div class="history-wrap"><table class="history-table"><thead><tr><th>Дата</th>';
-    items.forEach(function(item) { html += '<th>' + item.name.split(' ').pop() + '</th>'; });
-    html += '</tr></thead><tbody>';
-    entries.forEach(function(e, i) {
-      html += '<tr><td>' + (e.data.date || e.dk) + '</td>';
-      items.forEach(function(item) {
-        var v = e.data[item.name], delta = '';
-        if (i > 0) {
-          var prev = entries[i - 1].data[item.name];
-          if (v != null && prev != null) {
-            var diff = v - prev;
-            if (diff > 0) delta = '<span class="delta up">+' + diff + '</span>';
-            else if (diff < 0) delta = '<span class="delta down">' + diff + '</span>';
-          }
-        }
-        html += '<td>' + (v != null ? v : '—') + delta + '</td>';
-      });
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-    c.innerHTML = html;
+    renderTestHistory(c, items, entries);
   }).catch(function() { c.innerHTML = '<div class="empty">Ошибка загрузки.</div>'; });
+}
+
+function renderTestHistory(container, items, entries) {
+  var last = entries[entries.length - 1];
+  var prev = entries.length > 1 ? entries[entries.length - 2] : null;
+
+  var html = '<div class="t3-list">';
+  items.forEach(function(item, idx) {
+    var lastVal = last.data[item.name];
+    var prevVal = prev ? prev.data[item.name] : null;
+    var diff = (lastVal != null && prevVal != null) ? lastVal - prevVal : null;
+    var badgeHtml = '';
+    if (diff === null) {
+      badgeHtml = '<span class="t3-badge t3-badge-neutral">— нет данных</span>';
+    } else if (diff > 0) {
+      badgeHtml = '<span class="t3-badge t3-badge-up">+' + diff + ' ↑</span>';
+    } else if (diff < 0) {
+      badgeHtml = '<span class="t3-badge t3-badge-down">' + diff + ' ↓</span>';
+    } else {
+      badgeHtml = '<span class="t3-badge t3-badge-neutral">→ без изменений</span>';
+    }
+    var valHtml = lastVal != null
+      ? '<span class="t3-last-val">' + lastVal + '</span><span class="t3-unit"> ' + item.unit + '</span>'
+      : '<span class="t3-last-val" style="color:var(--text-muted)">—</span>';
+
+    // History rows
+    var maxVal = 0;
+    entries.forEach(function(e) { if (e.data[item.name] && e.data[item.name] > maxVal) maxVal = e.data[item.name]; });
+    var histHtml = '<div class="t3-history" id="t3-hist-' + idx + '" style="display:none">';
+    entries.forEach(function(e, i) {
+      var v = e.data[item.name];
+      var eprev = i > 0 ? entries[i-1].data[item.name] : null;
+      var ediff = (v != null && eprev != null) ? v - eprev : null;
+      var pct = (v != null && maxVal > 0) ? Math.round(v / maxVal * 100) : 0;
+      var diffHtml = ediff === null ? '' : (ediff > 0
+        ? '<span style="font-size:11px;color:#1D9E75;width:28px">+' + ediff + '</span>'
+        : (ediff < 0 ? '<span style="font-size:11px;color:#E24B4A;width:28px">' + ediff + '</span>'
+        : '<span style="font-size:11px;color:var(--text-muted);width:28px">0</span>'));
+      histHtml += '<div class="t3-hist-row">' +
+        '<div class="t3-hist-date">' + (e.data.date || e.dk) + '</div>' +
+        '<div class="t3-hist-val' + (i === entries.length-1 ? ' t3-hist-val-last' : '') + '">' + (v != null ? v : '—') + '</div>' +
+        '<div class="t3-bar-wrap"><div class="t3-bar-inner" style="width:' + pct + '%"></div></div>' +
+        diffHtml +
+      '</div>';
+    });
+    histHtml += '</div>';
+
+    html += '<div class="t3-item' + (idx === items.length - 1 ? ' t3-item-last' : '') + '" onclick="toggleTestHistory(' + idx + ', this)">' +
+      '<div class="t3-row-main">' +
+        '<div class="t3-item-name">' + item.name + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          valHtml + badgeHtml +
+          '<span class="t3-chevron">▼</span>' +
+        '</div>' +
+      '</div>' +
+      histHtml +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function toggleTestHistory(idx, el) {
+  var hist = document.getElementById('t3-hist-' + idx);
+  var chev = el.querySelector('.t3-chevron');
+  if (!hist) return;
+  var isOpen = hist.style.display !== 'none';
+  hist.style.display = isOpen ? 'none' : 'block';
+  if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+  el.style.background = isOpen ? '' : 'var(--bg-secondary, var(--color-background-secondary, #F7F6F2))';
 }
