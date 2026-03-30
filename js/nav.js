@@ -119,9 +119,9 @@ function buildSkillCardCompact(skill) {
   var div = document.createElement('div');
   div.className = 'sk-card';
   div.innerHTML =
+      '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
     '<div class="sk3-name-row">' +
       '<div class="sk-name">' + skill.name + '</div>' +
-      '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
     '</div>' +
     '<div class="sk3-mid">' +
       '<div class="sk-icon" style="background:' + skill.bgColor + '">' +
