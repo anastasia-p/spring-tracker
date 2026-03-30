@@ -17,7 +17,6 @@ function showTab(name, btn) {
   } else if (name === 'progress') {
     renderProgressTabs(userSections);
     subTabs.style.visibility = 'visible';
-    showProgressTab('skills', document.querySelector('#sub-tabs .sub-tab'));
   } else {
     subTabs.style.visibility = 'hidden';
   }
@@ -65,7 +64,7 @@ function renderProgressTabs(sections) {
   tabsEl.innerHTML = '';
 
   var skillsBtn = document.createElement('button');
-  skillsBtn.className = 'sub-tab active';
+  skillsBtn.className = 'sub-tab';
   skillsBtn.textContent = 'Навыки';
   skillsBtn.onclick = function() { showProgressTab('skills', skillsBtn); };
   tabsEl.appendChild(skillsBtn);
@@ -75,6 +74,8 @@ function renderProgressTabs(sections) {
   testBtn.textContent = 'Тесты';
   testBtn.onclick = function() { showProgressTab('tests', testBtn); };
   tabsEl.appendChild(testBtn);
+
+  showProgressTab('skills', skillsBtn);
 }
 
 function showProgressTab(section, btn) {
