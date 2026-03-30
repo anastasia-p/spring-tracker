@@ -146,5 +146,5 @@ function toggleTestHistory(idx, el) {
   var isOpen = hist.style.display !== 'none';
   hist.style.display = isOpen ? 'none' : 'block';
   if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
-  el.style.background = isOpen ? '' : 'var(--bg-secondary, var(--color-background-secondary, #F7F6F2))';
+  el.style.background = '';
 }
