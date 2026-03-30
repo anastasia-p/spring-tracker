@@ -119,17 +119,17 @@ function buildSkillCardCompact(skill) {
   var div = document.createElement('div');
   div.className = 'sk-card';
   div.innerHTML =
-    '<div class="sk-head">' +
+    '<div class="sk3-name-row">' +
+      '<div class="sk-name">' + skill.name + '</div>' +
+      '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
+    '</div>' +
+    '<div class="sk3-mid">' +
       '<div class="sk-icon" style="background:' + skill.bgColor + '">' +
         getSkillIcon(skill) +
       '</div>' +
-      '<div class="sk-info">' +
-        '<div class="sk-name">' + skill.name + '</div>' +
-        '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>' +
-      '</div>' +
-      '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
+      '<div class="sk-amount" id="' + prefix + '-hours"></div>' +
     '</div>' +
-    '<div class="sk-amount" id="' + prefix + '-hours"></div>' +
+    '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>' +
     '<div class="tree-progress-wrap">' +
       '<div class="tree-progress-bar" id="' + prefix + '-progress-bar" style="width:0%;background:' + skill.color + '"></div>' +
     '</div>' +
