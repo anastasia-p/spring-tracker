@@ -17,7 +17,7 @@ function showTab(name, btn) {
   } else if (name === 'progress') {
     renderProgressTabs(userSections);
     subTabs.style.visibility = 'visible';
-    showProgressTab('skills');
+    showProgressTab('skills', document.querySelector('#sub-tabs .sub-tab'));
   } else {
     subTabs.style.visibility = 'hidden';
   }
