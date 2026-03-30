@@ -84,7 +84,7 @@ function renderTestHistory(container, items, entries) {
     var diff = (lastVal != null && prevVal != null) ? lastVal - prevVal : null;
     var badgeHtml = '';
     if (diff === null) {
-      badgeHtml = '<span class="t3-badge t3-badge-neutral">— нет данных</span>';
+      badgeHtml = '<span class="t3-badge t3-badge-neutral">нет данных</span>';
     } else if (diff > 0) {
       badgeHtml = '<span class="t3-badge t3-badge-up">+' + diff + ' ↑</span>';
     } else if (diff < 0) {
