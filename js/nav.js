@@ -126,7 +126,7 @@ function buildSkillCardCompact(skill) {
         '<div class="sk-name">' + skill.name + '</div>' +
         '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>' +
       '</div>' +
-      '<button class="sk-q" onclick="showSkillLevels('' + skill.id + '');event.stopPropagation()">?</button>' +
+      '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
     '</div>' +
     '<div class="sk-amount" id="' + prefix + '-hours"></div>' +
     '<div class="tree-progress-wrap">' +
