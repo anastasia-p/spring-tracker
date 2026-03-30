@@ -246,12 +246,10 @@ function initWithSections(sections) {
   // Render plan tabs (plan is default active screen)
   renderPlanTabs();
 
-  // Show user email
+  // Show user email in settings
   if (currentUser) {
-    var emailEl = document.getElementById('user-email');
+    var emailEl = document.getElementById('settings-user-email');
     if (emailEl) emailEl.textContent = currentUser.email;
-    var userInfo = document.getElementById('user-info');
-    if (userInfo) userInfo.style.display = 'flex';
   }
 
   // Load data
