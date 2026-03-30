@@ -17,7 +17,7 @@ function showTab(name, btn) {
   } else if (name === 'progress') {
     renderProgressTabs(userSections);
     subTabs.style.visibility = 'visible';
-    showProgressTab(userSections[0] || 'tests');
+    showProgressTab('skills');
   } else {
     subTabs.style.visibility = 'hidden';
   }
@@ -63,16 +63,13 @@ var SECTION_LABELS = {
 function renderProgressTabs(sections) {
   var tabsEl = document.getElementById('sub-tabs');
   tabsEl.innerHTML = '';
-  sections.forEach(function(s, i) {
-    var btn = document.createElement('button');
-    btn.className = 'sub-tab' + (i === 0 ? ' active' : '');
-    btn.textContent = SECTION_LABELS[s] || s;
-    btn.onclick = (function(sec, b) {
-      return function() { showProgressTab(sec, b); };
-    })(s, btn);
-    tabsEl.appendChild(btn);
-  });
-  // Tests tab always last
+
+  var skillsBtn = document.createElement('button');
+  skillsBtn.className = 'sub-tab active';
+  skillsBtn.textContent = 'Навыки';
+  skillsBtn.onclick = function() { showProgressTab('skills', skillsBtn); };
+  tabsEl.appendChild(skillsBtn);
+
   var testBtn = document.createElement('button');
   testBtn.className = 'sub-tab';
   testBtn.textContent = 'Тесты';
@@ -101,13 +98,46 @@ function showProgressTab(section, btn) {
     return;
   }
 
-  // Render skill cards for this section
-  var skills = getSkillsBySection(section);
-  container.innerHTML = '';
-  skills.forEach(function(skill) {
-    container.appendChild(buildSkillCard(skill));
+  if (section === 'skills') {
+    renderAllSkillsGrid(container);
+    return;
+  }
+}
+
+function renderAllSkillsGrid(container) {
+  container.innerHTML = '<div class="sk-grid" id="sk-grid"></div>';
+  var grid = document.getElementById('sk-grid');
+  SKILLS.forEach(function(skill) {
+    grid.appendChild(buildSkillCardCompact(skill));
     renderSkillCard(skill);
   });
+}
+
+function buildSkillCardCompact(skill) {
+  var prefix = getElemPrefix(skill.id);
+  var div = document.createElement('div');
+  div.className = 'sk-card';
+  div.innerHTML =
+    '<div class="sk-head">' +
+      '<div class="sk-icon" style="background:' + skill.bgColor + '">' +
+        getSkillIcon(skill) +
+      '</div>' +
+      '<div class="sk-info">' +
+        '<div class="sk-name">' + skill.name + '</div>' +
+        '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>' +
+      '</div>' +
+      '<button class="sk-q" onclick="showSkillLevels('' + skill.id + '');event.stopPropagation()">?</button>' +
+    '</div>' +
+    '<div class="sk-amount" id="' + prefix + '-hours"></div>' +
+    '<div class="tree-progress-wrap">' +
+      '<div class="tree-progress-bar" id="' + prefix + '-progress-bar" style="width:0%;background:' + skill.color + '"></div>' +
+    '</div>' +
+    '<div class="tree-progress-labels">' +
+      '<span id="' + prefix + '-label-left"></span>' +
+      '<span id="' + prefix + '-progress-pct"></span>' +
+      '<span id="' + prefix + '-label-right"></span>' +
+    '</div>';
+  return div;
 }
 
 function buildSkillCard(skill) {
@@ -235,6 +265,6 @@ function initWithSections(sections) {
     sections.forEach(function(s) { renderSection(s); });
     renderTestForm();
     // Render first progress tab
-    showProgressTab(sections[0] || 'tests');
+    showProgressTab('skills');
   });
 }
