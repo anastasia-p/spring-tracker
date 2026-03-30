@@ -265,7 +265,7 @@ function initWithSections(sections) {
   Promise.all(loadPromises).then(function() {
     sections.forEach(function(s) { renderSection(s); });
     renderTestForm();
-    // Render first progress tab
-    showProgressTab('skills');
+    // Pre-render skills so data is ready when user switches to progress tab
+    // but don't activate progress tabs - plan is the default active screen
   });
 }
