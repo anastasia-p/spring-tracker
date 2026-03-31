@@ -1,0 +1,146 @@
+var BASE_URL = location.origin + location.pathname.replace('index.html', '');
+
+function updatePlan(section) {
+  var btn = event.target;
+  var statusEl = document.getElementById('status-' + section);
+  btn.disabled = true;
+  btn.textContent = '...';
+  statusEl.textContent = '';
+  statusEl.className = 'update-status';
+
+  var url = BASE_URL + 'plans/' + section + '.json?t=' + Date.now();
+
+  fetch(url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('Файл не найден');
+      return r.json();
+    })
+    .then(function(data) {
+      var field = section === 'tests' ? 'items' : 'days';
+      var doc = { updatedAt: new Date().toISOString() };
+      doc[field] = data;
+      return userCol('plan').doc(section).set(doc);
+    })
+    .then(function() {
+      plans[section] = null;
+      cache = { strength: {}, wingchun: {}, qigong: {} };
+      return loadPlanFromFirebase(section);
+    })
+    .then(function() {
+      if (section === 'tests') {
+        renderTestForm();
+      } else {
+        renderSection(section);
+      }
+      statusEl.textContent = 'Обновлено';
+      statusEl.className = 'update-status ok';
+      btn.disabled = false;
+      btn.textContent = 'Обновить';
+    })
+    .catch(function(e) {
+      statusEl.textContent = 'Ошибка: ' + e.message;
+      statusEl.className = 'update-status err';
+      btn.disabled = false;
+      btn.textContent = 'Обновить';
+    });
+}
+
+function downloadPlan(section) {
+  var plan = plans[section];
+  if (!plan || !plan.length) {
+    alert('План не загружен. Сначала обнови план.');
+    return;
+  }
+  jsonToExcel(plan, section);
+}
+
+// --- Загрузка плана из Excel ---
+
+function uploadPlan(section, input) {
+  var file = input.files[0];
+  if (!file) return;
+  input.value = ''; // сбрасываем input для повторной загрузки
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    validateXlsxAsync(e.target.result, file.name).then(function(result) {
+      if (!result.valid) {
+        showValidationPopup(file.name, result.errors, result.warnings);
+        return;
+      }
+      if (result.warnings.length > 0) {
+        showValidationPopup(file.name, [], result.warnings);
+      }
+      // TODO: конвертируем и сохраняем (excelToJson — следующий шаг)
+      alert('Файл прошел валидацию! Импорт данных будет реализован на следующем шаге.');
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// --- Попап валидации ---
+
+function showValidationPopup(filename, errors, warnings) {
+  var title = document.getElementById('validation-title');
+  var list = document.getElementById('validation-list');
+
+  var hasErrors = errors.length > 0;
+  var count = errors.length + warnings.length;
+  title.textContent = (hasErrors ? 'Ошибки в файле' : 'Предупреждения') + ' (' + count + ')';
+
+  var html = '';
+  if (errors.length > 0) {
+    html += '<div style="font-weight:500;color:var(--red,#E24B4A);margin-bottom:8px">Ошибки — файл не загружен:</div>';
+    errors.forEach(function(e) {
+      var loc = e.sheet ? (e.sheet + (e.row ? ', строка ' + e.row : '')) : '';
+      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
+      if (loc) html += '<span style="font-weight:500">' + loc + '</span> — ';
+      html += e.message + '</div>';
+    });
+  }
+  if (warnings.length > 0) {
+    html += '<div style="font-weight:500;color:#BA7517;margin-bottom:8px' + (errors.length ? ';margin-top:12px' : '') + '">Предупреждения:</div>';
+    warnings.forEach(function(w) {
+      var loc = w.sheet ? (w.sheet + (w.row ? ', строка ' + w.row : '')) : '';
+      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
+      if (loc) html += '<span style="font-weight:500">' + loc + '</span> — ';
+      html += w.message + '</div>';
+    });
+  }
+  list.innerHTML = html;
+
+  document.getElementById('validation-overlay').style.display = 'block';
+  document.getElementById('validation-popup').style.display = 'block';
+}
+
+function closeValidationPopup() {
+  document.getElementById('validation-overlay').style.display = 'none';
+  document.getElementById('validation-popup').style.display = 'none';
+}
+
+function copyValidationErrors() {
+  var list = document.getElementById('validation-list');
+  var text = list.innerText;
+  var btn = event.target;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Скопировано!';
+      setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
+    }).catch(function() { fallbackCopy(text, btn); });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  btn.textContent = 'Скопировано!';
+  setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
+}

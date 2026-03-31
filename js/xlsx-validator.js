@@ -154,7 +154,10 @@ function validateXlsxAsync(arrayBuffer, filename) {
           (ssXml.match(/<si>[\s\S]*?<\/si>/g) || []).forEach(function(si) {
             var parts = si.match(/<t[^>]*>([\s\S]*?)<\/t>/g) || [];
             var val = parts.map(function(t) { return t.replace(/<[^>]+>/g, ''); }).join('');
-            val = val.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+            val = val
+              .replace(/&#x([0-9a-fA-F]+);/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); })
+              .replace(/&#([0-9]+);/g, function(_, dec) { return String.fromCharCode(parseInt(dec, 10)); })
+              .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
             sharedStrings.push(val);
           });
         }
@@ -302,6 +305,8 @@ function parseSheetXml(xml, sharedStrings) {
       }
 
       val = val
+        .replace(/&#x([0-9a-fA-F]+);/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); })
+        .replace(/&#([0-9]+);/g, function(_, dec) { return String.fromCharCode(parseInt(dec, 10)); })
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
