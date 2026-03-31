@@ -57,32 +57,44 @@ function buildExerciseRowsXml(exercises, sharedStrings) {
 
 // Заменить данные на листе: тип дня (B1) и упражнения (строки 4+)
 function patchSheetXml(sheetXml, typeLabel, exercises) {
-  // 1. Заменяем значение B1
+  // 1. Заменяем B1 — ищем тег с r="B1"
   sheetXml = sheetXml.replace(
-    /(<c r="B1"[^>]*>).*?(<\/c>)/s,
-    '$1<is><t>' + xmlEscape(typeLabel) + '</t></is>$2'
-  );
-  // Если B1 был t="s" (shared string) - заменяем на inlineStr
-  sheetXml = sheetXml.replace(
-    /<c r="B1" t="s"><v>\d+<\/v><\/c>/,
+    /<c r="B1"[^>]*>.*?<\/c>/s,
     '<c r="B1" t="inlineStr"><is><t>' + xmlEscape(typeLabel) + '</t></is></c>'
   );
 
-  // 2. Убираем старые строки упражнений (строки 4 и дальше, до dataValidations)
-  // Заменяем все <row r="N"> где N >= 4 до конца sheetData
-  sheetXml = sheetXml.replace(
-    /(<row r="[1-9]\d{1,}[^"]*"[^>]*>.*?<\/row>|<row r="[4-9]"[^>]*>.*?<\/row>)/gs,
-    function(match) {
-      var m = match.match(/r="(\d+)"/);
-      if (m && parseInt(m[1]) >= 4) return '';
-      return match;
-    }
-  );
+  // 2. Удаляем все строки начиная с row 4
+  sheetXml = sheetXml.replace(/<row r="(\d+)"[^>]*>.*?<\/row>/gs, function(match, rowNum) {
+    return parseInt(rowNum) >= 4 ? '' : match;
+  });
 
-  // 3. Вставляем новые строки упражнений перед </sheetData>
-  var newRows = buildExerciseRowsXml(exercises);
+  // 3. Вставляем строки упражнений и пустые строки перед </sheetData>
+  var newRows = '';
+  var totalRows = Math.max(exercises.length, 1) + 8; // упражнения + 8 пустых строк
+
+  for (var i = 0; i < totalRows; i++) {
+    var rowNum = 4 + i;
+    var ex = exercises[i];
+    var cells = '';
+    ['A','B','C','D','E'].forEach(function(col, ci) {
+      var val = '';
+      if (ex) {
+        if (ci === 0) val = ex.name || '';
+        if (ci === 1) val = ex.desc || '';
+        if (ci === 2) val = ex.note || '';
+        if (ci === 3) val = ex.trackValue ? 'да' : '';
+        if (ci === 4) val = ex.unit || '';
+      }
+      if (val !== '') {
+        cells += '<c r="' + col + rowNum + '" t="inlineStr"><is><t>' + xmlEscape(val) + '</t></is></c>';
+      } else {
+        cells += '<c r="' + col + rowNum + '"/>';
+      }
+    });
+    newRows += '<row r="' + rowNum + '" ht="20" customHeight="1">' + cells + '</row>';
+  }
+
   sheetXml = sheetXml.replace('</sheetData>', newRows + '</sheetData>');
-
   return sheetXml;
 }
 
@@ -101,23 +113,33 @@ function jsonToExcel(plan, sectionName) {
       return JSZip.loadAsync(buffer);
     })
     .then(function(zip) {
-      // Находим маппинг имён листов → файлов
-      return zip.file('xl/workbook.xml').async('string').then(function(wbXml) {
-        var sheetMap = {};
-        var matches = wbXml.matchAll(/<sheet name="([^"]+)"[^>]+r:id="([^"]+)"/g);
-        for (var m of matches) {
-          sheetMap[m[1]] = m[2]; // name → rId
-        }
+      // Находим маппинг имён листов → файлов через workbook.xml + rels
+      return Promise.all([
+        zip.file('xl/workbook.xml').async('string'),
+        zip.file('xl/_rels/workbook.xml.rels').async('string'),
+      ]).then(function(results) {
+        var wbXml = results[0];
+        var relsXml = results[1];
 
-        // Читаем relationships для маппинга rId → файл
-        return zip.file('xl/_rels/workbook.xml.rels').async('string').then(function(relsXml) {
-          var fileMap = {};
-          var relMatches = relsXml.matchAll(/Id="([^"]+)"[^>]+Target="([^"]+)"/g);
-          for (var r of relMatches) {
-            fileMap[r[1]] = r[2]; // rId → target path
-          }
-          return { zip: zip, sheetMap: sheetMap, fileMap: fileMap };
+        // name → rId
+        var sheetMap = {};
+        var sheetMatches = wbXml.match(/<sheet [^/]*/g) || [];
+        sheetMatches.forEach(function(m) {
+          var nameM = m.match(/name="([^"]+)"/);
+          var ridM = m.match(/r:id="([^"]+)"/);
+          if (nameM && ridM) sheetMap[nameM[1]] = ridM[1];
         });
+
+        // rId → target path
+        var fileMap = {};
+        var relMatches = relsXml.match(/<Relationship [^/]*/g) || [];
+        relMatches.forEach(function(m) {
+          var idM = m.match(/Id="([^"]+)"/);
+          var targetM = m.match(/Target="([^"]+)"/);
+          if (idM && targetM) fileMap[idM[1]] = targetM[1];
+        });
+
+        return { zip: zip, sheetMap: sheetMap, fileMap: fileMap };
       });
     })
     .then(function(ctx) {
