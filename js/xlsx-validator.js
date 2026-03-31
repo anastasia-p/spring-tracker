@@ -138,12 +138,26 @@ function validateXlsxAsync(arrayBuffer, filename) {
 
   return JSZip.loadAsync(arrayBuffer)
     .then(function(zip) {
+      var ssFile = zip.file('xl/sharedStrings.xml');
       return Promise.all([
         zip.file('xl/workbook.xml').async('string'),
         zip.file('xl/_rels/workbook.xml.rels').async('string'),
+        ssFile ? ssFile.async('string') : Promise.resolve(''),
       ]).then(function(results) {
         var wbXml = results[0];
         var relsXml = results[1];
+        var ssXml = results[2];
+
+        // Парсим shared strings
+        var sharedStrings = [];
+        if (ssXml) {
+          (ssXml.match(/<si>[\s\S]*?<\/si>/g) || []).forEach(function(si) {
+            var parts = si.match(/<t[^>]*>([\s\S]*?)<\/t>/g) || [];
+            var val = parts.map(function(t) { return t.replace(/<[^>]+>/g, ''); }).join('');
+            val = val.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+            sharedStrings.push(val);
+          });
+        }
 
         // name → rId
         var sheetMap = {};
@@ -177,7 +191,7 @@ function validateXlsxAsync(arrayBuffer, filename) {
           var path = target.replace(/^\//, '');
           if (!path.startsWith('xl/')) path = 'xl/' + path.replace('../', '');
           return zip.file(path).async('string').then(function(xml) {
-            return { day: day, rows: parseSheetXml(xml) };
+            return { day: day, rows: parseSheetXml(xml, sharedStrings) };
           });
         });
 
@@ -247,8 +261,9 @@ function validateXlsxAsync(arrayBuffer, filename) {
 }
 
 // Парсит XML листа → массив строк [[col0, col1, ...], ...]
-function parseSheetXml(xml) {
+function parseSheetXml(xml, sharedStrings) {
   var rows = [];
+  var ss = sharedStrings || [];
   var rowMatches = xml.match(/<row\b[^>]*>[\s\S]*?<\/row>/g) || [];
 
   rowMatches.forEach(function(rowXml) {
@@ -263,30 +278,29 @@ function parseSheetXml(xml) {
       var refM = cellXml.match(/\br="([A-Z]+)(\d+)"/);
       if (!refM) return;
       var colLetter = refM[1];
-      if (colLetter.length > 1) return; // только A-E
+      if (colLetter.length > 1) return;
       var col = colLetter.charCodeAt(0) - 65;
       if (col < 0 || col > 4) return;
 
       var typeM = cellXml.match(/\bt="([^"]+)"/);
       var cellType = typeM ? typeM[1] : '';
-
       var val = '';
 
-      if (cellType === 'inlineStr' || cellType === 'str') {
-        // Текст хранится в <is><t>...</t></is> или <t>...</t>
+      if (cellType === 's') {
+        // Shared string — декодируем по индексу
+        var vM = cellXml.match(/<v>([\s\S]*?)<\/v>/);
+        if (vM) {
+          var idx = parseInt(vM[1]);
+          val = ss[idx] || '';
+        }
+      } else if (cellType === 'inlineStr' || cellType === 'str') {
         var tM = cellXml.match(/<t[^>]*>([\s\S]*?)<\/t>/);
         if (tM) val = tM[1];
-      } else if (cellType === 's') {
-        // Shared string — нет доступа к shared strings таблице
-        // Пропускаем — это скорее всего числовой индекс форматирования
-        val = '';
       } else {
-        // Числовое или другое значение
-        var vM = cellXml.match(/<v>([\s\S]*?)<\/v>/);
-        if (vM) val = vM[1];
+        var vM2 = cellXml.match(/<v>([\s\S]*?)<\/v>/);
+        if (vM2) val = vM2[1];
       }
 
-      // Декодируем XML entities
       val = val
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
