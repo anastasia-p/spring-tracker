@@ -249,34 +249,51 @@ function validateXlsxAsync(arrayBuffer, filename) {
 // Парсит XML листа → массив строк [[col0, col1, ...], ...]
 function parseSheetXml(xml) {
   var rows = [];
-  var rowMatches = xml.match(/<row\b[^>]*>.*?<\/row>/gs) || [];
+  var rowMatches = xml.match(/<row\b[^>]*>[\s\S]*?<\/row>/g) || [];
 
   rowMatches.forEach(function(rowXml) {
-    var rowNumM = rowXml.match(/r="(\d+)"/);
+    var rowNumM = rowXml.match(/\br="(\d+)"/);
     if (!rowNumM) return;
     var rowIdx = parseInt(rowNumM[1]) - 1;
 
     var rowData = ['', '', '', '', ''];
-    var cellMatches = rowXml.match(/<c\b[^>]*>.*?<\/c>/gs) || [];
+    var cellMatches = rowXml.match(/<c\b[^>]*>[\s\S]*?<\/c>/g) || [];
 
     cellMatches.forEach(function(cellXml) {
-      var refM = cellXml.match(/r="([A-Z]+)(\d+)"/);
+      var refM = cellXml.match(/\br="([A-Z]+)(\d+)"/);
       if (!refM) return;
-      var col = refM[1].charCodeAt(0) - 65; // A=0, B=1...
+      var colLetter = refM[1];
+      if (colLetter.length > 1) return; // только A-E
+      var col = colLetter.charCodeAt(0) - 65;
       if (col < 0 || col > 4) return;
 
-      var val = '';
-      var inlineM = cellXml.match(/<t>([^<]*)<\/t>/);
-      var valM = cellXml.match(/<v>([^<]*)<\/v>/);
+      var typeM = cellXml.match(/\bt="([^"]+)"/);
+      var cellType = typeM ? typeM[1] : '';
 
-      if (inlineM) {
-        val = inlineM[1];
-      } else if (valM) {
-        val = valM[1];
+      var val = '';
+
+      if (cellType === 'inlineStr' || cellType === 'str') {
+        // Текст хранится в <is><t>...</t></is> или <t>...</t>
+        var tM = cellXml.match(/<t[^>]*>([\s\S]*?)<\/t>/);
+        if (tM) val = tM[1];
+      } else if (cellType === 's') {
+        // Shared string — нет доступа к shared strings таблице
+        // Пропускаем — это скорее всего числовой индекс форматирования
+        val = '';
+      } else {
+        // Числовое или другое значение
+        var vM = cellXml.match(/<v>([\s\S]*?)<\/v>/);
+        if (vM) val = vM[1];
       }
 
       // Декодируем XML entities
-      val = val.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+      val = val
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'");
+
       rowData[col] = val;
     });
 
