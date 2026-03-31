@@ -300,15 +300,15 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="settings-group">
         <div class="settings-item">
           <div><div class="settings-item-label">Силовые тренировки</div><div class="settings-item-desc">plans/strength.json</div><div class="update-status" id="status-strength"></div></div>
-          <button class="update-btn" onclick="updatePlan('strength')">Обновить</button>
+          <div style="display:flex;gap:8px"><button class="update-btn" onclick="updatePlan('strength')">Обновить</button><button class="update-btn" onclick="downloadPlan('strength')">Скачать</button></div>
         </div>
         <div class="settings-item">
           <div><div class="settings-item-label">Вин Чун</div><div class="settings-item-desc">plans/wingchun.json</div><div class="update-status" id="status-wingchun"></div></div>
-          <button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button>
+          <div style="display:flex;gap:8px"><button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button><button class="update-btn" onclick="downloadPlan('wingchun')">Скачать</button></div>
         </div>
         <div class="settings-item">
           <div><div class="settings-item-label">Цигун</div><div class="settings-item-desc">plans/qigong.json</div><div class="update-status" id="status-qigong"></div></div>
-          <button class="update-btn" onclick="updatePlan('qigong')">Обновить</button>
+          <div style="display:flex;gap:8px"><button class="update-btn" onclick="updatePlan('qigong')">Обновить</button><button class="update-btn" onclick="downloadPlan('qigong')">Скачать</button></div>
         </div>
       </div>
       <div class="section-title">Обновление тестов</div>
@@ -498,6 +498,8 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 <script src="./js/progress.js"></script>
 <script src="./js/plan.js"></script>
 <script src="./js/workout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="./js/xlsx-converter.js"></script>
 <script src="./js/settings.js"></script>
 <script src="./js/nav.js"></script>
 </body>

@@ -44,3 +44,12 @@ function updatePlan(section) {
       btn.textContent = 'Обновить';
     });
 }
+
+function downloadPlan(section) {
+  var plan = plans[section];
+  if (!plan || !plan.length) {
+    alert('План не загружен. Сначала обнови план.');
+    return;
+  }
+  jsonToExcel(plan, section);
+}
