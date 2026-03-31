@@ -123,19 +123,19 @@ function jsonToExcel(plan, sectionName) {
 
         // name → rId
         var sheetMap = {};
-        var sheetMatches = wbXml.match(/<sheet [^/]*/g) || [];
+        var sheetMatches = wbXml.match(/<sheet\b[^>]+>/g) || [];
         sheetMatches.forEach(function(m) {
           var nameM = m.match(/name="([^"]+)"/);
-          var ridM = m.match(/r:id="([^"]+)"/);
+          var ridM = m.match(/r:id="([^"]+)"/i) || m.match(/id="([^"]+)"/i);
           if (nameM && ridM) sheetMap[nameM[1]] = ridM[1];
         });
 
         // rId → target path
         var fileMap = {};
-        var relMatches = relsXml.match(/<Relationship [^/]*/g) || [];
+        var relMatches = relsXml.match(/<Relationship\b[^>]+>/g) || [];
         relMatches.forEach(function(m) {
-          var idM = m.match(/Id="([^"]+)"/);
-          var targetM = m.match(/Target="([^"]+)"/);
+          var idM = m.match(/\bId="([^"]+)"/);
+          var targetM = m.match(/\bTarget="([^"]+)"/);
           if (idM && targetM) fileMap[idM[1]] = targetM[1];
         });
 
@@ -151,7 +151,8 @@ function jsonToExcel(plan, sectionName) {
         if (!rId) return;
         var target = ctx.fileMap[rId];
         if (!target) return;
-        var path = 'xl/' + target.replace('../', '');
+        var path = target.replace(/^\//, ''); // убираем начальный слеш если есть
+        if (!path.startsWith('xl/')) path = 'xl/' + path.replace('../', '');
 
         var dayData = plan.find(function(d) { return d.day === dayName; });
         if (!dayData) return;
