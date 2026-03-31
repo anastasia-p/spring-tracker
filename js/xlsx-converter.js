@@ -102,7 +102,7 @@ function patchSheetXml(sheetXml, typeLabel, exercises) {
 
 function jsonToExcel(plan, sectionName) {
   var baseUrl = location.origin + location.pathname.replace('index.html', '');
-  var templateUrl = baseUrl + 'plans/' + sectionName + '_template.xlsx?v=' + Date.now();
+  var templateUrl = baseUrl + 'plans/plan_template.xlsx?v=' + Date.now();
 
   fetch(templateUrl)
     .then(function(r) {
