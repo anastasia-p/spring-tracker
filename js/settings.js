@@ -53,3 +53,77 @@ function downloadPlan(section) {
   }
   jsonToExcel(plan, section);
 }
+
+// --- Загрузка плана из Excel ---
+
+function uploadPlan(section, input) {
+  var file = input.files[0];
+  if (!file) return;
+  input.value = ''; // сбрасываем input для повторной загрузки
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    validateXlsxAsync(e.target.result, file.name).then(function(result) {
+      if (!result.valid) {
+        showValidationPopup(file.name, result.errors, result.warnings);
+        return;
+      }
+      if (result.warnings.length > 0) {
+        showValidationPopup(file.name, [], result.warnings);
+      }
+      // TODO: конвертируем и сохраняем (excelToJson — следующий шаг)
+      alert('Файл прошел валидацию! Импорт данных будет реализован на следующем шаге.');
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// --- Попап валидации ---
+
+function showValidationPopup(filename, errors, warnings) {
+  var title = document.getElementById('validation-title');
+  var list = document.getElementById('validation-list');
+
+  var hasErrors = errors.length > 0;
+  var count = errors.length + warnings.length;
+  title.textContent = (hasErrors ? 'Ошибки в файле' : 'Предупреждения') + ' (' + count + ')';
+
+  var html = '';
+  if (errors.length > 0) {
+    html += '<div style="font-weight:500;color:var(--red,#E24B4A);margin-bottom:8px">Ошибки — файл не загружен:</div>';
+    errors.forEach(function(e) {
+      var loc = e.sheet ? (e.sheet + (e.row ? ', строка ' + e.row : '')) : '';
+      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
+      if (loc) html += '<span style="font-weight:500">' + loc + '</span> — ';
+      html += e.message + '</div>';
+    });
+  }
+  if (warnings.length > 0) {
+    html += '<div style="font-weight:500;color:#BA7517;margin-bottom:8px' + (errors.length ? ';margin-top:12px' : '') + '">Предупреждения:</div>';
+    warnings.forEach(function(w) {
+      var loc = w.sheet ? (w.sheet + (w.row ? ', строка ' + w.row : '')) : '';
+      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
+      if (loc) html += '<span style="font-weight:500">' + loc + '</span> — ';
+      html += w.message + '</div>';
+    });
+  }
+  list.innerHTML = html;
+
+  document.getElementById('validation-overlay').style.display = 'block';
+  document.getElementById('validation-popup').style.display = 'block';
+}
+
+function closeValidationPopup() {
+  document.getElementById('validation-overlay').style.display = 'none';
+  document.getElementById('validation-popup').style.display = 'none';
+}
+
+function copyValidationErrors() {
+  var list = document.getElementById('validation-list');
+  var text = list.innerText;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = event.target;
+    btn.textContent = 'Скопировано!';
+    setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
+  });
+}

@@ -300,15 +300,15 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="settings-group">
         <div class="settings-item">
           <div><div class="settings-item-label">Силовые тренировки</div><div class="settings-item-desc">plans/strength.json</div><div class="update-status" id="status-strength"></div></div>
-          <div style="display:flex;gap:8px"><button class="update-btn" onclick="updatePlan('strength')">Обновить</button><button class="update-btn" onclick="downloadPlan('strength')">Скачать</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="updatePlan('strength')">Обновить</button><button class="update-btn" onclick="downloadPlan('strength')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('strength', this)"></label></div>
         </div>
         <div class="settings-item">
           <div><div class="settings-item-label">Вин Чун</div><div class="settings-item-desc">plans/wingchun.json</div><div class="update-status" id="status-wingchun"></div></div>
-          <div style="display:flex;gap:8px"><button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button><button class="update-btn" onclick="downloadPlan('wingchun')">Скачать</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button><button class="update-btn" onclick="downloadPlan('wingchun')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('wingchun', this)"></label></div>
         </div>
         <div class="settings-item">
           <div><div class="settings-item-label">Цигун</div><div class="settings-item-desc">plans/qigong.json</div><div class="update-status" id="status-qigong"></div></div>
-          <div style="display:flex;gap:8px"><button class="update-btn" onclick="updatePlan('qigong')">Обновить</button><button class="update-btn" onclick="downloadPlan('qigong')">Скачать</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="updatePlan('qigong')">Обновить</button><button class="update-btn" onclick="downloadPlan('qigong')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('qigong', this)"></label></div>
         </div>
       </div>
       <div class="section-title">Обновление тестов</div>
@@ -499,8 +499,24 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 <script src="./js/plan.js"></script>
 <script src="./js/workout.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="./js/xlsx-validator.js"></script>
 <script src="./js/xlsx-converter.js"></script>
 <script src="./js/settings.js"></script>
 <script src="./js/nav.js"></script>
+
+  <!-- Validation popup -->
+  <div class="popup-overlay" id="validation-overlay" style="display:none" onclick="closeValidationPopup()"></div>
+  <div class="popup-box" id="validation-popup" style="display:none;max-height:70vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="popup-title" id="validation-title">Ошибки в файле</div>
+      <button class="sk-q" style="width:24px;height:24px;font-size:14px" onclick="closeValidationPopup()">×</button>
+    </div>
+    <div id="validation-list" style="font-size:13px;margin-bottom:16px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="update-btn" onclick="copyValidationErrors()">Скопировать</button>
+      <button class="update-btn" onclick="closeValidationPopup()">Закрыть</button>
+    </div>
+  </div>
+
 </body>
 </html>
