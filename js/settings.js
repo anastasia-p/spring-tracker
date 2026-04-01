@@ -51,7 +51,31 @@ function downloadPlan(section) {
     alert('План не загружен. Сначала обнови план.');
     return;
   }
-  jsonToExcel(plan, section);
+  var btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '...';
+  fetch('https://api.spring-tracker.ru:8080/download-plan/' + section, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(plan),
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('Ошибка сервера');
+    return r.blob();
+  })
+  .then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = section + '_plan.xlsx';
+    a.click();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  })
+  .catch(function(e) { alert('Ошибка: ' + e.message); })
+  .finally(function() {
+    btn.disabled = false;
+    btn.textContent = 'Скачать';
+  });
 }
 
 // --- Загрузка плана из Excel ---
@@ -59,23 +83,48 @@ function downloadPlan(section) {
 function uploadPlan(section, input) {
   var file = input.files[0];
   if (!file) return;
-  input.value = ''; // сбрасываем input для повторной загрузки
+  input.value = '';
 
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    validateXlsxAsync(e.target.result, file.name).then(function(result) {
-      if (!result.valid) {
-        showValidationPopup(file.name, result.errors, result.warnings);
-        return;
-      }
-      if (result.warnings.length > 0) {
-        showValidationPopup(file.name, [], result.warnings);
-      }
-      // TODO: конвертируем и сохраняем (excelToJson — следующий шаг)
-      alert('Файл прошел валидацию! Импорт данных будет реализован на следующем шаге.');
+  var formData = new FormData();
+  formData.append('file', file);
+
+  var label = input.closest('label');
+  if (label) { label.style.opacity = '0.6'; label.style.pointerEvents = 'none'; }
+
+  fetch('https://api.spring-tracker.ru:8080/upload-plan/' + section, {
+    method: 'POST',
+    body: formData,
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('Ошибка сервера');
+    return r.json();
+  })
+  .then(function(result) {
+    if (!result.valid) {
+      showValidationPopup(file.name, result.errors, result.warnings);
+      return;
+    }
+    if (result.warnings.length > 0) {
+      showValidationPopup(file.name, [], result.warnings);
+    }
+    // Сохраняем план в Firebase
+    var field = 'days';
+    var doc = { updatedAt: new Date().toISOString() };
+    doc[field] = result.plan;
+    userCol('plan').doc(section).set(doc).then(function() {
+      plans[section] = null;
+      cache[section] = {};
+      return loadPlanFromFirebase(section);
+    }).then(function() {
+      renderSection(section);
+      var statusEl = document.getElementById('status-' + section);
+      if (statusEl) { statusEl.textContent = 'Загружено!'; statusEl.className = 'update-status ok'; }
     });
-  };
-  reader.readAsArrayBuffer(file);
+  })
+  .catch(function(e) { alert('Ошибка: ' + e.message); })
+  .finally(function() {
+    if (label) { label.style.opacity = ''; label.style.pointerEvents = ''; }
+  });
 }
 
 // --- Попап валидации ---
@@ -121,9 +170,26 @@ function closeValidationPopup() {
 function copyValidationErrors() {
   var list = document.getElementById('validation-list');
   var text = list.innerText;
-  navigator.clipboard.writeText(text).then(function() {
-    var btn = event.target;
-    btn.textContent = 'Скопировано!';
-    setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
-  });
+  var btn = event.target;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Скопировано!';
+      setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
+    }).catch(function() { fallbackCopy(text, btn); });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  btn.textContent = 'Скопировано!';
+  setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
 }
