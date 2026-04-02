@@ -110,6 +110,10 @@ function doRegister() {
   if (!password) { showAuthError('Введите пароль', 'register'); return; }
   if (password !== password2) { showAuthError('Пароли не совпадают', 'register'); return; }
   if (password.length < 6) { showAuthError('Пароль минимум 6 символов', 'register'); return; }
+  if (!document.getElementById('reg-privacy').checked) {
+    showAuthError('Необходимо согласие с политикой конфиденциальности', 'register');
+    return;
+  }
   setAuthLoading(true);
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(function() {

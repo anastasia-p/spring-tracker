@@ -366,6 +366,12 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="auth-field"><label>Пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="reg-password" placeholder="" oninput="clearAuthError()"><button class="eye-btn" type="button" onclick="togglePassword('reg-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div class="auth-field"><label>Повтори пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="reg-password2" placeholder="" oninput="clearAuthError()" onkeydown="if(event.key==='Enter')doRegister()"><button class="eye-btn" type="button" onclick="togglePassword('reg-password2',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div class="auth-error" id="auth-error-register">&#8203;</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px">
+        <input type="checkbox" id="reg-privacy" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:var(--green);cursor:pointer">
+        <label for="reg-privacy" style="font-size:13px;color:var(--text-muted);cursor:pointer;line-height:1.5">
+          Я согласен(а) с <a href="privacy.html" target="_blank" style="color:var(--green)">политикой конфиденциальности</a>
+        </label>
+      </div>
       <button class="auth-btn" onclick="doRegister()">Зарегистрироваться</button>
       <div class="auth-link">Уже есть аккаунт? <a onclick="showLoginForm()">Войти</a></div>
     </div>
