@@ -185,7 +185,7 @@ function loadUserConfig() {
 }
 
 function saveUserConfig(sections) {
-  return userDoc().set({ sections: sections }, { merge: true });
+  return userDoc().set({ sections: sections, email: currentUser.email }, { merge: true });
 }
 
 // --- Onboarding ---
