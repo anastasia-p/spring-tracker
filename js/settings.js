@@ -163,7 +163,9 @@ function showValidationPopup(filename, errors, warnings) {
   list.innerHTML = html;
 
   document.getElementById('validation-overlay').style.display = 'block';
-  document.getElementById('validation-popup').style.display = 'flex';
+  var popup = document.getElementById('validation-popup');
+  popup.style.display = 'flex';
+  popup.style.flexDirection = 'column';
 }
 
 function closeValidationPopup() {
