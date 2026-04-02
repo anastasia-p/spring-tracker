@@ -141,36 +141,6 @@ function buildSkillCardCompact(skill) {
   return div;
 }
 
-function buildSkillCard(skill) {
-  var prefix = getElemPrefix(skill.id);
-  var div = document.createElement('div');
-  div.innerHTML =
-    '<div class="section-title">' + skill.name + '</div>' +
-    '<div class="tree-card">' +
-      '<div class="tree-header">' +
-        '<div class="tree-title-wrap">' +
-          '<div class="tree-icon" style="background:' + skill.bgColor + '">' +
-            getSkillIcon(skill) +
-          '</div>' +
-          '<div>' +
-            '<div class="tree-level-name" id="' + prefix + '-level-name">Загрузка...</div>' +
-            '<div class="tree-hours" id="' + prefix + '-hours"></div>' +
-          '</div>' +
-        '</div>' +
-        '<button class="tree-q-btn" onclick="showSkillLevels(\'' + skill.id + '\')">?</button>' +
-      '</div>' +
-      '<div class="tree-progress-wrap">' +
-        '<div class="tree-progress-bar" id="' + prefix + '-progress-bar" style="width:0%;background:' + skill.color + '"></div>' +
-      '</div>' +
-      '<div class="tree-progress-labels">' +
-        '<span id="' + prefix + '-label-left"></span>' +
-        '<span id="' + prefix + '-progress-pct"></span>' +
-        '<span id="' + prefix + '-label-right"></span>' +
-      '</div>' +
-    '</div>';
-  return div;
-}
-
 function getSkillIcon(skill) {
   var icons = {
     tree:     '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20v-8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q13 6 19 4 Q18 11 12 12Z" fill="#1D9E75"/><path d="M12 15 Q11 9 5 8 Q6 14 12 15Z" fill="#5DCAA5"/></svg>',
