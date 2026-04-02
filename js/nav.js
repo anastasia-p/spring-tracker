@@ -108,7 +108,10 @@ function showProgressTab(section, btn) {
 function renderAllSkillsGrid(container) {
   container.innerHTML = '<div class="sk-grid" id="sk-grid"></div>';
   var grid = document.getElementById('sk-grid');
-  SKILLS.forEach(function(skill) {
+  var visibleSkills = SKILLS.filter(function(skill) {
+    return userSections.indexOf(skill.section) !== -1;
+  });
+  visibleSkills.forEach(function(skill) {
     grid.appendChild(buildSkillCardCompact(skill));
     renderSkillCard(skill);
   });
