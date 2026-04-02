@@ -235,12 +235,27 @@ function finishOnboarding() {
     });
   });
 
-  // Load tests plan
-  var testsUrl = baseUrl + 'plans/tests.json?t=' + Date.now();
+  // Load merged tests based on selected sections
+  var testFiles = selected.map(function(s) {
+    return baseUrl + 'plans/tests_' + s + '_default.json?t=' + Date.now();
+  });
   planPromises.push(
-    fetch(testsUrl).then(function(r) { return r.json(); }).then(function(data) {
+    Promise.all(testFiles.map(function(url) {
+      return fetch(url).then(function(r) { return r.ok ? r.json() : []; });
+    })).then(function(results) {
+      // Merge and deduplicate by name
+      var seen = {};
+      var merged = [];
+      results.forEach(function(items) {
+        items.forEach(function(item) {
+          if (!seen[item.name]) {
+            seen[item.name] = true;
+            merged.push(item);
+          }
+        });
+      });
       return userDoc().collection('plan').doc('tests').set({
-        items: data, updatedAt: new Date().toISOString()
+        items: merged, updatedAt: new Date().toISOString()
       });
     })
   );
