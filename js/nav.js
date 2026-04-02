@@ -17,6 +17,9 @@ function showTab(name, btn) {
   } else if (name === 'progress') {
     renderProgressTabs(userSections);
     subTabs.style.visibility = 'visible';
+  } else if (name === 'settings') {
+    renderSettingsPlans();
+    subTabs.style.visibility = 'hidden';
   } else {
     subTabs.style.visibility = 'hidden';
   }
@@ -239,4 +242,21 @@ function initWithSections(sections) {
     // Pre-render skills so data is ready when user switches to progress tab
     // but don't activate progress tabs - plan is the default active screen
   });
+}
+
+function renderSettingsPlans() {
+  var container = document.getElementById('settings-plans-list');
+  if (!container) return;
+  var LABELS = { strength: 'Силовые тренировки', wingchun: 'Вин Чун', qigong: 'Цигун' };
+  container.innerHTML = userSections.map(function(section) {
+    return '<div class="settings-item">' +
+      '<div><div class="settings-item-label">' + LABELS[section] + '</div></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>' +
+        '<label class="update-btn" style="cursor:pointer">Загрузить' +
+          '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'' + section + '\', this)">' +
+        '</label>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }

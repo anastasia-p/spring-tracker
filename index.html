@@ -296,22 +296,10 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
           <button class="update-btn" onclick="doLogout()">Выйти</button>
         </div>
       </div>
-      <div class="section-title">Обновление планов</div>
-      <div class="settings-group">
-        <div class="settings-item">
-          <div><div class="settings-item-label">Силовые тренировки</div><div class="settings-item-desc">plans/strength.json</div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('strength')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('strength', this)"></label></div>
-        </div>
-        <div class="settings-item">
-          <div><div class="settings-item-label">Вин Чун</div><div class="settings-item-desc">plans/wingchun.json</div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('wingchun')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('wingchun', this)"></label></div>
-        </div>
-        <div class="settings-item">
-          <div><div class="settings-item-label">Цигун</div><div class="settings-item-desc">plans/qigong.json</div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('qigong')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('qigong', this)"></label></div>
-        </div>
+      <div class="section-title">Управление планами</div>
+      <div class="settings-group" id="settings-plans-list">
       </div>
-      <div class="section-title">Обновление тестов</div>
+      <div class="section-title">Тесты</div>
       <div class="settings-group">
         <div class="settings-item">
           <div><div class="settings-item-label">Список показателей</div><div class="settings-item-desc">plans/tests.json</div><div class="update-status" id="status-tests"></div></div>
