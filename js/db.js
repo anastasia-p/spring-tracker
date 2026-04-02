@@ -41,6 +41,14 @@ function getDayTypeLabel(type) {
 // In-memory cache
 var cache = { strength: {}, wingchun: {}, qigong: {}, tests: {} };
 
+function resetCache(section) {
+  if (section === 'tests') {
+    cache.tests = {};
+  } else {
+    cache[section] = {};
+  }
+}
+
 // Current plans loaded from Firebase
 var plans = { strength: null, wingchun: null, qigong: null, tests: null };
 

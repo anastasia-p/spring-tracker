@@ -1,3 +1,5 @@
+var API_URL = 'https://api.spring-tracker.ru:8080';
+
 function downloadPlan(section) {
   var plan = plans[section];
   if (!plan || !plan.length) {
@@ -7,7 +9,7 @@ function downloadPlan(section) {
   var btn = event.target;
   btn.disabled = true;
   btn.textContent = '...';
-  fetch('https://api.spring-tracker.ru:8080/download/' + section, {
+  fetch(API_URL + '/download/' + section, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ data: plan }),
@@ -44,7 +46,7 @@ function uploadPlan(section, input) {
   var label = input.closest('label');
   if (label) { label.style.opacity = '0.6'; label.style.pointerEvents = 'none'; }
 
-  fetch('https://api.spring-tracker.ru:8080/upload/' + section, {
+  fetch(API_URL + '/upload/' + section, {
     method: 'POST',
     body: formData,
   })
@@ -60,27 +62,30 @@ function uploadPlan(section, input) {
     if (result.warnings.length > 0) {
       showValidationPopup(file.name, [], result.warnings);
     }
-    // Сохраняем в Firebase
-    var field = section === 'tests' ? 'items' : 'days';
-    var doc = { updatedAt: new Date().toISOString() };
-    doc[field] = result.data;
-    userCol('plan').doc(section).set(doc).then(function() {
-      plans[section] = null;
-      if (section !== 'tests') cache[section] = {};
-      return loadPlanFromFirebase(section);
-    }).then(function() {
-      if (section === 'tests') {
-        renderTestForm();
-      } else {
-        renderSection(section);
-      }
-      var statusEl = document.getElementById('status-' + section);
-      if (statusEl) { statusEl.textContent = 'Загружено!'; statusEl.className = 'update-status ok'; }
-    });
+    applyUploadedPlan(section, result.data);
   })
   .catch(function(e) { alert('Ошибка: ' + e.message); })
   .finally(function() {
     if (label) { label.style.opacity = ''; label.style.pointerEvents = ''; }
+  });
+}
+
+function applyUploadedPlan(section, data) {
+  var field = section === 'tests' ? 'items' : 'days';
+  var doc = { updatedAt: new Date().toISOString() };
+  doc[field] = data;
+  userCol('plan').doc(section).set(doc).then(function() {
+    plans[section] = null;
+    resetCache(section);
+    return loadPlanFromFirebase(section);
+  }).then(function() {
+    if (section === 'tests') {
+      renderTestForm();
+    } else {
+      renderSection(section);
+    }
+    var statusEl = document.getElementById('status-' + section);
+    if (statusEl) { statusEl.textContent = 'Загружено!'; statusEl.className = 'update-status ok'; }
   });
 }
 
