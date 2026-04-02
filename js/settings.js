@@ -163,7 +163,7 @@ function showValidationPopup(filename, errors, warnings) {
   list.innerHTML = html;
 
   document.getElementById('validation-overlay').style.display = 'block';
-  document.getElementById('validation-popup').style.display = 'block';
+  document.getElementById('validation-popup').style.display = 'flex';
 }
 
 function closeValidationPopup() {
