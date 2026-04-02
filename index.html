@@ -299,23 +299,23 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="section-title">Обновление планов</div>
       <div class="settings-group">
         <div class="settings-item">
-          <div><div class="settings-item-label">Силовые тренировки</div><div class="settings-item-desc">plans/strength.json</div><div class="update-status" id="status-strength"></div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="updatePlan('strength')">Обновить</button><button class="update-btn" onclick="downloadPlan('strength')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('strength', this)"></label></div>
+          <div><div class="settings-item-label">Силовые тренировки</div><div class="settings-item-desc">plans/strength.json</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('strength')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('strength', this)"></label></div>
         </div>
         <div class="settings-item">
-          <div><div class="settings-item-label">Вин Чун</div><div class="settings-item-desc">plans/wingchun.json</div><div class="update-status" id="status-wingchun"></div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="updatePlan('wingchun')">Обновить</button><button class="update-btn" onclick="downloadPlan('wingchun')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('wingchun', this)"></label></div>
+          <div><div class="settings-item-label">Вин Чун</div><div class="settings-item-desc">plans/wingchun.json</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('wingchun')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('wingchun', this)"></label></div>
         </div>
         <div class="settings-item">
-          <div><div class="settings-item-label">Цигун</div><div class="settings-item-desc">plans/qigong.json</div><div class="update-status" id="status-qigong"></div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="updatePlan('qigong')">Обновить</button><button class="update-btn" onclick="downloadPlan('qigong')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('qigong', this)"></label></div>
+          <div><div class="settings-item-label">Цигун</div><div class="settings-item-desc">plans/qigong.json</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('qigong')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('qigong', this)"></label></div>
         </div>
       </div>
       <div class="section-title">Обновление тестов</div>
       <div class="settings-group">
         <div class="settings-item">
           <div><div class="settings-item-label">Список показателей</div><div class="settings-item-desc">plans/tests.json</div><div class="update-status" id="status-tests"></div></div>
-          <button class="update-btn" onclick="updatePlan('tests')">Обновить</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('tests')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('tests', this)"></label></div>
         </div>
       </div>
     </div>

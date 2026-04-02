@@ -54,10 +54,10 @@ function downloadPlan(section) {
   var btn = event.target;
   btn.disabled = true;
   btn.textContent = '...';
-  fetch('https://api.spring-tracker.ru:8080/download-plan/' + section, {
+  fetch('https://api.spring-tracker.ru:8080/download/' + section, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(plan),
+    body: JSON.stringify({ data: plan }),
   })
   .then(function(r) {
     if (!r.ok) throw new Error('Ошибка сервера');
@@ -91,7 +91,7 @@ function uploadPlan(section, input) {
   var label = input.closest('label');
   if (label) { label.style.opacity = '0.6'; label.style.pointerEvents = 'none'; }
 
-  fetch('https://api.spring-tracker.ru:8080/upload-plan/' + section, {
+  fetch('https://api.spring-tracker.ru:8080/upload/' + section, {
     method: 'POST',
     body: formData,
   })
@@ -107,16 +107,20 @@ function uploadPlan(section, input) {
     if (result.warnings.length > 0) {
       showValidationPopup(file.name, [], result.warnings);
     }
-    // Сохраняем план в Firebase
-    var field = 'days';
+    // Сохраняем в Firebase
+    var field = section === 'tests' ? 'items' : 'days';
     var doc = { updatedAt: new Date().toISOString() };
-    doc[field] = result.plan;
+    doc[field] = result.data;
     userCol('plan').doc(section).set(doc).then(function() {
       plans[section] = null;
-      cache[section] = {};
+      if (section !== 'tests') cache[section] = {};
       return loadPlanFromFirebase(section);
     }).then(function() {
-      renderSection(section);
+      if (section === 'tests') {
+        renderTestForm();
+      } else {
+        renderSection(section);
+      }
       var statusEl = document.getElementById('status-' + section);
       if (statusEl) { statusEl.textContent = 'Загружено!'; statusEl.className = 'update-status ok'; }
     });
