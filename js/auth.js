@@ -11,9 +11,9 @@ function hideSplash() {
 }
 
 var SECTION_TEMPLATES = [
-  { id: 'strength', label: 'Силовые',   planFile: 'strength.json' },
-  { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun.json' },
-  { id: 'qigong',   label: 'Цигун',     planFile: 'qigong.json'   },
+  { id: 'strength', label: 'Силовые',   planFile: 'strength_default.json' },
+  { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun_default.json' },
+  { id: 'qigong',   label: 'Цигун',     planFile: 'qigong_default.json'   },
 ];
 
 // --- Auth state ---
