@@ -1,9 +1,7 @@
 // Plan rendering and interaction
-
 // TC is now loaded from plans/day-types.json via db.js
 var DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 var SECTIONS = ['strength', 'wingchun', 'qigong'];
-
 var weekOffset = 0;
 
 function renderSection(section, keepOpen) {
@@ -14,25 +12,26 @@ function renderSection(section, keepOpen) {
   var dates = getWeekDates(weekOffset);
   var container = document.getElementById(section + '-days');
   container.innerHTML = '<div class="loading">Загрузка...</div>';
-
-  Promise.all(dates.map(function(d) { return loadDayData(section, d); })).then(function(results) {
+  Promise.all(dates.map(function(d) {
+    return loadDayData(section, d);
+  })).then(function(results) {
     var doneDays = 0, doneEx = 0, totalEx = 0;
-    results.forEach(function(r) { if (r.type !== 'rest') totalEx += r.plan.length; });
+    results.forEach(function(r) {
+      totalEx += r.plan.length;
+    });
     container.innerHTML = '';
     results.forEach(function(dayData, i) {
       var date = dates[i], dk = dateKey(date);
       var checks = dayData.checks || {}, values = dayData.values || {}, exs = dayData.plan || [];
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
-      if (done === total && total > 0 && dayData.type !== 'rest') doneDays++;
-      if (dayData.type !== 'rest') doneEx += done;
+      if (done === total && total > 0) doneDays++;
+      doneEx += done;
       var pct = total > 0 ? Math.round(done / total * 100) : 0;
-      var isComplete = done === total && total > 0 && dayData.type !== 'rest';
-      var isPartial = done > 0 && done < total && dayData.type !== 'rest';
+      var isComplete = done === total && total > 0;
+      var isPartial = done > 0 && done < total;
       var markBg = isComplete ? '#1D9E75' : isPartial ? '#FAC775' : 'transparent';
-      var markInner = (isComplete || isPartial)
-        ? '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        : '';
+      var markInner = (isComplete || isPartial) ? '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
       var card = document.createElement('div');
       card.className = 'day-card';
       card.innerHTML =
@@ -49,11 +48,10 @@ function renderSection(section, keepOpen) {
         '</div>' +
         '<div class="day-body">' +
           '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
-          '<div class="ex-list">' + exs.map(function(ex) {
+          '<div class="ex-list">' +
+          exs.map(function(ex) {
             var hasValue = ex.trackValue && checks[ex.name] && values[ex.name] > 0;
-            var valueLine = hasValue
-              ? '<div class="ex-value">' + values[ex.name] + ' ' + (ex.unit || '') + '</div>'
-              : '';
+            var valueLine = hasValue ? '<div class="ex-value">' + values[ex.name] + ' ' + (ex.unit || '') + '</div>' : '';
             var safeExName = ex.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
             var onchange = ex.trackValue
               ? 'onchange="handleExCheck(\'' + section + '\',\'' + dk + '\',\'' + safeExName + '\',\'' + (ex.unit || '') + '\',this)"'
@@ -67,7 +65,8 @@ function renderSection(section, keepOpen) {
                 valueLine +
               '</div>' +
             '</div>';
-          }).join('') + '</div>' +
+          }).join('') +
+          '</div>' +
         '</div>';
       container.appendChild(card);
     });
@@ -90,7 +89,9 @@ function getOpenCards(section) {
   return open;
 }
 
-function toggleDay(el) { el.closest('.day-card').classList.toggle('open'); }
+function toggleDay(el) {
+  el.closest('.day-card').classList.toggle('open');
+}
 
 function handleExCheck(section, dk, exName, unit, el) {
   if (el.checked) {
