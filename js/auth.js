@@ -223,39 +223,47 @@ function finishOnboarding() {
   btn.textContent = 'Загрузка...';
 
   // Load plans for selected sections
+  // Проверяем перед записью: если план уже существует, дефолтом не перезаписываем
   var baseUrl = location.origin + location.pathname.replace('index.html', '');
   var planPromises = selected.map(function(sectionId) {
     var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === sectionId; });
     if (!tmpl) return Promise.resolve();
-    var url = baseUrl + 'plans/' + tmpl.planFile + '?t=' + Date.now();
-    return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-      return userDoc().collection('plan').doc(sectionId).set({
-        days: data, updatedAt: new Date().toISOString()
+    return userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
+      if (snap.exists) return; // план пользователя уже есть — не трогаем
+      var url = baseUrl + 'plans/' + tmpl.planFile + '?t=' + Date.now();
+      return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        return userDoc().collection('plan').doc(sectionId).set({
+          days: data, updatedAt: new Date().toISOString()
+        });
       });
     });
   });
 
   // Load merged tests based on selected sections
+  // Аналогично: не перезаписываем если тесты уже есть
   var testFiles = selected.map(function(s) {
     return baseUrl + 'plans/tests_' + s + '_default.json?t=' + Date.now();
   });
   planPromises.push(
-    Promise.all(testFiles.map(function(url) {
-      return fetch(url).then(function(r) { return r.ok ? r.json() : []; });
-    })).then(function(results) {
-      // Merge and deduplicate by name
-      var seen = {};
-      var merged = [];
-      results.forEach(function(items) {
-        items.forEach(function(item) {
-          if (!seen[item.name]) {
-            seen[item.name] = true;
-            merged.push(item);
-          }
+    userDoc().collection('plan').doc('tests').get().then(function(snap) {
+      if (snap.exists) return; // тесты пользователя уже есть — не трогаем
+      return Promise.all(testFiles.map(function(url) {
+        return fetch(url).then(function(r) { return r.ok ? r.json() : []; });
+      })).then(function(results) {
+        // Merge and deduplicate by name
+        var seen = {};
+        var merged = [];
+        results.forEach(function(items) {
+          items.forEach(function(item) {
+            if (!seen[item.name]) {
+              seen[item.name] = true;
+              merged.push(item);
+            }
+          });
         });
-      });
-      return userDoc().collection('plan').doc('tests').set({
-        items: merged, updatedAt: new Date().toISOString()
+        return userDoc().collection('plan').doc('tests').set({
+          items: merged, updatedAt: new Date().toISOString()
+        });
       });
     })
   );
