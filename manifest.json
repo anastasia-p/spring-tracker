@@ -1,14 +1,14 @@
 {
   "name": "Spring Tracker",
   "short_name": "Spring Tracker",
-  "start_url": "/spring-tracker/",
-  "scope": "/spring-tracker/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FBEAF0",
   "theme_color": "#1D9E75",
   "icons": [
     {
-      "src": "/spring-tracker/icon.svg",
+      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
