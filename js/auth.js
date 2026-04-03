@@ -10,14 +10,6 @@ function hideSplash() {
   }
 }
 
-function showSplash() {
-  var el = document.getElementById('splash-screen');
-  if (el) {
-    el.style.display = 'flex';
-    el.classList.remove('hidden');
-  }
-}
-
 var SECTION_TEMPLATES = [
   { id: 'strength', label: 'Силовые',   planFile: 'strength_default.json' },
   { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun_default.json' },
@@ -31,17 +23,14 @@ firebase.auth().onAuthStateChanged(function(user) {
     currentUser = user;
     setAuthLoading(false);
     document.getElementById('auth-screen').style.display = 'none';
-    showSplash(); // показываем сплэш пока Firestore отдаёт конфиг
-    loadUserConfig().then(function(result) {
-      if (result.error) {
-        // Firestore упал — не показываем онбординг, возвращаем на экран входа
-        showAuthScreen();
-        showAuthError('Не удалось загрузить данные. Попробуй ещё раз', 'login');
-      } else if (!result.config) {
+    loadUserConfig().then(function(config) {
+      if (!config) {
         showOnboarding();
       } else {
-        startApp(result.config.sections || ['strength']);
+        startApp(config.sections || ['strength']);
       }
+    }).catch(function() {
+      showOnboarding();
     });
   } else {
     currentUser = null;
@@ -105,18 +94,8 @@ function doLogin() {
   if (!email) { showAuthError('Введите email', 'login'); return; }
   if (!password) { showAuthError('Введите пароль', 'login'); return; }
   setAuthLoading(true);
-  _doLoginAttempt(email, password, 0);
-}
-
-// Автоповтор один раз при auth/network-request-failed —
-// в инкогнито Firebase SDK инициализируется дольше и первый запрос может упасть
-function _doLoginAttempt(email, password, attempt) {
   firebase.auth().signInWithEmailAndPassword(email, password)
     .catch(function(e) {
-      if (e.code === 'auth/network-request-failed' && attempt === 0) {
-        setTimeout(function() { _doLoginAttempt(email, password, 1); }, 1500);
-        return;
-      }
       setAuthLoading(false);
       showAuthError(getAuthErrorMessage(e.code), 'login');
     });
@@ -204,26 +183,9 @@ function userDoc() {
 }
 
 function loadUserConfig() {
-  // source:'server' — обходим кеш Firestore, идём напрямую на сервер.
-  // Это важно в инкогнито, где persistence может быть в сломанном состоянии.
-  var fetchConfig = userDoc().get({ source: 'server' })
-    .then(function(s) {
-      return { config: s.exists ? s.data() : null, error: false };
-    })
-    .catch(function(e) {
-      console.error('loadUserConfig error:', e);
-      return { config: null, error: true };
-    });
-
-  // Страховочный таймаут: если Firestore всё равно завис — не вешаем сплэш навсегда
-  var timeout = new Promise(function(resolve) {
-    setTimeout(function() {
-      console.warn('loadUserConfig timeout');
-      resolve({ config: null, error: true });
-    }, 8000);
-  });
-
-  return Promise.race([fetchConfig, timeout]);
+  return userDoc().get().then(function(s) {
+    return s.exists ? s.data() : null;
+  }).catch(function() { return null; });
 }
 
 function saveUserConfig(sections) {
