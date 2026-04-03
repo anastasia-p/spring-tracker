@@ -10,6 +10,14 @@ function hideSplash() {
   }
 }
 
+function showSplash() {
+  var el = document.getElementById('splash-screen');
+  if (el) {
+    el.style.display = 'flex';
+    el.classList.remove('hidden');
+  }
+}
+
 var SECTION_TEMPLATES = [
   { id: 'strength', label: 'Силовые',   planFile: 'strength_default.json' },
   { id: 'wingchun', label: 'Вин Чун',   planFile: 'wingchun_default.json' },
@@ -23,14 +31,17 @@ firebase.auth().onAuthStateChanged(function(user) {
     currentUser = user;
     setAuthLoading(false);
     document.getElementById('auth-screen').style.display = 'none';
-    loadUserConfig().then(function(config) {
-      if (!config) {
+    showSplash(); // показываем сплэш пока Firestore отдаёт конфиг
+    loadUserConfig().then(function(result) {
+      if (result.error) {
+        // Firestore упал — не показываем онбординг, возвращаем на экран входа
+        showAuthScreen();
+        showAuthError('Не удалось загрузить данные. Попробуй ещё раз', 'login');
+      } else if (!result.config) {
         showOnboarding();
       } else {
-        startApp(config.sections || ['strength']);
+        startApp(result.config.sections || ['strength']);
       }
-    }).catch(function() {
-      showOnboarding();
     });
   } else {
     currentUser = null;
@@ -94,8 +105,18 @@ function doLogin() {
   if (!email) { showAuthError('Введите email', 'login'); return; }
   if (!password) { showAuthError('Введите пароль', 'login'); return; }
   setAuthLoading(true);
+  _doLoginAttempt(email, password, 0);
+}
+
+// Автоповтор один раз при auth/network-request-failed —
+// в инкогнито Firebase SDK инициализируется дольше и первый запрос может упасть
+function _doLoginAttempt(email, password, attempt) {
   firebase.auth().signInWithEmailAndPassword(email, password)
     .catch(function(e) {
+      if (e.code === 'auth/network-request-failed' && attempt === 0) {
+        setTimeout(function() { _doLoginAttempt(email, password, 1); }, 1500);
+        return;
+      }
       setAuthLoading(false);
       showAuthError(getAuthErrorMessage(e.code), 'login');
     });
@@ -183,9 +204,14 @@ function userDoc() {
 }
 
 function loadUserConfig() {
-  return userDoc().get().then(function(s) {
-    return s.exists ? s.data() : null;
-  }).catch(function() { return null; });
+  return userDoc().get()
+    .then(function(s) {
+      return { config: s.exists ? s.data() : null, error: false };
+    })
+    .catch(function(e) {
+      console.error('loadUserConfig error:', e);
+      return { config: null, error: true };
+    });
 }
 
 function saveUserConfig(sections) {
