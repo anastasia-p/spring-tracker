@@ -204,7 +204,9 @@ function userDoc() {
 }
 
 function loadUserConfig() {
-  return userDoc().get()
+  // source:'server' — обходим кеш Firestore, идём напрямую на сервер.
+  // Это важно в инкогнито, где persistence может быть в сломанном состоянии.
+  var fetchConfig = userDoc().get({ source: 'server' })
     .then(function(s) {
       return { config: s.exists ? s.data() : null, error: false };
     })
@@ -212,6 +214,16 @@ function loadUserConfig() {
       console.error('loadUserConfig error:', e);
       return { config: null, error: true };
     });
+
+  // Страховочный таймаут: если Firestore всё равно завис — не вешаем сплэш навсегда
+  var timeout = new Promise(function(resolve) {
+    setTimeout(function() {
+      console.warn('loadUserConfig timeout');
+      resolve({ config: null, error: true });
+    }, 8000);
+  });
+
+  return Promise.race([fetchConfig, timeout]);
 }
 
 function saveUserConfig(sections) {

@@ -1,7 +1,19 @@
 // Firebase init and data access layer
 
 var db = firebase.firestore();
-db.enablePersistence().catch(function() {});
+// enablePersistence использует IndexedDB — в инкогнито это вешает Firestore-запросы,
+// поэтому включаем только если IndexedDB реально доступен
+(function() {
+  try {
+    var test = indexedDB.open('_idb_test');
+    test.onerror = function() { /* IndexedDB недоступен — не включаем persistence */ };
+    test.onsuccess = function() {
+      test.result.close();
+      indexedDB.deleteDatabase('_idb_test');
+      db.enablePersistence().catch(function() {});
+    };
+  } catch(e) { /* IndexedDB не поддерживается */ }
+})();
 
 // Helper: returns subcollection scoped to current user
 function userCol(name) {
