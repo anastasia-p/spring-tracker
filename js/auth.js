@@ -1,9 +1,10 @@
 // Firebase Auth — login, register, onboarding
 var currentUser = null;
 
-// Флаг: нужно показать ошибку загрузки конфига после того, как showAuthScreen
-// отработает (иначе clearAuthError внутри showLoginForm стирает сообщение).
-var _configLoadFailed = false;
+// Sentinel: отличает "ошибку загрузки" от "конфига нет".
+// loadUserConfig возвращает CONFIG_ERROR вместо throw,
+// чтобы не использовать signOut() и не ломать Firebase в инкогнито.
+var CONFIG_ERROR = { __configError: true };
 
 function hideSplash() {
   var el = document.getElementById('splash-screen');
@@ -27,16 +28,16 @@ firebase.auth().onAuthStateChanged(function(user) {
     document.getElementById('auth-screen').style.display = 'none';
 
     loadUserConfig().then(function(config) {
-      if (!config) {
+      if (config === CONFIG_ERROR) {
+        // Ошибка загрузки (сеть, таймаут) — показываем экран с retry.
+        // Без signOut: он ломает Firebase Auth в инкогнито.
+        showConfigError();
+      } else if (!config) {
+        // Конфига нет — новый пользователь
         showOnboarding();
       } else {
         startApp(config.sections || ['strength']);
       }
-    }).catch(function(e) {
-      // Ошибка или таймаут загрузки конфига — НЕ показываем онбординг.
-      // Разлогиниваем; showAuthScreen покажет сообщение через _configLoadFailed.
-      console.error('loadUserConfig failed:', e);
-      showLoadError();
     });
   } else {
     currentUser = null;
@@ -54,23 +55,20 @@ function showAuthScreen() {
   if (onboardEl) onboardEl.style.display = 'none';
   if (mainEl)    mainEl.style.display    = 'none';
   showLoginForm();
-  // Показываем ошибку ПОСЛЕ clearAuthError внутри showLoginForm
-  if (_configLoadFailed) {
-    _configLoadFailed = false;
-    showAuthError('Ошибка загрузки данных. Проверь соединение и войди снова.', 'login');
-  }
 }
 
 function showLoginForm() {
   document.getElementById('auth-login').style.display    = 'block';
   document.getElementById('auth-register').style.display = 'none';
   clearAuthError();
+  hideConfigError();
 }
 
 function showRegisterForm() {
   document.getElementById('auth-login').style.display    = 'none';
   document.getElementById('auth-register').style.display = 'block';
   clearAuthError();
+  hideConfigError();
 }
 
 function showOnboarding() {
@@ -95,12 +93,41 @@ function startApp(sections) {
   initWithSections(sections);
 }
 
-// Ошибка загрузки конфига: ставим флаг, разлогиниваем.
-// signOut() → onAuthStateChanged(null) → showAuthScreen() → покажет ошибку через флаг.
-function showLoadError() {
-  _configLoadFailed = true;
+// Экран ошибки загрузки конфига: вставляем в auth-screen поверх форм.
+// Кнопка "Попробовать снова" делает location.reload() — при транзиентных
+// сетевых проблемах это решает вопрос без лишней логики.
+function showConfigError() {
   hideSplash();
-  firebase.auth().signOut();
+  var authEl    = document.getElementById('auth-screen');
+  var onboardEl = document.getElementById('onboarding-screen');
+  var mainEl    = document.getElementById('main-app');
+  if (authEl)    authEl.style.display    = 'flex';
+  if (onboardEl) onboardEl.style.display = 'none';
+  if (mainEl)    mainEl.style.display    = 'none';
+
+  // Прячем формы входа/регистрации
+  var loginForm = document.getElementById('auth-login');
+  var regForm   = document.getElementById('auth-register');
+  if (loginForm) loginForm.style.display = 'none';
+  if (regForm)   regForm.style.display   = 'none';
+
+  // Показываем или создаём блок ошибки
+  var el = document.getElementById('config-error-block');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'config-error-block';
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px;text-align:center';
+    el.innerHTML =
+      '<p style="color:var(--red,#E24B4A);margin:0;line-height:1.5">Не удалось загрузить данные.<br>Проверь соединение с интернетом.</p>' +
+      '<button class="auth-btn" style="width:auto;padding:12px 32px" onclick="location.reload()">Попробовать снова</button>';
+    if (authEl) authEl.appendChild(el);
+  }
+  el.style.display = 'flex';
+}
+
+function hideConfigError() {
+  var el = document.getElementById('config-error-block');
+  if (el) el.style.display = 'none';
 }
 
 // --- Auth actions ---
@@ -203,15 +230,15 @@ function userDoc() {
 }
 
 function loadUserConfig() {
-  // Таймаут 8 сек: в инкогнито Firestore иногда молчит бесконечно,
-  // не resolve и не reject — без таймаута сплеш-экран висит вечно.
-  var timeout = new Promise(function(_, reject) {
-    setTimeout(function() { reject(new Error('loadUserConfig timeout')); }, 8000);
+  // Ловим ошибку здесь и возвращаем sentinel CONFIG_ERROR —
+  // чтобы onAuthStateChanged мог отличить "конфига нет" от "не загрузился",
+  // и при этом не использовать signOut() (он ломает Firebase Auth в инкогнито).
+  return userDoc().get().then(function(s) {
+    return s.exists ? s.data() : null;
+  }).catch(function(e) {
+    console.error('loadUserConfig error:', e);
+    return CONFIG_ERROR;
   });
-  return Promise.race([
-    userDoc().get().then(function(s) { return s.exists ? s.data() : null; }),
-    timeout
-  ]);
 }
 
 function saveUserConfig(sections) {
