@@ -1,6 +1,10 @@
 // Firebase Auth — login, register, onboarding
 var currentUser = null;
 
+// Флаг: нужно показать ошибку загрузки конфига после того, как showAuthScreen
+// отработает (иначе clearAuthError внутри showLoginForm стирает сообщение).
+var _configLoadFailed = false;
+
 function hideSplash() {
   var el = document.getElementById('splash-screen');
   if (el) {
@@ -29,9 +33,8 @@ firebase.auth().onAuthStateChanged(function(user) {
         startApp(config.sections || ['strength']);
       }
     }).catch(function(e) {
-      // Ошибка загрузки конфига (сеть, Firestore) — НЕ показываем онбординг,
-      // иначе пользователь потеряет данные нажав "Начать".
-      // Разлогиниваем и показываем сообщение об ошибке.
+      // Ошибка или таймаут загрузки конфига — НЕ показываем онбординг.
+      // Разлогиниваем; showAuthScreen покажет сообщение через _configLoadFailed.
       console.error('loadUserConfig failed:', e);
       showLoadError();
     });
@@ -51,6 +54,11 @@ function showAuthScreen() {
   if (onboardEl) onboardEl.style.display = 'none';
   if (mainEl)    mainEl.style.display    = 'none';
   showLoginForm();
+  // Показываем ошибку ПОСЛЕ clearAuthError внутри showLoginForm
+  if (_configLoadFailed) {
+    _configLoadFailed = false;
+    showAuthError('Ошибка загрузки данных. Проверь соединение и войди снова.', 'login');
+  }
 }
 
 function showLoginForm() {
@@ -87,17 +95,11 @@ function startApp(sections) {
   initWithSections(sections);
 }
 
-// Ошибка загрузки конфига: показываем экран входа с сообщением и разлогиниваем.
-// signOut() сбрасывает состояние — при повторном входе onAuthStateChanged
-// снова попробует загрузить конфиг с нуля.
+// Ошибка загрузки конфига: ставим флаг, разлогиниваем.
+// signOut() → onAuthStateChanged(null) → showAuthScreen() → покажет ошибку через флаг.
 function showLoadError() {
+  _configLoadFailed = true;
   hideSplash();
-  var authEl = document.getElementById('auth-screen');
-  if (authEl) {
-    authEl.style.display = 'flex';
-    showLoginForm();
-    showAuthError('Ошибка загрузки данных. Проверь соединение и войди снова.', 'login');
-  }
   firebase.auth().signOut();
 }
 
@@ -201,12 +203,15 @@ function userDoc() {
 }
 
 function loadUserConfig() {
-  // catch убран намеренно: ошибка пробрасывается наверх в onAuthStateChanged,
-  // чтобы отличить "конфига нет" (вернётся null -> онбординг) от
-  // "не смогли загрузить" (throw -> showLoadError, без онбординга).
-  return userDoc().get().then(function(s) {
-    return s.exists ? s.data() : null;
+  // Таймаут 8 сек: в инкогнито Firestore иногда молчит бесконечно,
+  // не resolve и не reject — без таймаута сплеш-экран висит вечно.
+  var timeout = new Promise(function(_, reject) {
+    setTimeout(function() { reject(new Error('loadUserConfig timeout')); }, 8000);
   });
+  return Promise.race([
+    userDoc().get().then(function(s) { return s.exists ? s.data() : null; }),
+    timeout
+  ]);
 }
 
 function saveUserConfig(sections) {
