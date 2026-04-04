@@ -32,7 +32,7 @@ firebase.auth().onAuthStateChanged(function(user) {
         // Пользователь кликает "Войти" повторно — onAuthStateChanged сработает
         // снова и loadUserConfig попробует ещё раз.
         showAuthScreen();
-        showAuthError('Не удалось загрузить данные. Проверь соединение и войди снова.', 'login');
+        showAuthError('Не удалось загрузить данные. Проверь соединение и войди снова', 'login');
       } else if (!config) {
         showOnboarding();
       } else {
