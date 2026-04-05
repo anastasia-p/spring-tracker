@@ -99,7 +99,15 @@ def run_tests(html):
          opens == closes,
          f'<script>: {opens} открывающих, {closes} закрывающих')
 
-    # 15. centered-section padding на мобильном
+    # 15. Typewriter стартует после анимации листиков (>= 1700ms)
+    # logo-leaf-right: delay 1.15s + duration 0.55s = 1.7s
+    tw_delay = re.search(r'setTimeout\(type\s*,\s*(\d+)\)', html)
+    tw_ms = int(tw_delay.group(1)) if tw_delay else 0
+    test('Typewriter стартует после листиков (>= 1700ms)',
+         tw_ms >= 1700,
+         f'setTimeout(type, {tw_ms}) — меньше 1700ms, текст начнется до конца анимации ростка')
+
+    # 16. centered-section padding на мобильном
     test('Мобильный padding для centered-section',
          'centered-section' in html and ('padding: 56px 16px' in html or 'padding:56px 16px' in html or 'padding: 60px 16px' in html),
          'centered-section не имеет мобильного padding в 480px query')

@@ -21,6 +21,17 @@ test.describe('Desktop (1280x800)', () => {
     expect(overflow).toBe(false);
   });
 
+  test('typewriter не стартует раньше окончания анимации ростка', async ({ page }) => {
+    await page.goto(BASE_URL);
+    // В первую секунду typewriter должен быть пустым — листики ещё анимируются
+    const textAt1s = await page.locator('#typewriter').innerText();
+    expect(textAt1s.replace(/\s/g, '')).toBe('');
+    // После 2.5s текст уже должен появиться
+    await page.waitForTimeout(2500);
+    const textAt2_5s = await page.locator('#typewriter').innerText();
+    expect(textAt2_5s.length).toBeGreaterThan(3);
+  });
+
   test('typewriter напечатал текст', async ({ page }) => {
     await page.goto(BASE_URL);
     const tw = page.locator('#typewriter');
