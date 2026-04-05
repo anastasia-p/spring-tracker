@@ -835,7 +835,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbo
     if(i<=full.length){
       var bold=full.substring(0,Math.min(i,boldText.length));
       var norm=i>boldText.length?full.substring(boldText.length,i):'';
-      tw.innerHTML='<strong>'+bold+'</strong>'+norm+'<span class="cursor visible" id="cursor"></span>';
+      tw.innerHTML='<strong>'+bold+'</strong>'+'<span style="font-weight:400">'+norm+'</span>'+'<span class="cursor visible" id="cursor"></span>';
       i++;
       setTimeout(type,60);
     }
