@@ -34,9 +34,12 @@ test.describe('Desktop (1280x800)', () => {
 
   test('typewriter напечатал текст', async ({ page }) => {
     await page.goto(BASE_URL);
-    const tw = page.locator('#typewriter');
-    await expect(tw).not.toBeEmpty({ timeout: 5000 });
-    const text = await tw.innerText();
+    // Ждём пока напечатается минимум 4 символа (с учётом задержки 1800ms)
+    await page.waitForFunction(() => {
+      const el = document.getElementById('typewriter');
+      return el && el.innerText.replace(/\s/g, '').length > 3;
+    }, { timeout: 8000 });
+    const text = await page.locator('#typewriter').innerText();
     expect(text.length).toBeGreaterThan(3);
   });
 
