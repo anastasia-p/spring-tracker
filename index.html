@@ -835,4 +835,14 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbo
     if(i<=full.length){
       var bold=full.substring(0,Math.min(i,boldText.length));
       var norm=i>boldText.length?full.substring(boldText.length,i):'';
-      tw.innerHTML='<strong>'+bold+'</strong>'+'<span style="font-weight:400">'+norm+'</span>'+'<span class="cursor
+      tw.innerHTML='<strong>'+bold+'</strong>'+'<span style="font-weight:400">'+norm+'</span>';
+      tw.appendChild(cursor);
+      i++;
+      setTimeout(type,60);
+    }
+  }
+  setTimeout(type,1900);
+})();
+</script>
+</body>
+</html>
