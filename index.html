@@ -3,8 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spring Tracker — прокачай себя как персонажа</title>
-  <meta name="description" content="Spring Tracker — фитнес-трекер для осознанных тренировок. Силовые, Вин Чун, Цигун. Прокачивай навыки, отслеживай прогресс, расти каждый день.">
+  <title>Spring Tracker — трекер тренировок Wing Chun, цигун и силовых упражнений</title>
+  <meta name="description" content="Прокачивай навыки как в RPG: отмечай тренировки, копи часы, расти по уровням. Подходит для Wing Chun, цигун и силовых. Бесплатно, работает в браузере.">
+  <link rel="canonical" href="https://spring-tracker.ru/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://spring-tracker.ru/">
+  <meta property="og:title" content="Spring Tracker — трекер тренировок Wing Chun, цигун и силовых упражнений">
+  <meta property="og:description" content="Прокачивай навыки как в RPG: отмечай тренировки, копи часы, расти по уровням. Бесплатно, работает в браузере на любом устройстве.">
+  <meta property="og:image" content="https://spring-tracker.ru/images/mockup-plan.webp">
+  <meta property="og:locale" content="ru_RU">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Spring Tracker",
+        "url": "https://spring-tracker.ru",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Web",
+        "description": "Фитнес-трекер для осознанных тренировок Wing Chun, цигун и силовых упражнений с RPG-механикой прокачки навыков.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "RUB"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Это бесплатно?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Да, полностью. Никаких подписок и скрытых платежей."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Работает на iPhone и Android?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Spring Tracker — это PWA, то есть веб-приложение, которое работает прямо в браузере на любом устройстве. Можно добавить на главный экран — будет как обычное приложение."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Можно добавить свою дисциплину или навык?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Пока список фиксированный, но мы его расширяем. Напишите на qt.trek@gmail.com — расскажите, что хотите добавить."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Есть приложение в App Store или Google Play?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Нет. Spring Tracker работает как PWA через браузер — установка из магазинов не нужна."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -490,6 +560,18 @@
       .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
     }
   </style>
+
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript">
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
+    ym(108404687,"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/108404687" style="position:absolute;left:-9999px;" alt=""/></div></noscript>
+  <!-- /Yandex.Metrika counter -->
 </head>
 <body>
 
@@ -505,10 +587,10 @@
     Spring Tracker
   </a>
   <div style="display:flex;align-items:center;gap:24px">
-    <a href="https://t.me/spring_tracker" target="_blank" title="Telegram-канал" style="display:flex;align-items:center;color:#229ED9">
+    <a href="https://t.me/spring_tracker" target="_blank" title="Telegram-канал" style="display:flex;align-items:center;color:#229ED9" onclick="ym(108404687,'reachGoal','click_tg_nav')">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
     </a>
-    <a class="nav-btn" href="/app.html">Перейти в приложение</a>
+    <a class="nav-btn" href="/app.html" onclick="ym(108404687,'reachGoal','click_nav_app')">Перейти в приложение</a>
   </div>
 </nav>
 
@@ -526,7 +608,7 @@
   <h1>Прокачай себя<br>как <span>персонажа</span></h1>
   <p class="hero-sub">Трекер осознанных тренировок. Фиксируй прогресс, расти по уровням, развивай навыки — каждый день.</p>
   <div class="hero-cta">
-    <a class="btn-primary" href="/app.html">Начать</a>
+    <a class="btn-primary" href="/app.html" onclick="ym(108404687,'reachGoal','click_hero_start')">Начать</a>
     <a class="btn-secondary" href="#skills">Как это работает</a>
   </div>
 </div>
@@ -546,7 +628,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/screen-skills-grid.webp" alt="Экран навыков" class="phone-screen">
+          <img src="images/screen-skills-grid.webp" alt="Экран навыков Wing Chun и цигун в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -554,7 +636,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/screen-skills-detail.webp" alt="Шкала опыта навыка" class="phone-screen">
+          <img src="images/screen-skills-detail.webp" alt="Шкала опыта и уровни навыка в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -562,7 +644,7 @@
 
     <p style="font-size:14px;color:var(--text-muted);text-align:center">
       Состав навыков будет расширяться. Есть идея — пиши на
-      <a href="mailto:qt.trek@gmail.com" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#3d4c4913494f58567d5a505c5451135e5250" style="color:var(--green);text-decoration:none"><span class="__cf_email__" data-cfemail="3041441e4442555b70575d51595c1e535f5d">[email&#160;protected]</span></a>
     </p>
 
   </div>
@@ -583,7 +665,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/mockup-plan.webp" alt="Экран плана тренировок" class="phone-screen">
+          <img src="images/mockup-plan.webp" alt="Еженедельный план тренировок в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -591,7 +673,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/mockup-expanded.webp" alt="Развернутый день" class="phone-screen">
+          <img src="images/mockup-expanded.webp" alt="Развернутый день тренировки в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -599,7 +681,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/screen-settings.webp" alt="Настройки — загрузка планов" class="phone-screen">
+          <img src="images/screen-settings.webp" alt="Загрузка плана тренировок через Excel в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -624,7 +706,7 @@
 
     <p style="font-size:14px;color:var(--text-muted);text-align:center">
       Нет нужной дисциплины? Пиши на
-      <a href="mailto:qt.trek@gmail.com" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#bdccc993c9cfd8d6fddad0dcd4d193ded2d0" style="color:var(--green);text-decoration:none"><span class="__cf_email__" data-cfemail="d0a1a4fea4a2b5bb90b7bdb1b9bcfeb3bfbd">[email&#160;protected]</span></a>
     </p>
 
   </div>
@@ -645,7 +727,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/screen-test-input.webp" alt="Ввод результата теста" class="phone-screen">
+          <img src="images/screen-test-input.webp" alt="Ввод результата теста прогресса в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -653,7 +735,7 @@
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
-          <img src="images/screen-test-history.webp" alt="История тестов" class="phone-screen">
+          <img src="images/screen-test-history.webp" alt="История тестов и динамика прогресса в Spring Tracker" class="phone-screen" loading="lazy">
           <div class="phone-fade"></div>
         </div>
       </div>
@@ -666,7 +748,7 @@
 <div class="cta-section">
   <h2 class="section-title">Начни прокачку<br>сегодня</h2>
   <p class="section-sub">Бесплатно. Без рекламы. Твои данные — только твои.</p>
-  <a class="btn-white" href="/app.html">Создать аккаунт</a>
+  <a class="btn-white" href="/app.html" onclick="ym(108404687,'reachGoal','click_cta_register')">Создать аккаунт</a>
 </div>
 
 <!-- FAQ -->
@@ -685,7 +767,7 @@
       </details>
       <details class="faq-item">
         <summary class="faq-q">Можно добавить свою дисциплину или навык?</summary>
-        <p class="faq-a">Пока список фиксированный, но мы его расширяем. Пиши на <a href="mailto:qt.trek@gmail.com" style="color:var(--green)">qt.trek@gmail.com</a> — расскажи, что хочешь добавить.</p>
+        <p class="faq-a">Пока список фиксированный, но мы его расширяем. Пиши на <a href="/cdn-cgi/l/email-protection#29585d075d5b4c42694e44484045074a4644" style="color:var(--green)"><span class="__cf_email__" data-cfemail="0b7a7f257f796e604b6c666a626725686466">[email&#160;protected]</span></a> — расскажи, что хочешь добавить.</p>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Есть приложение в App Store или Google Play?</summary>
@@ -709,11 +791,11 @@
     </a>
     <div class="footer-links">
       <a href="/privacy.html">Политика конфиденциальности</a>
-      <a href="https://t.me/spring_tracker" target="_blank">Telegram-канал</a>
+      <a href="https://t.me/spring_tracker" target="_blank" onclick="ym(108404687,'reachGoal','click_tg_footer')">Telegram-канал</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>По всем вопросам, предложениям и багам — <a href="mailto:qt.trek@gmail.com" style="color:var(--green)">qt.trek@gmail.com</a></span>
+    <span>По всем вопросам, предложениям и багам — <a href="/cdn-cgi/l/email-protection#6b1a1f451f190e002b0c060a020745080406" style="color:var(--green)"><span class="__cf_email__" data-cfemail="9aebeeb4eee8fff1dafdf7fbf3f6b4f9f5f7">[email&#160;protected]</span></a></span>
     <span>© 2026 Spring Tracker</span>
   </div>
 </footer>
@@ -723,7 +805,7 @@
   <img id="lightbox-img" src="" alt="">
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function openLightbox(src){
   document.getElementById('lightbox-img').src=src;
   document.getElementById('lightbox').classList.add('active');
@@ -739,19 +821,18 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbo
 (function(){
   var boldText='Spring Tracker';
   var normalText=' — Фитнес-RPG';
-  var el=document.getElementById('typewriter');
+  var full=boldText+normalText;
+  var tw=document.getElementById('typewriter');
   var cursor=document.getElementById('cursor');
-  var i=0, total=boldText.length+normalText.length;
+  var i=0;
+  cursor.classList.add('visible');
   function type(){
-    if(i<total){
+    if(i<=full.length){
+      var bold=full.substring(0,Math.min(i,boldText.length));
+      var norm=i>boldText.length?full.substring(boldText.length,i):'';
+      tw.innerHTML='<strong>'+bold+'</strong>'+norm+'<span class="cursor visible" id="cursor"></span>';
       i++;
-      var b=boldText.slice(0,Math.min(i,boldText.length));
-      var n=i>boldText.length?normalText.slice(0,i-boldText.length):'';
-      el.innerHTML='<strong>'+b+'</strong>'+(n?'<span style="font-weight:400">'+n+'</span>':'');
-      el.appendChild(cursor);
       setTimeout(type,60);
-    } else {
-      cursor.classList.add('visible');
     }
   }
   setTimeout(type,1900);
