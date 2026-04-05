@@ -831,6 +831,10 @@
 </div>
 
 <script>
+document.querySelectorAll('.phones-centered').forEach(function(el){
+  el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+});
+
 function openLightbox(src){
   document.getElementById('lightbox-img').src=src;
   document.getElementById('lightbox').classList.add('active');
