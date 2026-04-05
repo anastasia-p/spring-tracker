@@ -13,9 +13,9 @@ function hideSplash() {
 }
 
 var SECTION_TEMPLATES = [
-  { id: 'strength', label: 'Силовые',  planFile: 'strength_default.json' },
-  { id: 'wingchun', label: 'Вин Чун',  planFile: 'wingchun_default.json' },
-  { id: 'qigong',   label: 'Цигун',    planFile: 'qigong_default.json'   },
+  { id: 'strength', label: 'Силовые', planFile: 'strength_default.json' },
+  { id: 'wingchun', label: 'Вин Чун', planFile: 'wingchun_default.json' },
+  { id: 'qigong',   label: 'Цигун',   planFile: 'qigong_default.json'   },
 ];
 
 // --- Auth state ---
@@ -24,7 +24,6 @@ firebase.auth().onAuthStateChanged(function(user) {
     currentUser = user;
     setAuthLoading(false);
     document.getElementById('auth-screen').style.display = 'none';
-
     loadUserConfig().then(function(config) {
       if (config === CONFIG_ERROR) {
         // Ошибка или таймаут загрузки — показываем экран входа с сообщением.
@@ -111,10 +110,10 @@ function doRegister() {
   var email     = document.getElementById('reg-email').value.trim();
   var password  = document.getElementById('reg-password').value;
   var password2 = document.getElementById('reg-password2').value;
-  if (!email)                 { showAuthError('Введите email', 'register');              return; }
-  if (!password)              { showAuthError('Введите пароль', 'register');             return; }
-  if (password !== password2) { showAuthError('Пароли не совпадают', 'register');        return; }
-  if (password.length < 6)    { showAuthError('Пароль минимум 6 символов', 'register'); return; }
+  if (!email)                    { showAuthError('Введите email', 'register');                                             return; }
+  if (!password)                 { showAuthError('Введите пароль', 'register');                                            return; }
+  if (password !== password2)    { showAuthError('Пароли не совпадают', 'register');                                       return; }
+  if (password.length < 6)       { showAuthError('Пароль минимум 6 символов', 'register');                                 return; }
   if (!document.getElementById('reg-privacy').checked) {
     showAuthError('Необходимо согласие с политикой конфиденциальности', 'register');
     return;
@@ -169,18 +168,18 @@ function clearAuthError() {
 
 function getAuthErrorMessage(code) {
   var messages = {
-    'auth/user-not-found':         'Неверный email или пароль',
-    'auth/wrong-password':         'Неверный email или пароль',
-    'auth/invalid-credential':     'Неверный email или пароль',
-    'auth/internal-error':         'Неверный email или пароль',
-    'auth/invalid-email':          'Неверный формат email',
-    'auth/email-already-in-use':   'Этот email уже зарегистрирован',
-    'auth/weak-password':          'Пароль слишком короткий — минимум 6 символов',
-    'auth/too-many-requests':      'Слишком много попыток. Попробуй позже',
-    'auth/network-request-failed': 'Ошибка сети. Проверь подключение к интернету',
-    'auth/operation-not-allowed':  'Этот способ входа не разрешён',
-    'auth/requires-recent-login':  'Войди в аккаунт заново',
-    'auth/user-disabled':          'Аккаунт заблокирован',
+    'auth/user-not-found':        'Неверный email или пароль',
+    'auth/wrong-password':        'Неверный email или пароль',
+    'auth/invalid-credential':    'Неверный email или пароль',
+    'auth/internal-error':        'Неверный email или пароль',
+    'auth/invalid-email':         'Неверный формат email',
+    'auth/email-already-in-use':  'Этот email уже зарегистрирован',
+    'auth/weak-password':         'Пароль слишком короткий — минимум 6 символов',
+    'auth/too-many-requests':     'Слишком много попыток. Попробуй позже',
+    'auth/network-request-failed':'Ошибка сети. Проверь подключение к интернету',
+    'auth/operation-not-allowed': 'Этот способ входа не разрешён',
+    'auth/requires-recent-login': 'Войди в аккаунт заново',
+    'auth/user-disabled':         'Аккаунт заблокирован',
   };
   return messages[code] || 'Что-то пошло не так. Попробуй ещё раз';
 }
@@ -226,7 +225,7 @@ function renderOnboarding() {
 function updateOnboardingBtn() {
   var checked = document.querySelectorAll('.onboard-check:checked').length;
   var btn = document.getElementById('onboarding-btn');
-  btn.disabled      = checked === 0;
+  btn.disabled     = checked === 0;
   btn.style.opacity = checked === 0 ? '0.5' : '1';
 }
 
@@ -241,7 +240,8 @@ function finishOnboarding() {
   btn.disabled    = true;
   btn.textContent = 'Загрузка...';
 
-  var baseUrl = location.origin + location.pathname.replace('index.html', '');
+  // ИСПРАВЛЕНО: работает корректно независимо от имени файла (index.html или app.html)
+  var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
 
   // Загружаем дефолтные планы, но только если документа ещё нет
   var planPromises = selected.map(function(sectionId) {
@@ -250,9 +250,7 @@ function finishOnboarding() {
     return userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
       if (snap.exists) return; // план пользователя уже есть — не трогаем
       var url = baseUrl + 'plans/' + tmpl.planFile + '?t=' + Date.now();
-      return fetch(url).then(function(r) {
-        return r.json();
-      }).then(function(data) {
+      return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
         return userDoc().collection('plan').doc(sectionId).set({
           days: data,
           updatedAt: new Date().toISOString()

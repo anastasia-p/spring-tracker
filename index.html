@@ -1,512 +1,761 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spring Tracker</title>
-<link rel="manifest" href="./manifest.json">
-<link rel="icon" type="image/svg+xml" href="./icon.svg">
-<meta name="theme-color" content="#1D9E75">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Spring Tracker">
-<link rel="apple-touch-icon" href="./icon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<style>
-:root{--green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;--blue-light:#E6F1FB;--blue-text:#0C447C;--purple-light:#EEEDFE;--purple-text:#3C3489;--gray-light:#F1EFE8;--gray-text:#444441;--amber-light:#FAEEDA;--amber-text:#633806;--bg:#F7F6F2;--card:#FFFFFF;--border:rgba(0,0,0,0.1);--text:#1a1a18;--text-muted:#888780;--text-hint:#B4B2A9;--radius:12px;--radius-sm:8px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.app{max-width:680px;margin:0 auto;padding:0 0 80px}
-.app-header{background:#FBEAF0;border-bottom:1px solid var(--border)}
-.header-top{display:flex;align-items:center;gap:10px;padding:16px 16px 12px}
-.header-top h1{font-size:20px;font-weight:600;color:var(--text)}
-.sub-tabs{display:flex;padding:0 16px}
-.sub-tab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border:none;background:none;font-family:'Onest',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
-.sub-tab.active{color:var(--green);border-bottom:2px solid var(--green)}
-.screen{display:none;padding:0}
-.screen.active{display:block}
-.sub-screen{display:none;padding:0 16px}
-.sub-screen.active{display:block}
-.tabs-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);align-items:center}
-.tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:'Onest',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
-.tab-btn.active{color:var(--green)}
-.tab-btn svg{width:20px;height:20px}
-.tab-divider{width:0.5px;height:32px;background:var(--border);flex-shrink:0}
-.settings-btn{padding:0 16px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:color .15s}
-.settings-btn svg{width:22px;height:22px}
-.week-nav{display:flex;align-items:center;gap:8px;padding:16px 0 0}
-.week-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;font-size:16px;color:var(--text);display:flex;align-items:center;justify-content:center}
-.week-nav span{flex:1;text-align:center;font-size:14px;font-weight:500}
-.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}
-.summary-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;text-align:center;border:1px solid var(--border)}
-.summary-num{font-size:24px;font-weight:600}
-.summary-lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
-.day-card{background:var(--card);border-radius:var(--radius);margin-bottom:10px;border:1px solid var(--border);overflow:hidden}
-.day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
-.day-left{display:flex;align-items:center;gap:10px}
-.day-name{font-size:15px;font-weight:500}
-.day-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;width:90px;text-align:center}
-.b-legs{background:var(--green-light);color:var(--green-text)}
-.b-upper{background:var(--blue-light);color:var(--blue-text)}
-.b-rest{background:var(--gray-light);color:var(--gray-text)}
-.b-wc{background:var(--purple-light);color:var(--purple-text)}
-.b-qi{background:var(--amber-light);color:var(--amber-text)}
-.b-full{background:#FAECE7;color:#712B13}
-.b-cardio{background:#FCEBEB;color:#791F1F}
-.b-stretch{background:#FBEAF0;color:#72243E}
-.b-yoga{background:#EAF3DE;color:#27500A}
-.day-right{display:flex;align-items:center;gap:8px}
-.day-count{font-size:12px;color:var(--text-muted);min-width:32px;text-align:right}
-.done-mark{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.done-mark svg{width:12px;height:12px}
-.chevron{width:16px;height:16px;color:var(--text-hint);transition:transform .2s}
-.day-card.open .chevron{transform:rotate(180deg)}
-.day-body{display:none;border-top:1px solid var(--border)}
-.day-card.open .day-body{display:block}
-.progress-bar-wrap{height:3px;background:var(--bg)}
-.progress-bar{height:100%;background:var(--green);transition:width .3s}
-.ex-list{padding:4px 0}
-.ex-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)}
-.ex-item:last-child{border-bottom:none}
-.ex-row{display:flex;align-items:flex-start;gap:12px;cursor:pointer;width:100%}
-.test-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px}
-.ex-check{width:20px;height:20px;flex-shrink:0;border-radius:5px;border:1.5px solid #C4C2B9;cursor:pointer;appearance:none;margin-top:1px;background:var(--card);transition:.15s}
-.ex-check:checked{background:var(--green);border-color:var(--green);background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 8l4 4 6-6' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:13px;background-repeat:no-repeat;background-position:center}
-.ex-info{flex:1}
-.ex-name{font-size:14px;font-weight:500}
-.ex-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
-.ex-note{font-size:12px;color:var(--green-dark);margin-top:3px;font-style:italic}
-.ex-value{font-size:12px;color:var(--green);margin-top:3px;font-weight:500}
-.section-pad{padding:16px 16px 0}
-.section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
-.test-item{background:var(--card);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border)}
-.test-label{font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.4}
-.test-input{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:20px;font-weight:600;font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);text-align:center}
-.test-unit{font-size:11px;color:var(--text-hint);text-align:center;margin-top:4px}
-.save-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'Onest',sans-serif;cursor:pointer;transition:background .15s}
-.save-btn:hover{background:var(--green-dark)}
-.history-wrap{overflow-x:auto}
-.history-table{width:100%;border-collapse:collapse;font-size:13px}
-.history-table th{text-align:left;padding:8px 10px;font-weight:500;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
-.history-table td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
-.history-table tr:last-child td{border-bottom:none}
-.delta{font-size:11px;margin-left:3px}
-.up{color:var(--green)}
-.down{color:#E24B4A}
-.empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:14px;line-height:1.6}
-.loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:14px}
-.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sk-card{position:relative}
-.sk3-name-row{padding-right:22px;margin-bottom:8px}
-.sk3-mid{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.sk-q{position:absolute;top:12px;right:14px}
-.sk-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
-.sk-name-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.sk-name{font-size:13px;font-weight:500;color:var(--text)}
-.sk-mid{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.sk-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sk-level{font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:5px}
-.sk-q{width:16px;height:16px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text-muted);font-size:10px;font-family:'Onest',sans-serif;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
-.sk-amount{font-size:15px;font-weight:500;color:var(--text)}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Tracker — прокачай себя как персонажа</title>
+  <meta name="description" content="Spring Tracker — фитнес-трекер для осознанных тренировок. Силовые, Вин Чун, Цигун. Прокачивай навыки, отслеживай прогресс, расти каждый день.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.t3-list{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-.t3-item{border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
-.t3-item-last{border-bottom:none}
-.t3-row-main{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;gap:8px}
-.t3-item-name{font-size:14px;font-weight:500;flex:1}
-.t3-last-val{font-size:17px;font-weight:500}
-.t3-unit{font-size:12px;color:var(--text-muted)}
-.t3-badge{font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.t3-badge-up{color:#1D9E75;background:#EAF3DE}
-.t3-badge-down{color:#A32D2D;background:#FCEBEB}
-.t3-badge-neutral{color:var(--text-muted);background:var(--bg-secondary,#F1EFE8)}
-.t3-chevron{font-size:10px;color:var(--text-muted);transition:transform .2s;display:inline-block}
-.t3-history{padding:12px 16px;background:var(--bg-secondary,#F7F6F2);border-top:1px solid var(--border)}
-.t3-hist-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-.t3-hist-row:last-child{margin-bottom:0}
-.t3-hist-date{font-size:12px;color:var(--text-muted);width:90px;flex-shrink:0}
-.t3-hist-val{font-size:13px;font-weight:500;width:44px;flex-shrink:0;text-align:right}
+    :root {
+      --pink: #FBEAF0;
+      --pink-mid: #F0C8D4;
+      --pink-text: #A06878;
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-light: #E1F5EE;
+      --green-mid: #5DCAA5;
+      --text: #1a1a1a;
+      --text-muted: #888;
+      --bg: #FAF8F5;
+      --radius: 16px;
+    }
 
-.t3-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.t3-bar-inner{height:100%;border-radius:3px;background:#1D9E75}
+    html { scroll-behavior: smooth; }
 
-.splash{position:fixed;inset:0;background:#FBEAF0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:500;transition:opacity .4s}
-.splash.hidden{opacity:0;pointer-events:none}
-.splash-dots{display:flex;gap:6px}
-.splash-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:dot-pulse 1.2s ease-in-out infinite}
-.splash-dot:nth-child(2){animation-delay:.2s}
-.splash-dot:nth-child(3){animation-delay:.4s}
-@keyframes dot-pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+    body {
+      font-family: 'Onest', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
 
-.auth-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
-.auth-box{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:32px 28px;width:100%;max-width:360px}
-.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
-.auth-logo h1{font-size:20px;font-weight:600}
-.auth-subtitle{font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:16px;text-align:center}
-.auth-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-.auth-field label{font-size:12px;color:var(--text-muted);font-weight:500}
-.auth-input{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:15px;font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);width:100%}.auth-pass-wrap{position:relative;display:flex;align-items:center}.auth-pass-wrap .auth-input{padding-right:42px}.eye-btn{position:absolute;right:12px;border:none;background:none;cursor:pointer;color:var(--text-muted);padding:0;display:flex;align-items:center}
-.auth-btn{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;margin-top:4px}
-.auth-btn:disabled{opacity:0.6;cursor:not-allowed}
-.auth-link{font-size:13px;color:var(--text-muted);text-align:center;margin-top:16px}
-.auth-link a{color:var(--green);cursor:pointer;text-decoration:none;font-weight:500}
-.auth-error{font-size:13px;color:#E24B4A;margin-bottom:8px;min-height:18px;display:block}.req{color:#E24B4A;margin-left:2px}
-.onboard-overlay{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
-.onboard-box{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:32px 28px;width:100%;max-width:360px}
-.onboard-title{font-size:18px;font-weight:600;margin-bottom:8px;text-align:center}
-.onboard-desc{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px}
-.onboard-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;font-size:15px;font-weight:500}
-.onboard-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 32px;
+      background: rgba(250,248,245,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
 
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--text);
+    }
 
-/* Tree card */
-.tree-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:16px}
-.tree-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.tree-title-wrap{display:flex;align-items:center;gap:10px}
-.tree-icon{width:36px;height:36px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center}
-.tree-icon svg{width:18px;height:18px}
-.tree-level-name{font-size:15px;font-weight:500}
-.tree-hours{font-size:12px;color:var(--text-muted);margin-top:2px}
-.tree-q-btn{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:13px;color:var(--text-muted);display:flex;align-items:center;justify-content:center}
-.tree-progress-wrap{height:6px;background:var(--bg);border-radius:3px;margin-bottom:8px}
-.tree-progress-bar{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
-.tree-progress-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted)}
+    .nav-logo svg { width: 32px; height: 32px; }
 
-/* Settings */
-.settings-group{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
-.settings-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
-.settings-item:last-child{border-bottom:none}
-.settings-item-label{font-size:14px;font-weight:500}
-.settings-item-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
-.update-btn{padding:8px 16px;background:var(--green-light);color:var(--green-text);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;white-space:nowrap}
-.update-btn:disabled{opacity:0.5;cursor:not-allowed}
-.update-status{font-size:12px;margin-top:4px}
-.update-status.ok{color:var(--green)}
-.update-status.err{color:#E24B4A}
+    .nav-btn {
+      display: inline-block;
+      padding: 8px 20px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
 
-/* Popups */
-.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:24px}
-.popup-box{background:var(--card);border-radius:var(--radius);width:100%;max-width:280px;box-sizing:border-box}
-.popup-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
-.popup-title{font-size:15px;font-weight:500}
-.popup-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:20px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0}
-.popup-body{padding:14px 16px}
-.popup-ex{font-size:13px;color:var(--text-muted);margin-bottom:10px}
-.popup-input-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.popup-input{min-width:0;flex:1;width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 8px;font-size:22px;font-weight:600;font-family:'Onest',sans-serif;text-align:center;background:var(--bg);color:var(--text);-moz-appearance:textfield}
-.popup-input::-webkit-outer-spin-button,.popup-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.popup-unit-label{font-size:13px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
-.popup-actions{display:flex;gap:8px}
-.popup-actions button{flex:1;padding:11px 8px;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer}
-.btn-cancel{background:var(--bg);color:var(--text-muted)}
-.btn-save{background:var(--green);color:white}
+    .nav-btn:hover { background: var(--green-dark); }
 
-/* Levels popup */
-.level-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)}
-.level-row:last-child{border-bottom:none}
-.level-num{width:24px;height:24px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--green-text);flex-shrink:0}
-.level-num.cur{background:var(--green);color:white}
-.level-info{flex:1}
-.level-name{font-size:13px;font-weight:500;color:var(--text)}
-.level-desc{font-size:11px;color:var(--text-muted);margin-top:1px}
-.level-hours{font-size:12px;color:var(--text-muted);white-space:nowrap}
-.levels-scroll{overflow-y:auto}
-</style>
+    /* HERO */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 56px;
+      background: var(--pink);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(29,158,117,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 7vw, 72px);
+      font-weight: 500;
+      line-height: 1.1;
+      color: var(--text);
+      max-width: 800px;
+      margin-bottom: 26px;
+    }
+
+    .hero h1 span { color: var(--green); }
+
+    .hero-sub {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: var(--pink-text);
+      max-width: 520px;
+      margin-bottom: 56px;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 0;
+      width: 220px;
+      text-align: center;
+      background: var(--green);
+      color: #fff;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-block;
+      padding: 14px 0;
+      width: 220px;
+      text-align: center;
+      background: transparent;
+      color: var(--green-dark);
+      border: 1.5px solid var(--pink-mid);
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: border-color 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--green-mid); }
+
+    /* SECTION COMMON */
+    .section-badge {
+      display: inline-block;
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin-bottom: 36px;
+      line-height: 1.55;
+    }
+
+    /* CENTERED SECTIONS (план, тесты) */
+    .centered-section { padding: 88px 32px; }
+
+    .centered-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 52px;
+    }
+
+    .centered-text { text-align: center; }
+
+    .phone-md .phone-screen { width: 196px; }
+
+    /* PLAN STEPS */
+    .plan-steps {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .plan-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: 10px;
+    }
+
+    .plan-step-arrow {
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+
+    @media (max-width: 600px) {
+      .phone-md .phone-screen { width: 130px; }
+      .plan-steps { gap: 8px; }
+      .plan-step-arrow { display: none; }
+    }
+
+    /* SKILLS SECTION — centered */
+    .skills-section { background: var(--bg); --fade-color: #FAF8F5; }
+
+    .skills-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 56px;
+    }
+
+    .skills-text {
+      text-align: center;
+    }
+
+    .skills-text .section-sub {
+      max-width: 420px;
+      line-height: 1.6;
+    }
+
+    .phones-centered {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .phone-lg .phone-screen { width: 240px; }
+
+    @media (max-width: 600px) {
+      .phone-lg .phone-screen { width: 160px; }
+      .phones-centered { gap: 20px; }
+    }
+
+    /* FEATURE SECTIONS */
+    .feature-section {
+      padding: 88px 32px;
+      --fade-color: #FAF8F5;
+    }
+
+    .feature-section--alt {
+      background: #fff;
+      --fade-color: #ffffff;
+    }
+
+    .feature-section--accent {
+      background: var(--pink);
+      --fade-color: #FBEAF0;
+    }
+
+    /* PHONE FRAME */
+    .phone-frame {
+      position: relative;
+      background: #111;
+      border-radius: 36px;
+      padding: 48px 12px 36px;
+      box-shadow:
+        inset 0 0 0 1px #333,
+        0 32px 80px rgba(0,0,0,0.22),
+        0 8px 20px rgba(0,0,0,0.14);
+      flex-shrink: 0;
+      cursor: zoom-in;
+    }
+
+    .phone-cam {
+      position: absolute;
+      top: 16px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phone-cam-dot { width: 8px; height: 8px; background: #2a2a2a; border-radius: 50%; border: 1px solid #3a3a3a; }
+    .phone-speaker { width: 44px; height: 5px; background: #1e1e1e; border-radius: 3px; border: 1px solid #333; }
+    .phone-power { position: absolute; right: -3px; top: 100px; width: 3px; height: 52px; background: #222; border-radius: 0 3px 3px 0; }
+    .phone-vol { position: absolute; left: -3px; top: 90px; width: 3px; height: 36px; background: #222; border-radius: 3px 0 0 3px; }
+    .phone-vol::after { content: ''; position: absolute; top: 48px; left: 0; width: 3px; height: 36px; background: #222; border-radius: 3px 0 0 3px; }
+    .phone-screen-wrap { position: relative; border-radius: 6px; overflow: hidden; line-height: 0; }
+    .phone-screen { width: 172px; display: block; cursor: zoom-in; }
+
+    .phone-fade {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 130px;
+      background: linear-gradient(to bottom, transparent, var(--fade-color));
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* CTA */
+    .cta-section {
+      text-align: center;
+      padding: 80px 24px;
+      background: var(--green);
+      margin: 0;
+    }
+
+    .cta-section .section-title { color: #fff; }
+    .cta-section .section-sub { color: rgba(255,255,255,0.7); margin: 0 auto 36px; }
+
+    .btn-white {
+      display: inline-block;
+      padding: 16px 40px;
+      background: #fff;
+      color: var(--green-dark);
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+
+    .btn-white:hover { transform: translateY(-2px); }
+
+    /* FAQ */
+    .faq-section {
+      padding: 80px 32px;
+      background: var(--bg);
+    }
+
+    .faq-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .faq-item {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .faq-q {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+      gap: 12px;
+    }
+
+    .faq-q::-webkit-details-marker { display: none; }
+
+    .faq-q::after {
+      content: '+';
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--green);
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .faq-item[open] .faq-q::after {
+      transform: rotate(45deg);
+    }
+
+    .faq-a {
+      padding: 0 20px 18px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--pink);
+      padding: 40px 48px 32px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .footer-brand svg { width: 32px; height: 32px; }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--pink-mid);
+      padding-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--green); }
+
+    /* LIGHTBOX */
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 24px; cursor: zoom-out; }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-height: 90vh; max-width: 420px; width: 100%; border-radius: 36px; box-shadow: 0 40px 120px rgba(0,0,0,0.5); cursor: default; animation: lb-in 0.2s ease; }
+    .lightbox-close { position: absolute; top: 20px; right: 24px; width: 40px; height: 40px; background: rgba(255,255,255,0.12); border: none; border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .lightbox-close:hover { background: rgba(255,255,255,0.22); }
+    @keyframes lb-in { from{opacity:0;transform:scale(0.92);} to{opacity:1;transform:scale(1);} }
+
+    /* HERO BRAND / TYPEWRITER */
+    .hero-brand { display: flex; align-items: center; gap: 4px; justify-content: center; margin-bottom: 26px; }
+    .logo-animated { display: block; flex-shrink: 0; margin-bottom: 12px; }
+    .hero-typewriter { font-size: 26px; font-weight: 700; color: var(--text); white-space: nowrap; min-height: 1.4em; }
+    .hero-typewriter .cursor { display: inline-block; width: 2px; height: 1.1em; background: var(--green); margin-left: 2px; vertical-align: middle; opacity: 0; animation: blink-cursor 0.8s step-end infinite; }
+    .hero-typewriter .cursor.visible { opacity: 1; }
+    @keyframes blink-cursor { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    /* LOGO ANIMATION */
+    .logo-stem { stroke-dasharray: 35; stroke-dashoffset: 35; animation: draw-stem 0.7s ease forwards; }
+    .logo-leaf-left { opacity: 0; transform-origin: 48px 58px; animation: appear-leaf 0.55s ease forwards 0.65s; }
+    .logo-leaf-right { opacity: 0; transform-origin: 48px 48px; animation: appear-leaf 0.55s ease forwards 1.15s; }
+    @keyframes draw-stem { to{stroke-dashoffset:0;} }
+    @keyframes appear-leaf { from{opacity:0;transform:scale(0.4);} to{opacity:1;transform:scale(1);} }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .phone-frame { border-radius: 28px; padding: 38px 9px 28px; }
+      .phone-screen { width: 130px; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 12px 16px; }
+      .feature-section { padding: 60px 16px; }
+      .cta-section { padding: 60px 16px; }
+      footer { padding: 28px 20px 24px; }
+      .footer-top { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- Splash screen -->
-<div id="splash-screen" class="splash">
-  <svg width="72" height="72" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0" stroke="#F4C0D1" stroke-width="1"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
-  <div style="font-size:18px;font-weight:600;color:#1a1a18;font-family:'Onest',sans-serif">Spring Tracker</div>
-  <div class="splash-dots">
-    <div class="splash-dot"></div>
-    <div class="splash-dot"></div>
-    <div class="splash-dot"></div>
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="/">
+    <svg viewBox="0 0 96 96" fill="none">
+      <rect width="96" height="96" rx="22" fill="#FBEAF0"/>
+      <path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+    Spring Tracker
+  </a>
+  <div style="display:flex;align-items:center;gap:24px">
+    <a href="https://t.me/spring_tracker" target="_blank" title="Telegram-канал" style="display:flex;align-items:center;color:#229ED9">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
+    </a>
+    <a class="nav-btn" href="/app.html">Перейти в приложение</a>
   </div>
-</div>
-
-
-<div id="main-app" style="display:none"><div class="app">
-
-  <div class="app-header">
-    <div class="header-top">
-      <svg width="28" height="28" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
-      <h1>Spring Tracker</h1>
-    </div>
-    <div class="sub-tabs" id="sub-tabs"></div>
-  </div>
-
-  <div id="plan" class="screen active">
-    <div id="strength" class="sub-screen active">
-      <div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="strength-week-label"></span><button onclick="changeWeek(1)">→</button></div>
-      <div class="summary-grid">
-        <div class="summary-card"><div class="summary-num" id="strength-s-days">—</div><div class="summary-lbl">дней</div></div>
-        <div class="summary-card"><div class="summary-num" id="strength-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
-        <div class="summary-card"><div class="summary-num" id="strength-s-pct">—</div><div class="summary-lbl">прогресс</div></div>
-      </div>
-      <div id="strength-days"><div class="loading">Загрузка...</div></div>
-    </div>
-    <div id="wingchun" class="sub-screen">
-      <div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="wingchun-week-label"></span><button onclick="changeWeek(1)">→</button></div>
-      <div class="summary-grid">
-        <div class="summary-card"><div class="summary-num" id="wingchun-s-days">—</div><div class="summary-lbl">дней</div></div>
-        <div class="summary-card"><div class="summary-num" id="wingchun-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
-        <div class="summary-card"><div class="summary-num" id="wingchun-s-pct">—</div><div class="summary-lbl">прогресс</div></div>
-      </div>
-      <div id="wingchun-days"><div class="loading">Загрузка...</div></div>
-    </div>
-    <div id="qigong" class="sub-screen">
-      <div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="qigong-week-label"></span><button onclick="changeWeek(1)">→</button></div>
-      <div class="summary-grid">
-        <div class="summary-card"><div class="summary-num" id="qigong-s-days">—</div><div class="summary-lbl">дней</div></div>
-        <div class="summary-card"><div class="summary-num" id="qigong-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
-        <div class="summary-card"><div class="summary-num" id="qigong-s-pct">—</div><div class="summary-lbl">прогресс</div></div>
-      </div>
-      <div id="qigong-days"><div class="loading">Загрузка...</div></div>
-    </div>
-  </div>
-
-  <div id="test" class="screen">
-    <div class="section-pad">
-      <div class="section-title">Еженедельный тест</div>
-      <div class="test-list" id="test-grid"><div class="loading">Загрузка...</div></div>
-    </div>
-  </div>
-
-  <div id="progress" class="screen">
-    <div id="progress-content" class="section-pad"></div>
-  </div>
-
-  <div id="settings" class="screen">
-    <div class="section-pad">
-      <div class="settings-group" style="margin-bottom:16px">
-        <div class="settings-item">
-          <div>
-            <div class="settings-item-desc">Аккаунт</div>
-            <div class="settings-item-label" id="settings-user-email" style="font-size:13px;font-weight:400;color:var(--text-muted)"></div>
-          </div>
-          <button class="update-btn" onclick="doLogout()">Выйти</button>
-        </div>
-      </div>
-      <div class="section-title">Управление планами</div>
-      <div class="settings-group" id="settings-plans-list">
-      </div>
-      <div class="section-title">Тесты</div>
-      <div class="settings-group">
-        <div class="settings-item">
-          <div><div class="settings-item-label">Список показателей</div><div class="update-status" id="status-tests"></div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('tests')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('tests', this)"></label></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<nav class="tabs-bar">
-  <button class="tab-btn active" onclick="showTab('plan',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    План
-  </button>
-  <button class="tab-btn" onclick="showTab('test',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-    Тест
-  </button>
-  <button class="tab-btn" onclick="showTab('progress',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Прогресс
-  </button>
-  <div class="tab-divider"></div>
-  <button class="settings-btn" id="settings-btn" onclick="showTab('settings',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  </button>
 </nav>
-</div><!-- end main-app -->
 
-
-<!-- Auth screen -->
-<div id="auth-screen" class="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <svg width="32" height="32" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
-      <h1>Spring Tracker</h1>
-    </div>
-    <div id="auth-login">
-      <div class="auth-subtitle">Войти в аккаунт</div>
-      <div class="auth-field"><label>Email<span class="req">*</span></label><input class="auth-input" type="email" id="login-email" placeholder="your@email.com" oninput="clearAuthError()" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="auth-field"><label>Пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="login-password" placeholder="" oninput="clearAuthError()" onkeydown="if(event.key==='Enter')doLogin()"><button class="eye-btn" type="button" onclick="togglePassword('login-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-      <div class="auth-error" id="auth-error-login">&#8203;</div>
-      <button class="auth-btn" onclick="doLogin()">Войти</button>
-      <div class="auth-link"><a onclick="doResetPassword()">Забыли пароль?</a></div>
-      <div class="auth-link">Нет аккаунта? <a onclick="showRegisterForm()">Зарегистрироваться</a></div>
-    </div>
-    <div id="auth-register" style="display:none">
-      <div class="auth-subtitle">Создать аккаунт</div>
-      <div class="auth-field"><label>Email<span class="req">*</span></label><input class="auth-input" type="email" id="reg-email" placeholder="your@email.com" oninput="clearAuthError()"></div>
-      <div class="auth-field"><label>Пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="reg-password" placeholder="" oninput="clearAuthError()"><button class="eye-btn" type="button" onclick="togglePassword('reg-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-      <div class="auth-field"><label>Повтори пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="reg-password2" placeholder="" oninput="clearAuthError()" onkeydown="if(event.key==='Enter')doRegister()"><button class="eye-btn" type="button" onclick="togglePassword('reg-password2',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-      <div class="auth-error" id="auth-error-register">&#8203;</div>
-      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px">
-        <input type="checkbox" id="reg-privacy" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:var(--green);cursor:pointer">
-        <label for="reg-privacy" style="font-size:13px;color:var(--text-muted);cursor:pointer;line-height:1.5">
-          Я согласен(а) с <a href="privacy.html" target="_blank" style="color:var(--green)">политикой конфиденциальности</a>
-        </label>
-      </div>
-      <button class="auth-btn" onclick="doRegister()">Зарегистрироваться</button>
-      <div class="auth-link">Уже есть аккаунт? <a onclick="showLoginForm()">Войти</a></div>
-    </div>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-brand">
+    <svg class="logo-animated" width="72" height="72" viewBox="0 0 96 96" fill="none">
+      <rect width="96" height="96" rx="22" fill="#FBEAF0"/>
+      <path class="logo-stem" d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <path class="logo-leaf-left" d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+      <path class="logo-leaf-right" d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+    <span class="hero-typewriter" id="typewriter"><span class="cursor" id="cursor"></span></span>
+  </div>
+  <h1>Прокачай себя<br>как <span>персонажа</span></h1>
+  <p class="hero-sub">Трекер осознанных тренировок. Фиксируй прогресс, расти по уровням, развивай навыки — каждый день.</p>
+  <div class="hero-cta">
+    <a class="btn-primary" href="/app.html">Начать</a>
+    <a class="btn-secondary" href="#skills">Как это работает</a>
   </div>
 </div>
 
-<!-- Onboarding screen -->
-<div id="onboarding-screen" class="onboard-overlay">
-  <div class="onboard-box">
-    <div style="display:flex;justify-content:center;margin-bottom:16px">
-      <svg width="56" height="56" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FBEAF0"/><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="onboard-title">Добро пожаловать!</div>
-    <div class="onboard-desc">Выбери разделы которые хочешь тренировать</div>
-    <div id="onboarding-list"></div>
-    <button class="auth-btn" id="onboarding-btn" onclick="finishOnboarding()" disabled style="opacity:0.5">Начать</button>
-  </div>
-</div>
+<!-- БЛОК 1: НАВЫКИ -->
+<div class="feature-section skills-section" id="skills">
+  <div class="skills-inner">
 
-<!-- Value input popup -->
-<div class="popup-overlay" id="value-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">Введи значение</span>
-      <button class="popup-close" onclick="cancelPopup()">×</button>
+    <div class="skills-text">
+      <div class="section-badge">Навыки</div>
+      <h2 class="section-title">Каждая тренировка — это опыт</h2>
+      <p class="section-sub" style="margin:0 auto">Копи часы и повторения, расти по уровням.<br>От Ватных рук — до Рук Титана.</p>
     </div>
-    <div class="popup-body">
-      <div class="popup-ex" id="popup-ex-name"></div>
-      <div class="popup-input-row">
-        <input class="popup-input" type="number" id="popup-value" min="0" placeholder="0"
-          onkeydown="if(event.key==='Enter') savePopupValue()">
-        <span class="popup-unit-label" id="popup-unit"></span>
+
+    <div class="phones-centered">
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-grid.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-skills-grid.webp" alt="Экран навыков" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
       </div>
-      <div class="popup-actions">
-        <button class="btn-cancel" onclick="cancelPopup()">Отмена</button>
-        <button class="btn-save" onclick="savePopupValue()">Сохранить</button>
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-detail.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-skills-detail.webp" alt="Шкала опыта навыка" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
       </div>
     </div>
+
+    <p style="font-size:14px;color:var(--text-muted);text-align:center">
+      Состав навыков будет расширяться. Есть идея — пиши на
+      <a href="mailto:qt.trek@gmail.com" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
+    </p>
+
   </div>
 </div>
 
-<!-- Value input popup -->
-<div class="popup-overlay" id="value-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">Введи значение</span>
-      <button class="popup-close" onclick="cancelPopup()">×</button>
-    </div>
-    <div class="popup-body">
-      <div class="popup-ex" id="popup-ex-name"></div>
-      <div class="popup-input-row">
-        <input class="popup-input" type="number" id="popup-value" min="0" placeholder="0"
-          onkeydown="if(event.key==='Enter') savePopupValue()">
-        <span class="popup-unit-label" id="popup-unit"></span>
-      </div>
-      <div class="popup-actions">
-        <button class="btn-cancel" onclick="cancelPopup()">Отмена</button>
-        <button class="btn-save" onclick="savePopupValue()">Сохранить</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- БЛОК 2: ПЛАН -->
+<div class="feature-section feature-section--alt centered-section">
+  <div class="centered-inner">
 
-<!-- Levels popup -->
-<div class="popup-overlay" id="levels-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">ДЕРЕВО<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closeLevelsPopup()">×</button>
+    <div class="centered-text">
+      <div class="section-badge">План</div>
+      <h2 class="section-title">Тренируйся по своей программе</h2>
+      <p class="section-sub" style="margin:0 auto">Никаких чужих схем. Загружай свои планы через Excel — отдельно для каждой дисциплины.</p>
     </div>
-    <div class="levels-scroll">
-      <div id="levels-list"></div>
-    </div>
-  </div>
-</div>
 
-
-<!-- Value input popup -->
-<div class="popup-overlay" id="value-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">Введи значение</span>
-      <button class="popup-close" onclick="cancelPopup()">×</button>
-    </div>
-    <div class="popup-body">
-      <div class="popup-ex" id="popup-ex-name"></div>
-      <div class="popup-input-row">
-        <input class="popup-input" type="number" id="popup-value" min="0" placeholder="0"
-          onkeydown="if(event.key==='Enter') savePopupValue()">
-        <span class="popup-unit-label" id="popup-unit"></span>
+    <div class="phones-centered">
+      <div class="phone-frame phone-md" onclick="openLightbox('images/mockup-plan.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/mockup-plan.webp" alt="Экран плана тренировок" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
       </div>
-      <div class="popup-actions">
-        <button class="btn-cancel" onclick="cancelPopup()">Отмена</button>
-        <button class="btn-save" onclick="savePopupValue()">Сохранить</button>
+      <div class="phone-frame phone-md" onclick="openLightbox('images/mockup-expanded.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/mockup-expanded.webp" alt="Развернутый день" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
+      </div>
+      <div class="phone-frame phone-md" onclick="openLightbox('images/screen-settings.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-settings.webp" alt="Настройки — загрузка планов" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
       </div>
     </div>
+
+    <div class="plan-steps">
+      <div class="plan-step">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8L14 2z" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Скачай шаблон
+      </div>
+      <div class="plan-step-arrow">→</div>
+      <div class="plan-step">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#534AB7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#534AB7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Настрой в Excel
+      </div>
+      <div class="plan-step-arrow">→</div>
+      <div class="plan-step">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Загрузи обратно
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:var(--text-muted);text-align:center">
+      Нет нужной дисциплины? Пиши на
+      <a href="mailto:qt.trek@gmail.com" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
+    </p>
+
   </div>
 </div>
 
-<!-- Levels popup -->
-<div class="popup-overlay" id="levels-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">ДЕРЕВО<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closeLevelsPopup()">×</button>
+<!-- БЛОК 3: ТЕСТЫ -->
+<div class="feature-section feature-section--accent centered-section">
+  <div class="centered-inner">
+
+    <div class="centered-text">
+      <div class="section-badge">Тесты</div>
+      <h2 class="section-title">Следи за прогрессом</h2>
+      <p class="section-sub" style="margin:0 auto">Раз в неделю — короткий срез по твоим показателям. История хранится, динамика видна.</p>
     </div>
-    <div class="levels-scroll">
-      <div id="levels-list"></div>
+
+    <div class="phones-centered">
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-input.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-test-input.webp" alt="Ввод результата теста" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
+      </div>
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-history.webp')">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-test-history.webp" alt="История тестов" class="phone-screen">
+          <div class="phone-fade"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2 class="section-title">Начни прокачку<br>сегодня</h2>
+  <p class="section-sub">Бесплатно. Без рекламы. Твои данные — только твои.</p>
+  <a class="btn-white" href="/app.html">Создать аккаунт</a>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <div class="faq-inner">
+    <h2 class="section-title" style="text-align:center;margin-bottom:36px">FAQ</h2>
+
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary class="faq-q">Это бесплатно?</summary>
+        <p class="faq-a">Да, полностью. Никаких подписок и скрытых платежей.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Работает на iPhone и Android?</summary>
+        <p class="faq-a">Spring Tracker — это PWA, то есть веб-приложение, которое работает прямо в браузере на любом устройстве. Можно добавить на главный экран — будет как обычное приложение.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Можно добавить свою дисциплину или навык?</summary>
+        <p class="faq-a">Пока список фиксированный, но мы его расширяем. Пиши на <a href="mailto:qt.trek@gmail.com" style="color:var(--green)">qt.trek@gmail.com</a> — расскажи, что хочешь добавить.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Есть приложение в App Store или Google Play?</summary>
+        <p class="faq-a">Нет. Spring Tracker работает как PWA через браузер — установка из магазинов не нужна.</p>
+      </details>
     </div>
   </div>
 </div>
 
-<!-- Mountain levels popup -->
-<div class="popup-overlay" id="mountain-levels-popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <span class="popup-title">СТОЙКА ГОРЫ<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>
-      <button class="popup-close" onclick="closeMountainLevelsPopup()">×</button>
-    </div>
-    <div class="levels-scroll">
-      <div id="mountain-levels-list"></div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <a class="footer-brand" href="/">
+      <svg viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="#FBEAF0"/>
+        <path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+      Spring Tracker
+    </a>
+    <div class="footer-links">
+      <a href="/privacy.html">Политика конфиденциальности</a>
+      <a href="https://t.me/spring_tracker" target="_blank">Telegram-канал</a>
     </div>
   </div>
+  <div class="footer-bottom">
+    <span>По всем вопросам, предложениям и багам — <a href="mailto:qt.trek@gmail.com" style="color:var(--green)">qt.trek@gmail.com</a></span>
+    <span>© 2026 Spring Tracker</span>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+  <img id="lightbox-img" src="" alt="">
 </div>
 
-<script src="./js/firebase-init.js"></script>
-<script src="./js/auth.js"></script>
-<script src="./js/pure.js"></script>
-<script src="./js/db.js"></script>
-<script src="./js/progress.js"></script>
-<script src="./js/plan.js"></script>
-<script src="./js/workout.js"></script>
-<script src="./js/settings.js"></script>
-<script src="./js/nav.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function openLightbox(src){
+  document.getElementById('lightbox-img').src=src;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeLightbox(e){
+  if(e && e.target===document.getElementById('lightbox-img')) return;
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
 
-  <!-- Validation popup -->
-  <div id="validation-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000" onclick="closeValidationPopup()"></div>
-  <div id="validation-popup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:480px;max-height:80vh;background:var(--card,#fff);border-radius:var(--radius,12px);padding:20px;z-index:1001;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="popup-title" id="validation-title">Ошибки в файле</div>
-      <button class="sk-q" style="width:24px;height:24px;font-size:14px" onclick="closeValidationPopup()">×</button>
-    </div>
-    <div id="validation-list" style="font-size:13px;margin-bottom:16px;overflow-y:auto;max-height:50vh;flex:1"></div>
-    <div style="display:flex;gap:8px">
-      <button class="update-btn" onclick="copyValidationErrors()">Скопировать</button>
-    </div>
-  </div>
-
+(function(){
+  var boldText='Spring Tracker';
+  var normalText=' — Фитнес-RPG';
+  var el=document.getElementById('typewriter');
+  var cursor=document.getElementById('cursor');
+  var i=0, total=boldText.length+normalText.length;
+  function type(){
+    if(i<total){
+      i++;
+      var b=boldText.slice(0,Math.min(i,boldText.length));
+      var n=i>boldText.length?normalText.slice(0,i-boldText.length):'';
+      el.innerHTML='<strong>'+b+'</strong>'+(n?'<span style="font-weight:400">'+n+'</span>':'');
+      el.appendChild(cursor);
+      setTimeout(type,60);
+    } else {
+      cursor.classList.add('visible');
+    }
+  }
+  setTimeout(type,1900);
+})();
+</script>
 </body>
 </html>
