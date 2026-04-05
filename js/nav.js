@@ -250,7 +250,7 @@ function renderSettingsPlans() {
   var LABELS = { strength: 'Силовые тренировки', wingchun: 'Вин Чун', qigong: 'Цигун' };
   container.innerHTML = userSections.map(function(section) {
     return '<div class="settings-item">' +
-      '<div><div class="settings-item-label">' + LABELS[section] + '</div></div>' +
+      '<div><div class="settings-item-label">' + LABELS[section] + '</div><div class="update-status" id="status-' + section + '"></div></div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>' +
         '<label class="update-btn" style="cursor:pointer">Загрузить' +
