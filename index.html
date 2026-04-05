@@ -99,13 +99,15 @@
       --radius: 16px;
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       font-family: 'Onest', sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
+      overflow-x: hidden;
+      max-width: 100%;
     }
 
     /* NAV */
@@ -331,7 +333,13 @@
       gap: 40px;
       align-items: flex-start;
       justify-content: center;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 4px;
     }
+    .phones-centered::-webkit-scrollbar { display: none; }
 
     .phone-lg .phone-screen { width: 240px; }
 
@@ -538,7 +546,7 @@
     /* HERO BRAND / TYPEWRITER */
     .hero-brand { display: flex; align-items: center; gap: 4px; justify-content: center; margin-bottom: 26px; }
     .logo-animated { display: block; flex-shrink: 0; margin-bottom: 12px; }
-    .hero-typewriter { font-size: 26px; font-weight: 700; color: var(--text); white-space: nowrap; min-height: 1.4em; }
+    .hero-typewriter { font-size: 26px; font-weight: 700; color: var(--text); white-space: nowrap; min-height: 1.4em; max-width: 100%; }
     .hero-typewriter .cursor { display: inline-block; width: 2px; height: 1.1em; background: var(--green); margin-left: 2px; vertical-align: middle; opacity: 0; animation: blink-cursor 0.8s step-end infinite; }
     .hero-typewriter .cursor.visible { opacity: 1; }
     @keyframes blink-cursor { 0%,100%{opacity:1;} 50%{opacity:0;} }
@@ -558,8 +566,12 @@
 
     @media (max-width: 480px) {
       nav { padding: 12px 16px; }
-      .feature-section { padding: 60px 16px; }
-      .cta-section { padding: 60px 16px; }
+      .hero { padding: 100px 16px 48px; }
+      .hero-typewriter { font-size: 18px; }
+      .centered-section { padding: 56px 16px; }
+      .feature-section { padding: 56px 16px; }
+      .faq-section { padding: 56px 16px; }
+      .cta-section { padding: 56px 16px; }
       footer { padding: 28px 20px 24px; }
       .footer-top { flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -649,7 +661,7 @@
 
     <p style="font-size:14px;color:var(--text-muted);text-align:center">
       Состав навыков будет расширяться. Есть идея — пиши на
-      <a href="/cdn-cgi/l/email-protection#0e7f7a207a7c6b654e69636f6762206d6163" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#0e7f7a207a7c6b654e69636f6762206d6163" style="color:var(--green);text-decoration:none"><span class="__cf_email__" data-cfemail="e19095cf9593848aa1868c80888dcf828e8c">[email&#160;protected]</span></a>
     </p>
 
   </div>
@@ -711,7 +723,7 @@
 
     <p style="font-size:14px;color:var(--text-muted);text-align:center">
       Нет нужной дисциплины? Пиши на
-      <a href="/cdn-cgi/l/email-protection#2352570d5751464863444e424a4f0d404c4e" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#2352570d5751464863444e424a4f0d404c4e" style="color:var(--green);text-decoration:none"><span class="__cf_email__" data-cfemail="92e3e6bce6e0f7f9d2f5fff3fbfebcf1fdff">[email&#160;protected]</span></a>
     </p>
 
   </div>
@@ -772,7 +784,7 @@
       </details>
       <details class="faq-item">
         <summary class="faq-q">Можно добавить свою дисциплину или навык?</summary>
-        <p class="faq-a">Пока список фиксированный, но мы его расширяем. Пиши на <a href="/cdn-cgi/l/email-protection#aadbde84ded8cfc1eacdc7cbc3c684c9c5c7" style="color:var(--green)">qt.trek@gmail.com</a> — расскажи, что хочешь добавить.</p>
+        <p class="faq-a">Пока список фиксированный, но мы его расширяем. Пиши на <a href="/cdn-cgi/l/email-protection#aadbde84ded8cfc1eacdc7cbc3c684c9c5c7" style="color:var(--green)"><span class="__cf_email__" data-cfemail="b8c9cc96cccaddd3f8dfd5d9d1d496dbd7d5">[email&#160;protected]</span></a> — расскажи, что хочешь добавить.</p>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Есть приложение в App Store или Google Play?</summary>
@@ -800,7 +812,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>По всем вопросам, предложениям и багам — <a href="/cdn-cgi/l/email-protection#3f4e4b114b4d5a547f58525e5653115c5052" style="color:var(--green)">qt.trek@gmail.com</a></span>
+    <span>По всем вопросам, предложениям и багам — <a href="/cdn-cgi/l/email-protection#3f4e4b114b4d5a547f58525e5653115c5052" style="color:var(--green)"><span class="__cf_email__" data-cfemail="2d5c5903595f48466d4a404c4441034e4240">[email&#160;protected]</span></a></span>
     <span>© 2026 Spring Tracker</span>
   </div>
 </footer>
@@ -810,7 +822,7 @@
   <img id="lightbox-img" src="" alt="">
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function openLightbox(src){
   document.getElementById('lightbox-img').src=src;
   document.getElementById('lightbox').classList.add('active');
@@ -830,18 +842,24 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbo
   var tw=document.getElementById('typewriter');
   var cursor=document.getElementById('cursor');
   var i=0;
+  var boldEnd=boldText.length;
   cursor.classList.add('visible');
   function type(){
     if(i<=full.length){
-      var bold=full.substring(0,Math.min(i,boldText.length));
-      var norm=i>boldText.length?full.substring(boldText.length,i):'';
-      tw.innerHTML='<strong>'+bold+'</strong>'+'<span style="font-weight:400">'+norm+'</span>';
+      var typed=full.substring(0,i);
+      var html;
+      if(i<=boldEnd){
+        html='<span style="font-weight:700">'+typed+'</span>';
+      } else {
+        html='<span style="font-weight:700">'+boldText+'</span><span style="font-weight:400">'+typed.substring(boldEnd)+'</span>';
+      }
+      tw.innerHTML=html;
       tw.appendChild(cursor);
       i++;
-      setTimeout(type,60);
+      setTimeout(type,55+Math.random()*45);
     }
   }
-  setTimeout(type,1900);
+  setTimeout(type,300);
 })();
 </script>
 </body>
