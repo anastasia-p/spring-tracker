@@ -617,10 +617,23 @@
     @keyframes appear-leaf { from{opacity:0;transform:scale(0.4);} to{opacity:1;transform:scale(1);} }
 
     /* MOBILE */
+    .phones-centered--with-badge {
+      overflow: visible;
+      padding-right: 80px;
+    }
     @media (max-width: 768px) {
       .phone-frame { border-radius: 28px; padding: 38px 9px 28px; }
       .phone-screen { width: 130px; }
       .xp-badge { display: none; }
+      .phones-centered--with-badge {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        justify-content: flex-start;
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+      .phones-centered--with-badge::-webkit-scrollbar { display: none; }
     }
 
     @media (max-width: 480px) {
@@ -699,7 +712,7 @@
       <p class="section-sub" style="margin:0 auto">Копи часы и повторения, расти по уровням.<br>От Ватных рук — до Рук Титана.</p>
     </div>
 
-    <div class="phones-centered" style="overflow: visible; padding-right: 80px;">
+    <div class="phones-centered phones-centered--with-badge">
       <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-grid.webp')">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
