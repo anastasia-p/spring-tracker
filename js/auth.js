@@ -210,6 +210,14 @@ function saveUserConfig(sections) {
   return userDoc().set({ sections: sections, email: currentUser.email }, { merge: true });
 }
 
+// --- Определение платформы ---
+function detectPlatform() {
+  var ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
 // --- Onboarding ---
 function renderOnboarding() {
   var html = SECTION_TEMPLATES.map(function(s) {
@@ -284,7 +292,25 @@ function finishOnboarding() {
   );
 
   Promise.all(planPromises).then(function() {
-    return saveUserConfig(selected);
+    // Сохраняем конфиг с createdAt и platform
+    var platform = detectPlatform();
+    return userDoc().set({
+      sections: selected,
+      email: currentUser.email,
+      createdAt: new Date().toISOString(),
+      platform: platform
+    }, { merge: true });
+  }).then(function() {
+    // Уведомляем сервер о новом пользователе
+    return currentUser.getIdToken().then(function(token) {
+      return fetch('https://api.spring-tracker.ru:8080/notify/new-user', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    }).catch(function(e) {
+      // Не критично — если упало, просто логируем
+      console.warn('notify-new-user failed:', e);
+    });
   }).then(function() {
     startApp(selected);
   }).catch(function(e) {

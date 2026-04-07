@@ -40,15 +40,19 @@ function uploadPlan(section, input) {
   if (!file) return;
   input.value = '';
 
-  var formData = new FormData();
-  formData.append('file', file);
-
   var label = input.closest('label');
   if (label) { label.style.opacity = '0.6'; label.style.pointerEvents = 'none'; }
 
-  fetch(API_URL + '/upload/' + section, {
-    method: 'POST',
-    body: formData,
+  // Получаем ID токен и только потом делаем запрос
+  currentUser.getIdToken().then(function(token) {
+    var formData = new FormData();
+    formData.append('file', file);
+
+    return fetch(API_URL + '/upload/' + section, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData,
+    });
   })
   .then(function(r) {
     if (!r.ok) throw new Error('Ошибка сервера');
