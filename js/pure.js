@@ -280,6 +280,18 @@ var SKILLS = [
     trackerField: 'totalReps',
     levels: null,
   },
+  {
+    id: 'lotus',
+    name: 'Лотос',
+    section: 'qigong',
+    color: '#B06FC4',
+    bgColor: '#F3E8FA',
+    valueType: 'minutes',
+    source: { collection: 'qigong', field: 'Медитация' },
+    tracker: 'lotus',
+    trackerField: 'totalMinutes',
+    levels: null,
+  },
 ];
 
 // Привязываем уровни после их объявления
@@ -290,6 +302,7 @@ function initSkillLevels() {
   SKILLS[3].levels = PULLUP_LEVELS;
   SKILLS[4].levels = FORMS_LEVELS;
   SKILLS[5].levels = FORMS_LEVELS;
+  SKILLS[6].levels = LOTUS_LEVELS;
 }
 
 function getSkillById(id) {
@@ -312,6 +325,8 @@ if (typeof module !== 'undefined') {
     getPullupLevel, getPullupNextLevel, getPullupProgress,
     FORMS_LEVELS,
     getFormsLevel, getFormsNextLevel, getFormsProgress,
+    LOTUS_LEVELS,
+    getLotusLevel, getLotusNextLevel, getLotusProgress,
     SKILLS, initSkillLevels, getSkillById, getSkillsBySection,
   };
 }
@@ -354,4 +369,43 @@ function getFormsProgress(totalReps) {
   return Math.round(done / range * 100);
 }
 
+var LOTUS_LEVELS = [
+  { level: 0, name: 'Беспокойный ум',        hours: 0,     desc: 'Мысли кружатся, как листья на ветру' },
+  { level: 1, name: 'Первый вдох',            hours: 10,    desc: 'Тело начинает успокаиваться' },
+  { level: 2, name: 'Тихая вода',             hours: 30,    desc: 'Рябь уходит с поверхности' },
+  { level: 3, name: 'Ясное озеро',            hours: 60,    desc: 'Вода не спешит' },
+  { level: 4, name: 'Глубина',                hours: 100,   desc: 'Свет проходит насквозь' },
+  { level: 5, name: 'Семя на дне',            hours: 300,   desc: 'Ничто не тревожит' },
+  { level: 6, name: 'Росток тянется к небу',  hours: 600,   desc: 'Мысли проходят, как облака' },
+  { level: 7, name: 'Бутон над водой',        hours: 1000,  desc: 'Отражает все, не удерживая ничего' },
+  { level: 8, name: 'Лепестки встрепенулись', hours: 5000,  desc: 'Тишина вокруг' },
+  { level: 9, name: 'Лотос раскрылся',        hours: 10000, desc: 'Пробуждение ото сна' },
+];
 
+function getLotusLevel(totalMinutes) {
+  var hours = totalMinutes / 60;
+  var current = LOTUS_LEVELS[0];
+  for (var i = 0; i < LOTUS_LEVELS.length; i++) {
+    if (hours >= LOTUS_LEVELS[i].hours) current = LOTUS_LEVELS[i];
+    else break;
+  }
+  return current;
+}
+
+function getLotusNextLevel(totalMinutes) {
+  var hours = totalMinutes / 60;
+  for (var i = 0; i < LOTUS_LEVELS.length; i++) {
+    if (hours < LOTUS_LEVELS[i].hours) return LOTUS_LEVELS[i];
+  }
+  return null;
+}
+
+function getLotusProgress(totalMinutes) {
+  var hours = totalMinutes / 60;
+  var current = getLotusLevel(totalMinutes);
+  var next = getLotusNextLevel(totalMinutes);
+  if (!next) return 100;
+  var range = next.hours - current.hours;
+  var done = hours - current.hours;
+  return Math.round(done / range * 100);
+}

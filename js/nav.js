@@ -155,6 +155,7 @@ function getSkillIcon(skill) {
     pullups:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20V8" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/></svg>',
     slt:      '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">小</span>',
     ck:       '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">桥</span>',
+    lotus:    '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20 Q12 14 12 12" stroke="#B06FC4" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q9 8 5 9 Q7 13 12 12Z" fill="#D4A0E0"/><path d="M12 12 Q15 8 19 9 Q17 13 12 12Z" fill="#B06FC4"/><path d="M12 12 Q8 6 10 2 Q13 6 12 12Z" fill="#D4A0E0"/><path d="M12 12 Q16 6 14 2 Q11 6 12 12Z" fill="#B06FC4"/></svg>',
   };
   return icons[skill.id] || '';
 }
