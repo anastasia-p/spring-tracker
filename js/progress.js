@@ -45,50 +45,11 @@ function closePopup() {
   pendingCheck = null;
 }
 
-// --- Universal level helpers ---
+// --- Universal level helpers (реализация в pure.js) ---
 
-function skillValueToScale(skill, total) {
-  if (skill.valueType === 'minutes') return total / 60;
-  if (skill.valueType === 'seconds') return total / 3600;
-  return total;
-}
-
-function levelField(skill) {
-  return skill.valueType === 'reps' ? 'reps' : 'hours';
-}
-
-function getLevelForSkill(skill, total) {
-  var levels = skill.levels;
-  var field = levelField(skill);
-  var scaled = skillValueToScale(skill, total);
-  var current = levels[0];
-  for (var i = 0; i < levels.length; i++) {
-    if (scaled >= levels[i][field]) current = levels[i];
-    else break;
-  }
-  return current;
-}
-
-function getNextLevelForSkill(skill, total) {
-  var levels = skill.levels;
-  var field = levelField(skill);
-  var scaled = skillValueToScale(skill, total);
-  for (var i = 0; i < levels.length; i++) {
-    if (scaled < levels[i][field]) return levels[i];
-  }
-  return null;
-}
-
-function getProgressForSkill(skill, total) {
-  var field = levelField(skill);
-  var scaled = skillValueToScale(skill, total);
-  var current = getLevelForSkill(skill, total);
-  var next = getNextLevelForSkill(skill, total);
-  if (!next) return 100;
-  var range = next[field] - current[field];
-  var done = scaled - current[field];
-  return Math.round(done / range * 100);
-}
+var getLevelForSkill    = getSkillLevel;
+var getNextLevelForSkill = getSkillNextLevel;
+var getProgressForSkill  = getSkillProgress;
 
 // --- Universal render ---
 
