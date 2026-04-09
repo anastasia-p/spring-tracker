@@ -4,7 +4,6 @@ const { test, expect } = require('@playwright/test');
 const BASE_URL = process.env.TEST_URL || 'http://localhost:8080';
 
 // --- Desktop ---
-
 test.describe('Desktop (1280x800)', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
@@ -23,10 +22,13 @@ test.describe('Desktop (1280x800)', () => {
 
   test('typewriter не стартует раньше окончания анимации ростка', async ({ page }) => {
     await page.goto(BASE_URL);
-    // В первую секунду typewriter должен быть пустым — листики ещё анимируются
-    const textAt1s = await page.locator('#typewriter').innerText();
-    expect(textAt1s.replace(/\s/g, '')).toBe('');
-    // После 2.5s текст уже должен появиться
+    // Ждём DOMContentLoaded — именно отсюда стартует таймер typewriter (задержка 1.9с).
+    // Проверяем сразу: к этому моменту 1.9с точно не прошло.
+    await page.waitForLoadState('domcontentloaded');
+    const textAtLoad = await page.locator('#typewriter').innerText();
+    expect(textAtLoad.replace(/\s/g, '')).toBe('');
+
+    // После 2.5с текст уже должен появиться
     await page.waitForTimeout(2500);
     const textAt2_5s = await page.locator('#typewriter').innerText();
     expect(textAt2_5s.length).toBeGreaterThan(3);
@@ -34,7 +36,6 @@ test.describe('Desktop (1280x800)', () => {
 
   test('typewriter напечатал текст', async ({ page }) => {
     await page.goto(BASE_URL);
-    // Ждём пока напечатается минимум 4 символа (с учётом задержки 1800ms)
     await page.waitForFunction(() => {
       const el = document.getElementById('typewriter');
       return el && el.innerText.replace(/\s/g, '').length > 3;
@@ -99,7 +100,6 @@ test.describe('Desktop (1280x800)', () => {
 });
 
 // --- Mobile ---
-
 test.describe('Mobile (375x812, iPhone SE)', () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
@@ -144,7 +144,6 @@ test.describe('Mobile (375x812, iPhone SE)', () => {
 });
 
 // --- SEO и мета ---
-
 test.describe('SEO и мета-теги', () => {
   test('og:title присутствует', async ({ page }) => {
     await page.goto(BASE_URL);
