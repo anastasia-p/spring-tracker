@@ -1,5 +1,4 @@
 // Firebase init and data access layer
-
 var db = firebase.firestore();
 db.enablePersistence().catch(function() {});
 
@@ -10,20 +9,19 @@ function userCol(name) {
 
 // Day types loaded from day-types.json
 var dayTypes = [];
-
 function loadDayTypes() {
-  var baseUrl = location.origin + location.pathname.replace('index.html', '');
+  var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
   return fetch(baseUrl + 'plans/day-types.json?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) { dayTypes = data; })
     .catch(function() {
       dayTypes = [
-        { type: 'legs',    label: 'Ноги + таз',  css: 'b-legs'  },
-        { type: 'upper',   label: 'Верх + кор',  css: 'b-upper' },
-        { type: 'rest',    label: 'Отдых',        css: 'b-rest'  },
-        { type: 'test',    label: 'Отдых + тест', css: 'b-rest'  },
-        { type: 'wc',      label: 'Вин Чун',      css: 'b-wc'    },
-        { type: 'qi',      label: 'Цигун',        css: 'b-qi'    },
+        { type: 'legs',  label: 'Ноги + таз',    css: 'b-legs' },
+        { type: 'upper', label: 'Верх + кор',     css: 'b-upper' },
+        { type: 'rest',  label: 'Отдых',          css: 'b-rest' },
+        { type: 'test',  label: 'Отдых + тест',   css: 'b-rest' },
+        { type: 'wc',    label: 'Вин Чун',        css: 'b-wc' },
+        { type: 'qi',    label: 'Цигун',          css: 'b-qi' },
       ];
     });
 }
@@ -40,13 +38,8 @@ function getDayTypeLabel(type) {
 
 // In-memory cache
 var cache = { strength: {}, wingchun: {}, qigong: {}, tests: {} };
-
 function resetCache(section) {
-  if (section === 'tests') {
-    cache.tests = {};
-  } else {
-    cache[section] = {};
-  }
+  if (section === 'tests') { cache.tests = {}; } else { cache[section] = {}; }
 }
 
 // Current plans loaded from Firebase
@@ -79,17 +72,17 @@ function loadDayData(section, date) {
     if (s.exists) {
       var data = s.data();
       cache[section][dk] = {
-        plan: isToday ? (dayPlan ? dayPlan.exercises : (data.plan || [])) : (data.plan || (dayPlan ? dayPlan.exercises : [])),
-        type: data.type || (dayPlan ? dayPlan.type : 'rest'),
-        label: data.label || (dayPlan ? dayPlan.label : ''),
+        plan:   isToday ? (dayPlan ? dayPlan.exercises : (data.plan || [])) : (data.plan || (dayPlan ? dayPlan.exercises : [])),
+        type:   data.type   || (dayPlan ? dayPlan.type  : 'rest'),
+        label:  data.label  || (dayPlan ? dayPlan.label : ''),
         checks: data.checks || {},
         values: data.values || {}
       };
     } else {
       cache[section][dk] = {
-        plan: dayPlan ? dayPlan.exercises : [],
-        type: dayPlan ? dayPlan.type : 'rest',
-        label: dayPlan ? dayPlan.label : '',
+        plan:   dayPlan ? dayPlan.exercises : [],
+        type:   dayPlan ? dayPlan.type  : 'rest',
+        label:  dayPlan ? dayPlan.label : '',
         checks: {},
         values: {}
       };
@@ -98,9 +91,9 @@ function loadDayData(section, date) {
   }).catch(function() {
     var dayPlan = getDayPlan(section, date);
     cache[section][dk] = {
-      plan: dayPlan ? dayPlan.exercises : [],
-      type: dayPlan ? dayPlan.type : 'rest',
-      label: dayPlan ? dayPlan.label : '',
+      plan:   dayPlan ? dayPlan.exercises : [],
+      type:   dayPlan ? dayPlan.type  : 'rest',
+      label:  dayPlan ? dayPlan.label : '',
       checks: {},
       values: {}
     };
@@ -112,11 +105,8 @@ function saveDayData(section, date) {
   var dk = dateKey(date), data = cache[section][dk];
   if (!data) return;
   userCol(section).doc(dk).set({
-    plan: data.plan,
-    type: data.type,
-    label: data.label,
-    checks: data.checks,
-    values: data.values
+    plan: data.plan, type: data.type, label: data.label,
+    checks: data.checks, values: data.values
   }).catch(function() {});
 }
 
@@ -136,14 +126,11 @@ function saveTestData(dk, data) {
 function loadSkill(skill) {
   return userCol('tracker').doc(skill.tracker).get().then(function(s) {
     skillTotals[skill.id] = s.exists ? (s.data()[skill.trackerField] || 0) : 0;
-  }).catch(function() {
-    skillTotals[skill.id] = 0;
-  });
+  }).catch(function() { skillTotals[skill.id] = 0; });
 }
 
 function recalcSkill(skill) {
   var sources = [];
-
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
   sources.push(userCol(src.collection).get().then(function(snap) {
@@ -158,11 +145,9 @@ function recalcSkill(skill) {
     });
     return total;
   }));
-
   if (skill.sourceExtra) {
     var ext = skill.sourceExtra;
     var extFields = ext.fields || (ext.field ? [ext.field] : []);
-    // Читаем из кеша если есть (как plan.js), иначе из Firebase
     var cachedDocs = cache[ext.collection];
     if (cachedDocs && Object.keys(cachedDocs).length > 0) {
       var total = 0;
@@ -182,7 +167,6 @@ function recalcSkill(skill) {
       }));
     }
   }
-
   Promise.all(sources).then(function(totals) {
     var total = totals.reduce(function(a, b) { return a + b; }, 0);
     skillTotals[skill.id] = total;
@@ -204,6 +188,8 @@ function findSkillByExercise(exName, collection) {
 }
 
 function loadAllSkills() {
-  initSkillLevels();
-  return Promise.all(SKILLS.map(function(skill) { return loadSkill(skill); }));
+  // initSkillLevels() удалён — уровни теперь инлайн в SKILLS (pure.js)
+  return Promise.all(SKILLS.map(function(skill) {
+    return loadSkill(skill);
+  }));
 }
