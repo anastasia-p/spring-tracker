@@ -19,9 +19,11 @@ function renderSection(section, keepOpen) {
     results.forEach(function(r) {
       totalEx += r.plan.length;
     });
+    var todayKey = dateKey(new Date());
     container.innerHTML = '';
     results.forEach(function(dayData, i) {
       var date = dates[i], dk = dateKey(date);
+      var isToday = dk === todayKey;
       var checks = dayData.checks || {}, values = dayData.values || {}, exs = dayData.plan || [];
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
@@ -34,6 +36,7 @@ function renderSection(section, keepOpen) {
       var markInner = (isComplete || isPartial) ? '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
       var card = document.createElement('div');
       card.className = 'day-card';
+      if (isToday) card.style.border = '2px solid #1D9E75';
       card.innerHTML =
         '<div class="day-header" onclick="toggleDay(this)">' +
           '<div class="day-left">' +
