@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Юнит-тесты pure.js
+        run: node tools/tests/pure.test.js
+
       - name: Кеш Playwright браузеров
         uses: actions/cache@v4
         id: playwright-cache
