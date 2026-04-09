@@ -216,17 +216,16 @@ function renderSettingsPlans() {
       '.toggle-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}' +
       '.toggle-switch input:checked+.toggle-slider{background:#1D9E75}' +
       '.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}' +
-      '.toggle-switch input:disabled+.toggle-slider{opacity:0.5;cursor:not-allowed}' +
-      '.settings-group-label{font-size:12px;font-weight:500;color:var(--text-muted,#888);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}';
+      '.toggle-switch input:disabled+.toggle-slider{opacity:0.5;cursor:not-allowed}';
     document.head.appendChild(style);
   }
 
   var togglesHtml =
-    '<div style="margin-bottom:20px">' +
-      '<div class="settings-group-label">Дисциплины</div>' +
+    '<div class="section-title">Дисциплины</div>' +
+    '<div class="settings-group" style="margin-bottom:16px">' +
       SECTION_TEMPLATES.map(function(tmpl) {
         var active = userSections.indexOf(tmpl.id) !== -1;
-        return '<div class="settings-item" style="padding:10px 0">' +
+        return '<div class="settings-item">' +
           '<span class="settings-item-label">' + tmpl.label + '</span>' +
           '<label class="toggle-switch">' +
             '<input type="checkbox"' + (active ? ' checked' : '') +
@@ -238,7 +237,8 @@ function renderSettingsPlans() {
     '</div>';
 
   var plansHtml = userSections.length > 0
-    ? '<div class="settings-group-label">Планы</div>' +
+    ? '<div class="section-title">Планы</div>' +
+      '<div class="settings-group" style="margin-bottom:16px">' +
       userSections.map(function(section) {
         var meta = getSectionMeta(section);
         var label = meta ? meta.label : section;
@@ -252,7 +252,8 @@ function renderSettingsPlans() {
             '</label>' +
           '</div>' +
         '</div>';
-      }).join('')
+      }).join('') +
+      '</div>'
     : '';
 
   container.innerHTML = togglesHtml + plansHtml;
