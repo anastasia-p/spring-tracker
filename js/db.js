@@ -36,14 +36,20 @@ function getDayTypeLabel(type) {
   return found ? found.label : type;
 }
 
+// Все секции + тесты — дериватив из SECTION_META (pure.js грузится раньше)
+var ALL_DATA_SECTIONS = SECTIONS.concat(['tests']);
+
 // In-memory cache
-var cache = { strength: {}, wingchun: {}, qigong: {}, tests: {} };
+var cache = {};
+ALL_DATA_SECTIONS.forEach(function(s) { cache[s] = {}; });
+
 function resetCache(section) {
-  if (section === 'tests') { cache.tests = {}; } else { cache[section] = {}; }
+  cache[section] = {};
 }
 
 // Current plans loaded from Firebase
-var plans = { strength: null, wingchun: null, qigong: null, tests: null };
+var plans = {};
+ALL_DATA_SECTIONS.forEach(function(s) { plans[s] = null; });
 
 // Skill totals — keyed by skill id
 var skillTotals = {};
