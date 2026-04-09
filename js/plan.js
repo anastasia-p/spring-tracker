@@ -77,6 +77,7 @@ function renderSection(section, keepOpen) {
     document.getElementById(section + '-s-days').textContent = doneDays;
     document.getElementById(section + '-s-ex').textContent = doneEx;
     document.getElementById(section + '-s-pct').textContent = tp + '%';
+    renderWeekStars(section, results, dates);
     if (keepOpen) {
       var cards = document.querySelectorAll('#' + section + '-days .day-card');
       keepOpen.forEach(function(i) { if (cards[i]) cards[i].classList.add('open'); });
@@ -122,4 +123,48 @@ function toggleCheck(section, dk, exName, el) {
 function changeWeek(d) {
   weekOffset += d;
   SECTIONS.forEach(function(s) { renderSection(s); });
+}
+
+function computeWeekStars(results, dates) {
+  var todayKey = dateKey(new Date());
+  var hasGreen = false, hasOrange = false, hasRed = false;
+  results.forEach(function(dayData, i) {
+    if (dateKey(dates[i]) >= todayKey) return;
+    var exs = dayData.plan || [], checks = dayData.checks || {};
+    var total = exs.length;
+    var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
+    if (total === 0) { hasGreen = true; return; }
+    if (done === total) hasGreen = true;
+    else if (done > 0) hasOrange = true;
+    else hasRed = true;
+  });
+  if (!hasGreen && !hasOrange && !hasRed) return { count: 3, color: '#1D9E75' };
+  if (hasGreen && !hasOrange && !hasRed)  return { count: 3, color: '#1D9E75' };
+  if (hasGreen && hasOrange && !hasRed)   return { count: 2, color: '#FAC775' };
+  if (hasGreen && hasRed)                 return { count: 1, color: '#FAC775' };
+  if (!hasGreen && hasOrange && !hasRed)  return { count: 2, color: '#FAC775' };
+  if (!hasGreen && hasOrange && hasRed)   return { count: 1, color: '#FAC775' };
+  return { count: 1, color: '#E24B4A' };
+}
+
+function renderWeekStars(section, results, dates) {
+  var container = document.getElementById(section + '-week-stars');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = section + '-week-stars';
+    container.style.cssText = 'text-align:center;padding:6px 0 2px';
+    var labelEl = document.getElementById(section + '-week-label');
+    if (labelEl && labelEl.parentNode) labelEl.parentNode.insertBefore(container, labelEl);
+  }
+  var s = computeWeekStars(results, dates);
+  var pts = '8,1 9.8,5.6 14.7,5.8 10.9,8.9 12.1,13.7 8,11 3.9,13.7 5.1,8.9 1.3,5.8 6.2,5.6';
+  var html = '';
+  for (var i = 0; i < 3; i++) {
+    var fill = i < s.count ? s.color : 'none';
+    var strokeOpacity = i < s.count ? '1' : '0.25';
+    html += '<svg width="20" height="20" viewBox="0 0 16 16" style="display:inline-block;margin:0 3px">' +
+      '<polygon points="' + pts + '" fill="' + fill + '" stroke="' + s.color + '" stroke-width="1" stroke-opacity="' + strokeOpacity + '"/>' +
+      '</svg>';
+  }
+  container.innerHTML = html;
 }
