@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Локальные файлы
+avatar.png
+bot_avatar.png
+little_avatar.png
+TECH_DEBT.md
