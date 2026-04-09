@@ -1,5 +1,4 @@
 // Navigation and app init
-
 var userSections = []; // sections chosen by this user
 
 function showTab(name, btn) {
@@ -9,7 +8,6 @@ function showTab(name, btn) {
   document.getElementById(name).classList.add('active');
   if (btn && btn.classList && btn.classList.contains('tab-btn')) btn.classList.add('active');
   else if (btn) btn.style.color = 'var(--green)';
-
   var subTabs = document.getElementById('sub-tabs');
   if (name === 'plan') {
     renderPlanTabs();
@@ -33,16 +31,15 @@ function showSubTab(name, btn) {
 }
 
 // --- Plan tabs ---
-
 function renderPlanTabs() {
   var subTabsEl = document.getElementById('sub-tabs');
   subTabsEl.innerHTML = '';
   userSections.forEach(function(s, i) {
-    var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === s; });
-    if (!tmpl) return;
+    var meta = getSectionMeta(s);
+    if (!meta) return;
     var btn = document.createElement('button');
     btn.className = 'sub-tab' + (i === 0 ? ' active' : '');
-    btn.textContent = tmpl.label;
+    btn.textContent = meta.label;
     btn.onclick = function() { showSubTab(s, btn); };
     subTabsEl.appendChild(btn);
   });
@@ -55,57 +52,37 @@ function renderPlanTabs() {
 }
 
 // --- Progress tabs ---
-
-var SECTION_LABELS = {
-  strength: 'Силовые',
-  wingchun: 'Вин Чун',
-  qigong:   'Цигун',
-};
-
 function renderProgressTabs(sections) {
   var tabsEl = document.getElementById('sub-tabs');
   tabsEl.innerHTML = '';
-
   var skillsBtn = document.createElement('button');
   skillsBtn.className = 'sub-tab';
   skillsBtn.textContent = 'Навыки';
   skillsBtn.onclick = function() { showProgressTab('skills', skillsBtn); };
   tabsEl.appendChild(skillsBtn);
-
   var testBtn = document.createElement('button');
   testBtn.className = 'sub-tab';
   testBtn.textContent = 'Тесты';
   testBtn.onclick = function() { showProgressTab('tests', testBtn); };
   tabsEl.appendChild(testBtn);
-
   showProgressTab('skills', skillsBtn);
 }
 
 function showProgressTab(section, btn) {
-  // Update active tab button
   document.querySelectorAll('#sub-tabs .sub-tab').forEach(function(b) { b.classList.remove('active'); });
-  if (btn) btn.classList.add('active');
-  else {
-    // Activate by section name
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    var label = (getSectionMeta(section) || {}).label || section;
     document.querySelectorAll('#sub-tabs .sub-tab').forEach(function(b) {
-      var label = SECTION_LABELS[section] || section;
       if (b.textContent === label || (section === 'tests' && b.textContent === 'Тесты')) {
         b.classList.add('active');
       }
     });
   }
-
   var container = document.getElementById('progress-content');
-
-  if (section === 'tests') {
-    renderTestsTab(container);
-    return;
-  }
-
-  if (section === 'skills') {
-    renderAllSkillsGrid(container);
-    return;
-  }
+  if (section === 'tests') { renderTestsTab(container); return; }
+  if (section === 'skills') { renderAllSkillsGrid(container); return; }
 }
 
 function renderAllSkillsGrid(container) {
@@ -125,14 +102,10 @@ function buildSkillCardCompact(skill) {
   var div = document.createElement('div');
   div.className = 'sk-card';
   div.innerHTML =
-      '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
-    '<div class="sk3-name-row">' +
-      '<div class="sk-name">' + skill.name + '</div>' +
-    '</div>' +
+    '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>' +
+    '<div class="sk3-name-row"><div class="sk-name">' + skill.name + '</div></div>' +
     '<div class="sk3-mid">' +
-      '<div class="sk-icon" style="background:' + skill.bgColor + '">' +
-        getSkillIcon(skill) +
-      '</div>' +
+      '<div class="sk-icon" style="background:' + skill.bgColor + '">' + getSkillIcon(skill) + '</div>' +
       '<div class="sk-amount" id="' + prefix + '-hours"></div>' +
     '</div>' +
     '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>' +
@@ -149,13 +122,13 @@ function buildSkillCardCompact(skill) {
 
 function getSkillIcon(skill) {
   var icons = {
-    tree:     '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20v-8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q13 6 19 4 Q18 11 12 12Z" fill="#1D9E75"/><path d="M12 15 Q11 9 5 8 Q6 14 12 15Z" fill="#5DCAA5"/></svg>',
-    mountain: '<svg width="20" height="20" viewBox="0 0 30 30" fill="none"><path d="M3 25 L15 5 L27 25 Z" fill="#7F77DD"/><path d="M8 25 L15 13 L22 25 Z" fill="#534AB7"/><path d="M12 9 L15 5 L18 9 L15 12 Z" fill="white"/></svg>',
-    pushups:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 12h12M6 12c0-2 1.5-4 4-4M6 12c0 2 1.5 4 4 4M18 12c0-2-1.5-4-4-4M18 12c0 2-1.5 4-4 4" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="4" r="2" fill="#D85A30"/><circle cx="12" cy="20" r="2" fill="#D85A30"/></svg>',
-    pullups:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20V8" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/></svg>',
-    slt:      '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">小</span>',
-    ck:       '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">桥</span>',
-    lotus:    '<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="16" rx="10" ry="3" fill="#E8C8F0" opacity="0.4"/><path d="M12 16 Q6 10 9 1 Q13 8 12 16Z" fill="#D4A0E0"/><path d="M12 16 Q18 10 15 1 Q11 8 12 16Z" fill="#B06FC4"/><path d="M12 16 Q2 12 3 5 Q8 11 12 16Z" fill="#C880D8"/><path d="M12 16 Q22 12 21 5 Q16 11 12 16Z" fill="#9B4FB5"/><path d="M12 16 Q4 17 1 11 Q7 14 12 16Z" fill="#D4A0E0" opacity="0.7"/><path d="M12 16 Q20 17 23 11 Q17 14 12 16Z" fill="#B06FC4" opacity="0.7"/><circle cx="12" cy="15" r="2.5" fill="#F3E8FA"/><circle cx="12" cy="15" r="1.2" fill="#E8C8F0"/></svg>',
+    tree:    '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20v-8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q13 6 19 4 Q18 11 12 12Z" fill="#1D9E75"/><path d="M12 15 Q11 9 5 8 Q6 14 12 15Z" fill="#5DCAA5"/></svg>',
+    mountain:'<svg width="20" height="20" viewBox="0 0 30 30" fill="none"><path d="M3 25 L15 5 L27 25 Z" fill="#7F77DD"/><path d="M8 25 L15 13 L22 25 Z" fill="#534AB7"/><path d="M12 9 L15 5 L18 9 L15 12 Z" fill="white"/></svg>',
+    pushups: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 12h12M6 12c0-2 1.5-4 4-4M6 12c0 2 1.5 4 4 4M18 12c0-2-1.5-4-4-4M18 12c0 2-1.5 4-4 4" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="4" r="2" fill="#D85A30"/><circle cx="12" cy="20" r="2" fill="#D85A30"/></svg>',
+    pullups: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20V8" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    slt:     '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">小</span>',
+    ck:      '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">桥</span>',
+    lotus:   '<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="16" rx="10" ry="3" fill="#E8C8F0" opacity="0.4"/><path d="M12 16 Q6 10 9 1 Q13 8 12 16Z" fill="#D4A0E0"/><path d="M12 16 Q18 10 15 1 Q11 8 12 16Z" fill="#B06FC4"/><path d="M12 16 Q2 12 3 5 Q8 11 12 16Z" fill="#C880D8"/><path d="M12 16 Q22 12 21 5 Q16 11 12 16Z" fill="#9B4FB5"/><path d="M12 16 Q4 17 1 11 Q7 14 12 16Z" fill="#D4A0E0" opacity="0.7"/><path d="M12 16 Q20 17 23 11 Q17 14 12 16Z" fill="#B06FC4" opacity="0.7"/><circle cx="12" cy="15" r="2.5" fill="#F3E8FA"/><circle cx="12" cy="15" r="1.2" fill="#E8C8F0"/></svg>',
   };
   return icons[skill.id] || '';
 }
@@ -169,17 +142,13 @@ function renderTestsTab(container) {
 function showSkillLevels(skillId) {
   var skill = getSkillById(skillId);
   if (!skill) return;
-
-  // Remove existing popup if any
   var existing = document.getElementById('dynamic-levels-popup');
   if (existing) existing.remove();
-
   var prefix = getElemPrefix(skillId);
   var popup = document.createElement('div');
   popup.id = 'dynamic-levels-popup';
   popup.className = 'popup-overlay';
   popup.style.display = 'flex';
-
   var titleName = skill.name.toUpperCase();
   popup.innerHTML =
     '<div class="popup-box">' +
@@ -189,16 +158,13 @@ function showSkillLevels(skillId) {
       '</div>' +
       '<div class="levels-scroll"><div id="dynamic-levels-list"></div></div>' +
     '</div>';
-
   document.body.appendChild(popup);
-
-  // Fill levels
   var listEl = document.getElementById('dynamic-levels-list');
-  var total   = getSkillTotal(skill);
-  var levels  = skill.levels;
+  var total = getSkillTotal(skill);
+  var levels = skill.levels;
   var current = getLevelForSkill(skill, total);
   var html = levels.map(function(lvl) {
-    var isCur  = lvl.level === current.level;
+    var isCur = lvl.level === current.level;
     var isPast = lvl.level < current.level;
     var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
     return '<div class="level-row" style="opacity:' + opacity + '">' +
@@ -214,21 +180,15 @@ function showSkillLevels(skillId) {
 }
 
 // --- Init ---
-
 function initWithSections(sections) {
   userSections = sections;
-  SECTIONS = sections;
-  initSkillLevels();
-
   // Render plan tabs (plan is default active screen)
   renderPlanTabs();
-
   // Show user email in settings
   if (currentUser) {
     var emailEl = document.getElementById('settings-user-email');
     if (emailEl) emailEl.textContent = currentUser.email;
   }
-
   // Load data
   var loadPromises = [
     loadDayTypes(),
@@ -236,22 +196,21 @@ function initWithSections(sections) {
     loadTestsCache(),
     loadAllSkills(),
   ].concat(sections.map(function(s) { return loadPlanFromFirebase(s); }));
-
   Promise.all(loadPromises).then(function() {
     sections.forEach(function(s) { renderSection(s); });
     renderTestForm();
-    // Pre-render skills so data is ready when user switches to progress tab
-    // but don't activate progress tabs - plan is the default active screen
   });
 }
 
 function renderSettingsPlans() {
   var container = document.getElementById('settings-plans-list');
   if (!container) return;
-  var LABELS = { strength: 'Силовые тренировки', wingchun: 'Вин Чун', qigong: 'Цигун' };
   container.innerHTML = userSections.map(function(section) {
+    var meta = getSectionMeta(section);
+    var label = meta ? meta.label : section;
     return '<div class="settings-item">' +
-      '<div><div class="settings-item-label">' + LABELS[section] + '</div><div class="update-status" id="status-' + section + '"></div></div>' +
+      '<div><div class="settings-item-label">' + label + '</div>' +
+      '<div class="update-status" id="status-' + section + '"></div></div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>' +
         '<label class="update-btn" style="cursor:pointer">Загрузить' +
