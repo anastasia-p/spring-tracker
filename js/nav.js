@@ -205,18 +205,55 @@ function initWithSections(sections) {
 function renderSettingsPlans() {
   var container = document.getElementById('settings-plans-list');
   if (!container) return;
-  container.innerHTML = userSections.map(function(section) {
-    var meta = getSectionMeta(section);
-    var label = meta ? meta.label : section;
-    return '<div class="settings-item">' +
-      '<div><div class="settings-item-label">' + label + '</div>' +
-      '<div class="update-status" id="status-' + section + '"></div></div>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>' +
-        '<label class="update-btn" style="cursor:pointer">Загрузить' +
-          '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'' + section + '\', this)">' +
-        '</label>' +
-      '</div>' +
+
+  if (!document.getElementById('toggle-switch-style')) {
+    var style = document.createElement('style');
+    style.id = 'toggle-switch-style';
+    style.textContent =
+      '.toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}' +
+      '.toggle-switch input{opacity:0;width:0;height:0}' +
+      '.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.2s}' +
+      '.toggle-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}' +
+      '.toggle-switch input:checked+.toggle-slider{background:#1D9E75}' +
+      '.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}' +
+      '.toggle-switch input:disabled+.toggle-slider{opacity:0.5;cursor:not-allowed}' +
+      '.settings-group-label{font-size:12px;font-weight:500;color:var(--text-muted,#888);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}';
+    document.head.appendChild(style);
+  }
+
+  var togglesHtml =
+    '<div style="margin-bottom:20px">' +
+      '<div class="settings-group-label">Дисциплины</div>' +
+      SECTION_TEMPLATES.map(function(tmpl) {
+        var active = userSections.indexOf(tmpl.id) !== -1;
+        return '<div class="settings-item" style="padding:10px 0">' +
+          '<span class="settings-item-label">' + tmpl.label + '</span>' +
+          '<label class="toggle-switch">' +
+            '<input type="checkbox"' + (active ? ' checked' : '') +
+            ' onchange="toggleSection(\'' + tmpl.id + '\',this.checked,this)">' +
+            '<span class="toggle-slider"></span>' +
+          '</label>' +
+        '</div>';
+      }).join('') +
     '</div>';
-  }).join('');
+
+  var plansHtml = userSections.length > 0
+    ? '<div class="settings-group-label">Планы</div>' +
+      userSections.map(function(section) {
+        var meta = getSectionMeta(section);
+        var label = meta ? meta.label : section;
+        return '<div class="settings-item">' +
+          '<div><div class="settings-item-label">' + label + '</div>' +
+          '<div class="update-status" id="status-' + section + '"></div></div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+            '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>' +
+            '<label class="update-btn" style="cursor:pointer">Загрузить' +
+              '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'' + section + '\', this)">' +
+            '</label>' +
+          '</div>' +
+        '</div>';
+      }).join('')
+    : '';
+
+  container.innerHTML = togglesHtml + plansHtml;
 }

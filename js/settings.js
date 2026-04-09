@@ -161,3 +161,47 @@ function fallbackCopy(text, btn) {
   btn.textContent = 'Скопировано!';
   setTimeout(function() { btn.textContent = 'Скопировать'; }, 2000);
 }
+
+// --- Управление дисциплинами ---
+
+function toggleSection(sectionId, checked, el) {
+  if (!checked) {
+    var meta = getSectionMeta(sectionId);
+    var label = meta ? meta.label : sectionId;
+    if (!confirm('Убрать «' + label + '» из плана?\n\nДанные сохранятся — можно вернуть в любой момент.')) {
+      el.checked = true;
+      return;
+    }
+    var newSections = userSections.filter(function(s) { return s !== sectionId; });
+    saveUserConfig(newSections).then(function() {
+      initWithSections(newSections);
+      renderSettingsPlans();
+    });
+    return;
+  }
+
+  el.disabled = true;
+  var newSections = userSections.concat([sectionId]);
+  var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
+  var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === sectionId; });
+
+  userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
+    if (snap.exists) return Promise.resolve();
+    var url = baseUrl + 'plans/' + tmpl.planFile + '?t=' + Date.now();
+    return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+      return userDoc().collection('plan').doc(sectionId).set({
+        days: data,
+        updatedAt: new Date().toISOString()
+      });
+    });
+  }).then(function() {
+    return saveUserConfig(newSections);
+  }).then(function() {
+    initWithSections(newSections);
+    renderSettingsPlans();
+  }).catch(function(e) {
+    console.error('toggleSection:', e);
+    el.checked = false;
+    el.disabled = false;
+  });
+}
