@@ -154,7 +154,10 @@ function renderWeekStars(section, results, dates) {
     container.id = section + '-week-stars';
     container.style.cssText = 'text-align:center;padding:6px 0 2px';
     var labelEl = document.getElementById(section + '-week-label');
-    if (labelEl && labelEl.parentNode) labelEl.parentNode.insertBefore(container, labelEl);
+    if (labelEl && labelEl.parentNode && labelEl.parentNode.parentNode) {
+      var headerRow = labelEl.parentNode;
+      headerRow.parentNode.insertBefore(container, headerRow);
+    }
   }
   var s = computeWeekStars(results, dates);
   var pts = '8,1 9.8,5.6 14.7,5.8 10.9,8.9 12.1,13.7 8,11 3.9,13.7 5.1,8.9 1.3,5.8 6.2,5.6';
