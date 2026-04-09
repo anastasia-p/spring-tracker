@@ -45,6 +45,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .week-nav{display:flex;align-items:center;gap:8px;padding:16px 0 0}
 .week-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;font-size:16px;color:var(--text);display:flex;align-items:center;justify-content:center}
 .week-nav span{flex:1;text-align:center;font-size:14px;font-weight:500}
+.week-stars{text-align:center;padding:14px 0 4px}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}
 .summary-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;text-align:center;border:1px solid var(--border)}
 .summary-num{font-size:24px;font-weight:600}
@@ -247,7 +248,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="plan" class="screen active">
     <div id="strength" class="sub-screen active">
-      <div id="strength-week-stars" style="text-align:center;padding:6px 0 2px"></div><div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="strength-week-label"></span><button onclick="changeWeek(1)">→</button></div>
+      <div id="strength-week-stars" class="week-stars"></div><div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="strength-week-label"></span><button onclick="changeWeek(1)">→</button></div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="strength-s-days">—</div><div class="summary-lbl">дней</div></div>
         <div class="summary-card"><div class="summary-num" id="strength-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
@@ -256,7 +257,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div id="strength-days"><div class="loading">Загрузка...</div></div>
     </div>
     <div id="wingchun" class="sub-screen">
-      <div id="wingchun-week-stars" style="text-align:center;padding:6px 0 2px"></div><div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="wingchun-week-label"></span><button onclick="changeWeek(1)">→</button></div>
+      <div id="wingchun-week-stars" class="week-stars"></div><div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="wingchun-week-label"></span><button onclick="changeWeek(1)">→</button></div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="wingchun-s-days">—</div><div class="summary-lbl">дней</div></div>
         <div class="summary-card"><div class="summary-num" id="wingchun-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
@@ -265,7 +266,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div id="wingchun-days"><div class="loading">Загрузка...</div></div>
     </div>
     <div id="qigong" class="sub-screen">
-      <div id="qigong-week-stars" style="text-align:center;padding:6px 0 2px"></div><div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="qigong-week-label"></span><button onclick="changeWeek(1)">→</button></div>
+      <div id="qigong-week-stars" class="week-stars"></div><div class="week-nav"><button onclick="changeWeek(-1)">←</button><span id="qigong-week-label"></span><button onclick="changeWeek(1)">→</button></div>
       <div class="summary-grid">
         <div class="summary-card"><div class="summary-num" id="qigong-s-days">—</div><div class="summary-lbl">дней</div></div>
         <div class="summary-card"><div class="summary-num" id="qigong-s-ex">—</div><div class="summary-lbl">упражнений</div></div>
