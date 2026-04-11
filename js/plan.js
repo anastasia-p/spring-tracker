@@ -70,7 +70,7 @@ function renderSection(section, keepOpen) {
             '</div>';
           }).join('') +
           '</div>' +
-          '<div style="border-top:0.5px solid #f0f0f0;text-align:center;padding:6px 0 2px">' +
+          '<div style="border-top:0.5px solid #f0f0f0;text-align:center;padding:6px 0">' +
             '<button onclick="editDay(\'' + section + '\',' + i + ')" ' +
               'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 0">' +
               '✏ редактировать план' +
