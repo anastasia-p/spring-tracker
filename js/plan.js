@@ -70,6 +70,12 @@ function renderSection(section, keepOpen) {
             '</div>';
           }).join('') +
           '</div>' +
+          '<div style="text-align:right;padding:4px 0 2px">' +
+            '<button onclick="editDay(\'' + section + '\',' + i + ')" ' +
+              'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 0">' +
+              '✏ редактировать план' +
+            '</button>' +
+          '</div>' +
         '</div>';
       container.appendChild(card);
     });
@@ -147,8 +153,17 @@ function computeWeekStars(results, dates) {
   return { count: 1, color: '#E24B4A' };
 }
 
+function editDay(section, dayIndex) {
+  var open = getOpenCards(section);
+  openPlanEditor({
+    section:      section,
+    dayIndex:     dayIndex,
+    sectionLabel: getSectionMeta(section).label,
+    onSave:       function() { renderSection(section, open); }
+  });
+}
+
 function renderWeekStars(section, results, dates) {
-  var container = document.getElementById(section + '-week-stars');
   if (!container) return;
   var s = computeWeekStars(results, dates);
   var pts = '8,1 9.8,5.6 14.7,5.8 10.9,8.9 12.1,13.7 8,11 3.9,13.7 5.1,8.9 1.3,5.8 6.2,5.6';
