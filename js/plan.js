@@ -164,6 +164,7 @@ function editDay(section, dayIndex) {
 }
 
 function renderWeekStars(section, results, dates) {
+  var container = document.getElementById(section + '-week-stars');
   if (!container) return;
   var s = computeWeekStars(results, dates);
   var pts = '8,1 9.8,5.6 14.7,5.8 10.9,8.9 12.1,13.7 8,11 3.9,13.7 5.1,8.9 1.3,5.8 6.2,5.6';
