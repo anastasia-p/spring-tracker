@@ -523,7 +523,7 @@ function _peClose() {
 function _peBtn(text, type) {
   var btn = document.createElement('button');
   if (type === 'primary') {
-    btn.style.cssText = 'flex:1;padding:11px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;justify-content:center';
+    btn.style.cssText = 'flex:1;padding:11px;min-height:42px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1';
   } else {
     btn.style.cssText = 'flex:1;padding:11px;border:0.5px solid #ccc;border-radius:10px;background:none;color:#555;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center';
   }
