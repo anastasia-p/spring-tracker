@@ -63,7 +63,7 @@ function renderSection(section, keepOpen) {
               '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + ' ' + onchange + '>' +
               '<div class="ex-info">' +
                 '<div class="ex-name">' + ex.name + '</div>' +
-                '<div class="ex-desc">' + ex.desc + '</div>' +
+                (ex.desc ? '<div class="ex-desc">' + ex.desc + '</div>' : '') +
                 (ex.note ? '<div class="ex-note">' + ex.note + '</div>' : '') +
                 valueLine +
               '</div>' +
