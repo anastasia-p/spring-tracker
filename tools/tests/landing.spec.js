@@ -21,12 +21,15 @@ test.describe('Desktop (1280x800)', () => {
   });
 
   test('typewriter не стартует раньше окончания анимации ростка', async ({ page }) => {
+    // Захватываем текст синхронно в момент DOMContentLoaded — до любых таймеров
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        window.__twAtDCL = document.getElementById('typewriter')?.textContent || '';
+      });
+    });
     await page.goto(BASE_URL);
-    // Ждём DOMContentLoaded — именно отсюда стартует таймер typewriter (задержка 1.9с).
-    // Проверяем сразу: к этому моменту 1.9с точно не прошло.
-    await page.waitForLoadState('domcontentloaded');
-    const textAtLoad = await page.locator('#typewriter').innerText();
-    expect(textAtLoad.replace(/\s/g, '')).toBe('');
+    const twAtDCL = await page.evaluate(() => window.__twAtDCL || '');
+    expect(twAtDCL.replace(/\s/g, '')).toBe('');
 
     // После 2.5с текст уже должен появиться
     await page.waitForTimeout(2500);
