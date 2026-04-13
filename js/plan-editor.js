@@ -461,7 +461,7 @@ function _peApplyForm(state) {
 
 function _peSave(state) {
   var btn = document.getElementById('pe-save-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Сохранение...'; }
+  if (btn) { btn.style.width = btn.offsetWidth + 'px'; btn.style.height = btn.offsetHeight + 'px'; btn.disabled = true; btn.textContent = 'Сохранение...'; }
 
   // Обновляем тип и label дня
   var dayTypes   = (state.config && state.config.dayTypes) || [];
@@ -487,6 +487,8 @@ function _peSave(state) {
           if (btn) {
             btn.textContent      = 'Сохранить';
             btn.style.background = '#1D9E75';
+            btn.style.width = '';
+            btn.style.height = '';
           }
         }, 2000);
       }
