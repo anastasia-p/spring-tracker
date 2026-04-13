@@ -2,6 +2,7 @@
 // Использование: openPlanEditor({ section, dayIndex, sectionLabel, onSave })
 
 var _planEditorClipboard = null; // { name, desc, note, trackValue, unit }
+var _planEditorPasted = new Set(); // "section:dayIndex" уже вставленных дней
 var _peConfigCache = null;
 
 function _peLoadConfig(cb) {
@@ -200,7 +201,8 @@ function _peRenderList(state, body) {
   }
 
   // Кнопка вставить
-  if (_planEditorClipboard) {
+  var _pasteKey = state.section + ':' + state.dayIndex;
+  if (_planEditorClipboard && !_planEditorPasted.has(_pasteKey)) {
     var clipName  = _planEditorClipboard.name;
     var shortName = clipName.length > 26 ? clipName.slice(0, 26) + '…' : clipName;
     var pasteBtn  = document.createElement('button');
@@ -213,6 +215,7 @@ function _peRenderList(state, body) {
     ].join(';');
     pasteBtn.onclick = function() {
       state.exercises.push(JSON.parse(JSON.stringify(_planEditorClipboard)));
+      _planEditorPasted.add(_pasteKey);
       _peRender(state);
     };
     body.appendChild(pasteBtn);
@@ -241,6 +244,7 @@ function _peRenderList(state, body) {
     btnCopy.onclick = (function(idx) {
       return function() {
         _planEditorClipboard = JSON.parse(JSON.stringify(state.exercises[idx]));
+        _planEditorPasted = new Set();
         _peRender(state);
       };
     })(i);
@@ -465,12 +469,7 @@ function _peSave(state) {
     .update({ days: state.allDays })
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
-      var reloadPlan = (typeof loadPlanFromFirebase === 'function')
-        ? loadPlanFromFirebase(state.section)
-        : Promise.resolve();
-      return reloadPlan.then(function() { state.onSave(); });
-    })
-    .then(function() {
+      state.onSave();
       if (btn) {
         btn.disabled         = false;
         btn.textContent      = 'Сохранено ✓';
