@@ -180,7 +180,7 @@ function _peRenderList(state, body) {
       'font-size:14px;color:#222',
       'outline:none;cursor:pointer',
       'appearance:none;-webkit-appearance:none',
-      'background:#fff url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center"'
+      'background:#fff url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center'
     ].join(';');
     dayTypes.forEach(function(dt) {
       var opt = document.createElement('option');
@@ -336,7 +336,7 @@ function _peRenderForm(state, body) {
       'font-size:14px;color:#222',
       'outline:none;cursor:pointer',
       'appearance:none;-webkit-appearance:none',
-      'background:#fff url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center"'
+      'background:#fff url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center'
     ].join(';');
     el.addEventListener('focus', function() { this.style.borderColor = '#1D9E75'; });
     el.addEventListener('blur',  function() { this.style.borderColor = '#ddd'; });
