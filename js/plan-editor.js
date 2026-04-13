@@ -245,6 +245,8 @@ function _peRenderList(state, body) {
       return function() {
         _planEditorClipboard = JSON.parse(JSON.stringify(state.exercises[idx]));
         _planEditorClipboard._sourceKey = state.section + ':' + state.dayIndex;
+        btn.style.width = btn.offsetWidth + 'px';
+        btn.style.height = btn.offsetHeight + 'px';
         btn.textContent = '✓';
         btn.style.color = '#1D9E75';
         btn.style.borderColor = '#1D9E75';
