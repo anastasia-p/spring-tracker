@@ -466,7 +466,7 @@ function _peSave(state) {
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
       if (typeof plans !== 'undefined' && plans[state.section] !== undefined) {
-        plans[state.section] = null;
+        plans[state.section] = state.allDays;
       }
       state.onSave();
       if (btn) {
