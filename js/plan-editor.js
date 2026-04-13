@@ -241,13 +241,16 @@ function _peRenderList(state, body) {
       (ex.note ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ex.note + '</div>' : '');
 
     var btnCopy = _peIconBtn('⎘', 'Копировать');
-    btnCopy.onclick = (function(idx) {
+    btnCopy.onclick = (function(idx, btn) {
       return function() {
         _planEditorClipboard = JSON.parse(JSON.stringify(state.exercises[idx]));
         _planEditorClipboard._sourceKey = state.section + ':' + state.dayIndex;
-        _peRender(state);
+        btn.textContent = '✓';
+        btn.style.color = '#1D9E75';
+        btn.style.borderColor = '#1D9E75';
+        setTimeout(function() { _peRender(state); }, 1000);
       };
-    })(i);
+    })(i, btnCopy);
 
     var btnEdit = _peIconBtn('✏', 'Редактировать');
     btnEdit.onclick = (function(idx) {
