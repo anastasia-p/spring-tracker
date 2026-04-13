@@ -472,10 +472,8 @@ function _peSave(state) {
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
       state.dirty = false;
-      var reloadPlan = (typeof loadPlanFromFirebase === 'function')
-        ? loadPlanFromFirebase(state.section)
-        : Promise.resolve();
-      reloadPlan.then(function() { state.onSave(); });
+      if (typeof plans !== 'undefined') plans[state.section] = state.allDays;
+      state.onSave();
       if (btn) {
         btn.disabled         = false;
         btn.textContent      = 'Сохранено ✓';
