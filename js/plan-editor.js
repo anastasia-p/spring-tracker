@@ -465,6 +465,9 @@ function _peSave(state) {
     .update({ days: state.allDays })
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
+      if (typeof plans !== 'undefined' && plans[state.section] !== undefined) {
+        plans[state.section] = { days: state.allDays };
+      }
       state.onSave();
       if (btn) {
         btn.disabled         = false;
