@@ -175,10 +175,12 @@ function _peRenderList(state, body) {
     var typeSelect = document.createElement('select');
     typeSelect.style.cssText = [
       'width:100%;box-sizing:border-box',
-      'padding:10px 12px',
+      'padding:10px 36px 10px 12px',
       'border:0.5px solid #ddd;border-radius:10px',
-      'font-size:14px;color:#222;background:#fff',
-      'outline:none;cursor:pointer'
+      'font-size:14px;color:#222',
+      'outline:none;cursor:pointer',
+      'appearance:none;-webkit-appearance:none',
+      'background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center"'
     ].join(';');
     dayTypes.forEach(function(dt) {
       var opt = document.createElement('option');
@@ -329,10 +331,12 @@ function _peRenderForm(state, body) {
     var el = document.createElement('select');
     el.style.cssText = [
       'width:100%;box-sizing:border-box',
-      'padding:10px 12px',
+      'padding:10px 36px 10px 12px',
       'border:0.5px solid #ddd;border-radius:10px',
-      'font-size:14px;color:#222;background:#fff',
-      'outline:none;cursor:pointer'
+      'font-size:14px;color:#222',
+      'outline:none;cursor:pointer',
+      'appearance:none;-webkit-appearance:none',
+      'background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center"'
     ].join(';');
     el.addEventListener('focus', function() { this.style.borderColor = '#1D9E75'; });
     el.addEventListener('blur',  function() { this.style.borderColor = '#ddd'; });
