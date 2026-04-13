@@ -75,7 +75,7 @@ function _peOpen(state) {
     'display:flex;align-items:flex-end;justify-content:center'
   ].join(';');
   overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) _peClose();
+    if (e.target === overlay) _peConfirmClose(state);
   });
 
   var sheet = document.createElement('div');
@@ -117,7 +117,7 @@ function _peRender(state) {
     '</div>' +
     '<button id="pe-close-btn" style="background:none;border:none;font-size:22px;color:#aaa;cursor:pointer;padding:2px 8px;line-height:1">×</button>';
   sheet.appendChild(header);
-  document.getElementById('pe-close-btn').onclick = _peClose;
+  document.getElementById('pe-close-btn').onclick = function() { _peConfirmClose(state); };
 
   // Тело
   var body = document.createElement('div');
@@ -150,7 +150,7 @@ function _peRender(state) {
     footer.appendChild(btnApply);
   } else {
     var btnClose = _peBtn('Закрыть', 'secondary');
-    btnClose.onclick = _peClose;
+    btnClose.onclick = function() { _peConfirmClose(state); };
     var btnSave = _peBtn('Сохранить', 'primary');
     btnSave.id = 'pe-save-btn';
     btnSave.onclick = function() { _peSave(state); };
@@ -189,7 +189,7 @@ function _peRenderList(state, body) {
     });
     typeSelect.addEventListener('focus', function() { this.style.borderColor = '#1D9E75'; });
     typeSelect.addEventListener('blur',  function() { this.style.borderColor = '#ddd'; });
-    typeSelect.onchange = function() { state.dayType = this.value; };
+    typeSelect.onchange = function() { state.dayType = this.value; state.dirty = true; };
     typeWrap.appendChild(typeLbl);
     typeWrap.appendChild(typeSelect);
     body.appendChild(typeWrap);
@@ -215,6 +215,7 @@ function _peRenderList(state, body) {
     pasteBtn.onclick = function() {
       state.exercises.push(JSON.parse(JSON.stringify(_planEditorClipboard)));
       state.pastedThisSession = true;
+      state.dirty = true;
       _peRender(state);
     };
     body.appendChild(pasteBtn);
@@ -264,6 +265,7 @@ function _peRenderList(state, body) {
       return function() {
         if (confirm('Удалить "' + state.exercises[idx].name + '"?')) {
           state.exercises.splice(idx, 1);
+          state.dirty = true;
           _peRender(state);
         }
       };
@@ -442,6 +444,7 @@ function _peApplyForm(state) {
   } else {
     state.exercises[state.editIdx] = ex;
   }
+  state.dirty    = true;
 
   state.mode     = 'list';
   state.editIdx  = null;
@@ -468,6 +471,7 @@ function _peSave(state) {
     .update({ days: state.allDays })
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
+      state.dirty = false;
       state.onSave();
       if (btn) {
         btn.disabled         = false;
@@ -489,6 +493,13 @@ function _peSave(state) {
 }
 
 // ─── Закрыть ──────────────────────────────────────────────────────────────────
+
+function _peConfirmClose(state) {
+  if (state && state.dirty) {
+    if (!confirm('Есть несохраненные изменения. Выйти без сохранения?')) return;
+  }
+  _peClose();
+}
 
 function _peClose() {
   var overlay = document.getElementById('pe-overlay');
