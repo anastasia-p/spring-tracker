@@ -465,10 +465,12 @@ function _peSave(state) {
     .update({ days: state.allDays })
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
-      if (typeof plans !== 'undefined' && plans[state.section] !== undefined) {
-        plans[state.section] = state.allDays;
-      }
-      state.onSave();
+      var reloadPlan = (typeof loadPlanFromFirebase === 'function')
+        ? loadPlanFromFirebase(state.section)
+        : Promise.resolve();
+      return reloadPlan.then(function() { state.onSave(); });
+    })
+    .then(function() {
       if (btn) {
         btn.disabled         = false;
         btn.textContent      = 'Сохранено ✓';
