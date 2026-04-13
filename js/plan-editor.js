@@ -266,6 +266,30 @@ function _peRenderList(state, body) {
       };
     })(i);
 
+    var btnUp = _peIconBtn('↑', 'Выше');
+    if (i === 0) btnUp.style.visibility = 'hidden';
+    btnUp.onclick = (function(idx) {
+      return function() {
+        var tmp = state.exercises[idx - 1];
+        state.exercises[idx - 1] = state.exercises[idx];
+        state.exercises[idx] = tmp;
+        state.dirty = true;
+        _peRender(state);
+      };
+    })(i);
+
+    var btnDown = _peIconBtn('↓', 'Ниже');
+    if (i === exs.length - 1) btnDown.style.visibility = 'hidden';
+    btnDown.onclick = (function(idx) {
+      return function() {
+        var tmp = state.exercises[idx + 1];
+        state.exercises[idx + 1] = state.exercises[idx];
+        state.exercises[idx] = tmp;
+        state.dirty = true;
+        _peRender(state);
+      };
+    })(i);
+
     var btnDel = _peIconBtn('✕', 'Удалить');
     btnDel.style.color = '#c0392b';
     btnDel.onclick = (function(idx) {
@@ -279,6 +303,8 @@ function _peRenderList(state, body) {
     })(i);
 
     item.appendChild(info);
+    item.appendChild(btnUp);
+    item.appendChild(btnDown);
     item.appendChild(btnCopy);
     item.appendChild(btnEdit);
     item.appendChild(btnDel);
