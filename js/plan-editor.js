@@ -1,8 +1,7 @@
 // plan-editor.js — редактор упражнений дня (независимый модуль)
 // Использование: openPlanEditor({ section, dayIndex, sectionLabel, onSave })
 
-var _planEditorClipboard = null; // { name, desc, note, trackValue, unit }
-var _planEditorPasted = new Set(); // "section:dayIndex" уже вставленных дней
+var _planEditorClipboard = null; // { name, desc, note, trackValue, unit, _sourceKey }
 var _peConfigCache = null;
 
 function _peLoadConfig(cb) {
@@ -202,7 +201,7 @@ function _peRenderList(state, body) {
 
   // Кнопка вставить
   var _pasteKey = state.section + ':' + state.dayIndex;
-  if (_planEditorClipboard && !_planEditorPasted.has(_pasteKey)) {
+  if (_planEditorClipboard && _planEditorClipboard._sourceKey !== _pasteKey && !state.pastedThisSession) {
     var clipName  = _planEditorClipboard.name;
     var shortName = clipName.length > 26 ? clipName.slice(0, 26) + '…' : clipName;
     var pasteBtn  = document.createElement('button');
@@ -215,7 +214,7 @@ function _peRenderList(state, body) {
     ].join(';');
     pasteBtn.onclick = function() {
       state.exercises.push(JSON.parse(JSON.stringify(_planEditorClipboard)));
-      _planEditorPasted.add(_pasteKey);
+      state.pastedThisSession = true;
       _peRender(state);
     };
     body.appendChild(pasteBtn);
@@ -244,7 +243,7 @@ function _peRenderList(state, body) {
     btnCopy.onclick = (function(idx) {
       return function() {
         _planEditorClipboard = JSON.parse(JSON.stringify(state.exercises[idx]));
-        _planEditorPasted = new Set();
+        _planEditorClipboard._sourceKey = state.section + ':' + state.dayIndex;
         _peRender(state);
       };
     })(i);
