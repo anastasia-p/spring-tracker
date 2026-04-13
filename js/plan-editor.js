@@ -535,7 +535,8 @@ function _peIconBtn(icon, title) {
     'border-radius:8px',
     'padding:5px 9px',
     'font-size:13px;color:#888',
-    'cursor:pointer;flex-shrink:0'
+    'cursor:pointer;flex-shrink:0',
+    'display:inline-flex;align-items:center;justify-content:center'
   ].join(';');
   return btn;
 }
