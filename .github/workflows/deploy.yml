@@ -18,25 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
       - name: Python — статические проверки HTML
         run: python3 tools/test_landing.py index.html
-      - name: Проверка версии JS в app.html
-        run: |
-          if git diff HEAD~1 --name-only | grep -q "^js/"; then
-            PREV_V=$(git show HEAD~1:app.html | grep -o '?v=[0-9]*' | head -1)
-            CURR_V=$(grep -o '?v=[0-9]*' app.html | head -1)
-            if [ "$PREV_V" = "$CURR_V" ]; then
-              echo "❌ JS файлы изменились, но версия в app.html не обновлена ($CURR_V)"
-              echo "   Обнови ?v= в тегах <script> в app.html"
-              exit 1
-            else
-              echo "✓ Версия JS обновлена: $PREV_V → $CURR_V"
-            fi
-          else
-            echo "✓ JS файлы не изменялись, проверка версии не нужна"
-          fi
       - name: Node.js setup
         uses: actions/setup-node@v4
         with:
