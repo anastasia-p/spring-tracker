@@ -65,12 +65,13 @@ function getSkillTotal(skill) {
 function formatSkillValue(skill, total) {
   if (skill.valueType === 'minutes') return (total / 60).toFixed(1) + ' ч';
   if (skill.valueType === 'seconds') return (total / 3600).toFixed(1) + ' ч';
+  if (skill.valueType === 'km')      return total.toLocaleString('ru') + ' км';
   return total.toLocaleString('ru') + ' повт.';
 }
 
 function formatLevelThreshold(skill, lvl) {
-  var field = lvl.hours !== undefined ? 'hours' : 'reps';
-  if (field === 'hours') return lvl.hours + ' ч';
+  if (lvl.km    !== undefined) return lvl.km.toLocaleString('ru') + ' км';
+  if (lvl.hours !== undefined) return lvl.hours + ' ч';
   return lvl.reps.toLocaleString('ru');
 }
 
