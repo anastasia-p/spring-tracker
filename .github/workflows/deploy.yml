@@ -1,20 +1,16 @@
 name: Test & Deploy
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   test:
     name: Тесты
@@ -22,18 +18,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 2
       - name: Python — статические проверки HTML
         run: python3 tools/test_landing.py index.html
-
+      - name: Проверка версии JS в app.html
+        run: |
+          if git diff HEAD~1 --name-only | grep -q "^js/"; then
+            PREV_V=$(git show HEAD~1:app.html | grep -o '?v=[0-9]*' | head -1)
+            CURR_V=$(grep -o '?v=[0-9]*' app.html | head -1)
+            if [ "$PREV_V" = "$CURR_V" ]; then
+              echo "❌ JS файлы изменились, но версия в app.html не обновлена ($CURR_V)"
+              echo "   Обнови ?v= в тегах <script> в app.html"
+              exit 1
+            else
+              echo "✓ Версия JS обновлена: $PREV_V → $CURR_V"
+            fi
+          else
+            echo "✓ JS файлы не изменялись, проверка версии не нужна"
+          fi
       - name: Node.js setup
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Юнит-тесты pure.js
         run: node tools/tests/pure.test.js
-
       - name: Кеш Playwright браузеров
         uses: actions/cache@v4
         id: playwright-cache
@@ -42,31 +51,25 @@ jobs:
           key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             playwright-chromium-${{ runner.os }}-
-
       - name: Установить Playwright
         run: |
           npm init -y
           npm install @playwright/test
-
       - name: Установить браузер (если нет в кеше)
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
-
       - name: Запустить локальный сервер
         run: |
           python3 -m http.server 8080 &
           echo "SERVER_PID=$!" >> $GITHUB_ENV
           sleep 2
-
       - name: Playwright E2E тесты
         run: npx playwright test --config=playwright.config.js
         env:
           TEST_URL: http://localhost:8080
-
       - name: Остановить сервер
         if: always()
         run: kill $SERVER_PID || true
-
       - name: Загрузить отчет Playwright при падении
         if: failure()
         uses: actions/upload-artifact@v4
@@ -74,7 +77,6 @@ jobs:
           name: playwright-report
           path: tools/tests/report/
           retention-days: 7
-
   deploy:
     name: Деплой
     needs: test
@@ -86,15 +88,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
