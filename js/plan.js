@@ -1,12 +1,11 @@
 // Plan rendering and interaction
 // TC is now loaded from plans/day-types.json via db.js
 var DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-var SECTIONS = ['strength', 'wingchun', 'qigong'];
 var weekOffset = 0;
 
 function renderSection(section, keepOpen) {
   var label = getWeekLabel(weekOffset);
-  SECTIONS.forEach(function(s) {
+  userSections.forEach(function(s) {
     document.getElementById(s + '-week-label').textContent = 'Неделя ' + label;
   });
   var dates = getWeekDates(weekOffset);
@@ -128,7 +127,7 @@ function toggleCheck(section, dk, exName, el) {
 
 function changeWeek(d) {
   weekOffset += d;
-  SECTIONS.forEach(function(s) { renderSection(s); });
+  userSections.forEach(function(s) { renderSection(s); });
 }
 
 function computeWeekStars(results, dates) {
