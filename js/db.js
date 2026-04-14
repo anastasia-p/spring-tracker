@@ -22,6 +22,7 @@ function loadDayTypes() {
         { type: 'test',  label: 'Отдых + тест',   css: 'b-rest' },
         { type: 'wc',    label: 'Вин Чун',        css: 'b-wc' },
         { type: 'qi',    label: 'Цигун',          css: 'b-qi' },
+        { type: 'run',   label: 'Бег',            css: 'b-run' },
       ];
     });
 }
