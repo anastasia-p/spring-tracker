@@ -12,12 +12,6 @@ function hideSplash() {
   }
 }
 
-var SECTION_TEMPLATES = [
-  { id: 'strength', label: 'Силовые', planFile: 'strength_default.json' },
-  { id: 'wingchun', label: 'Вин Чун', planFile: 'wingchun_default.json' },
-  { id: 'qigong',   label: 'Цигун',   planFile: 'qigong_default.json'   },
-];
-
 // --- Auth state ---
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
@@ -26,10 +20,6 @@ firebase.auth().onAuthStateChanged(function(user) {
     document.getElementById('auth-screen').style.display = 'none';
     loadUserConfig().then(function(config) {
       if (config === CONFIG_ERROR) {
-        // Ошибка или таймаут загрузки — показываем экран входа с сообщением.
-        // Без signOut: он ломает Firebase Auth в инкогнито.
-        // Пользователь кликает "Войти" повторно — onAuthStateChanged сработает
-        // снова и loadUserConfig попробует ещё раз.
         showAuthScreen();
         showAuthError('Не удалось загрузить данные. Проверь соединение и войди снова', 'login');
       } else if (!config) {
@@ -95,14 +85,11 @@ function doLogin() {
   clearAuthError();
   var email    = document.getElementById('login-email').value.trim();
   var password = document.getElementById('login-password').value;
-  if (!email)    { showAuthError('Введите email', 'login');  return; }
+  if (!email)    { showAuthError('Введите email',  'login'); return; }
   if (!password) { showAuthError('Введите пароль', 'login'); return; }
   setAuthLoading(true);
   firebase.auth().signInWithEmailAndPassword(email, password)
-    .catch(function(e) {
-      setAuthLoading(false);
-      showAuthError(getAuthErrorMessage(e.code), 'login');
-    });
+    .catch(function(e) { setAuthLoading(false); showAuthError(getAuthErrorMessage(e.code), 'login'); });
 }
 
 function doRegister() {
@@ -110,47 +97,30 @@ function doRegister() {
   var email     = document.getElementById('reg-email').value.trim();
   var password  = document.getElementById('reg-password').value;
   var password2 = document.getElementById('reg-password2').value;
-  if (!email)                    { showAuthError('Введите email', 'register');                                             return; }
-  if (!password)                 { showAuthError('Введите пароль', 'register');                                            return; }
-  if (password !== password2)    { showAuthError('Пароли не совпадают', 'register');                                       return; }
-  if (password.length < 6)       { showAuthError('Пароль минимум 6 символов', 'register');                                 return; }
+  if (!email)                { showAuthError('Введите email',                                          'register'); return; }
+  if (!password)             { showAuthError('Введите пароль',                                         'register'); return; }
+  if (password !== password2){ showAuthError('Пароли не совпадают',                                    'register'); return; }
+  if (password.length < 6)   { showAuthError('Пароль минимум 6 символов',                             'register'); return; }
   if (!document.getElementById('reg-privacy').checked) {
-    showAuthError('Необходимо согласие с политикой конфиденциальности', 'register');
-    return;
+    showAuthError('Необходимо согласие с политикой конфиденциальности', 'register'); return;
   }
   setAuthLoading(true);
   firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(function() {
-      // onAuthStateChanged will handle navigation
-    })
-    .catch(function(e) {
-      setAuthLoading(false);
-      showAuthError(getAuthErrorMessage(e.code), 'register');
-    });
+    .catch(function(e) { setAuthLoading(false); showAuthError(getAuthErrorMessage(e.code), 'register'); });
 }
 
-function doLogout() {
-  firebase.auth().signOut();
-}
+function doLogout()        { firebase.auth().signOut(); }
 
 function doResetPassword() {
   var email = document.getElementById('login-email').value.trim();
-  if (!email) {
-    showAuthError('Введите email для восстановления пароля', 'login');
-    return;
-  }
+  if (!email) { showAuthError('Введите email для восстановления пароля', 'login'); return; }
   firebase.auth().sendPasswordResetEmail(email)
-    .then(function() {
-      showAuthError('Письмо отправлено на ' + email, 'login');
-    })
-    .catch(function(e) {
-      showAuthError(getAuthErrorMessage(e.code), 'login');
-    });
+    .then(function()  { showAuthError('Письмо отправлено на ' + email, 'login'); })
+    .catch(function(e){ showAuthError(getAuthErrorMessage(e.code), 'login'); });
 }
 
 function setAuthLoading(loading) {
-  var btns = document.querySelectorAll('.auth-btn');
-  btns.forEach(function(b) { b.disabled = loading; });
+  document.querySelectorAll('.auth-btn').forEach(function(b) { b.disabled = loading; });
 }
 
 function showAuthError(msg, form) {
@@ -190,8 +160,6 @@ function userDoc() {
 }
 
 function loadUserConfig() {
-  // Таймаут 5 сек: Firestore в инкогнито иногда молчит бесконечно.
-  // Resolve с CONFIG_ERROR (не reject) — onAuthStateChanged не нужен catch.
   var timeout = new Promise(function(resolve) {
     setTimeout(function() { resolve(CONFIG_ERROR); }, 5000);
   });
@@ -214,17 +182,18 @@ function saveUserConfig(sections) {
 function detectPlatform() {
   var ua = navigator.userAgent;
   if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
-  if (/Android/.test(ua)) return 'android';
+  if (/Android/.test(ua))          return 'android';
   return 'desktop';
 }
 
 // --- Onboarding ---
 function renderOnboarding() {
-  var html = SECTION_TEMPLATES.map(function(s) {
+  var html = SECTIONS.map(function(id) {
+    var meta = SECTION_META[id];
     return '<label class="onboard-item">' +
-      '<input type="checkbox" class="onboard-check" value="' + s.id + '" onchange="updateOnboardingBtn()">' +
-      '<span>' + s.label + '</span>' +
-      '</label>';
+      '<input type="checkbox" class="onboard-check" value="' + id + '" onchange="updateOnboardingBtn()">' +
+      '<span>' + meta.label + '</span>' +
+    '</label>';
   }).join('');
   document.getElementById('onboarding-list').innerHTML = html;
   updateOnboardingBtn();
@@ -248,16 +217,15 @@ function finishOnboarding() {
   btn.disabled    = true;
   btn.textContent = 'Загрузка...';
 
-  // ИСПРАВЛЕНО: работает корректно независимо от имени файла (index.html или app.html)
   var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
 
-  // Загружаем дефолтные планы, но только если документа ещё нет
+  // Загружаем дефолтные планы
   var planPromises = selected.map(function(sectionId) {
-    var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === sectionId; });
-    if (!tmpl) return Promise.resolve();
+    var meta = SECTION_META[sectionId];
+    if (!meta) return Promise.resolve();
     return userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
-      if (snap.exists) return; // план пользователя уже есть — не трогаем
-      var url = baseUrl + 'plans/' + tmpl.planFile + '?t=' + Date.now();
+      if (snap.exists) return;
+      var url = baseUrl + meta.defaultPlan + '?t=' + Date.now();
       return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
         return userDoc().collection('plan').doc(sectionId).set({
           days: data,
@@ -267,13 +235,16 @@ function finishOnboarding() {
     });
   });
 
-  // Загружаем тесты, но только если документа ещё нет
-  var testFiles = selected.map(function(s) {
-    return baseUrl + 'plans/tests_' + s + '_default.json?t=' + Date.now();
-  });
+  // Загружаем тесты (только для секций у которых есть defaultTests)
+  var testFiles = selected
+    .map(function(id) { return SECTION_META[id]; })
+    .filter(function(meta) { return meta && meta.defaultTests; })
+    .map(function(meta) { return baseUrl + meta.defaultTests + '?t=' + Date.now(); });
+
   planPromises.push(
     userDoc().collection('plan').doc('tests').get().then(function(snap) {
-      if (snap.exists) return; // тесты пользователя уже есть — не трогаем
+      if (snap.exists) return;
+      if (!testFiles.length) return;
       return Promise.all(testFiles.map(function(url) {
         return fetch(url).then(function(r) { return r.ok ? r.json() : []; });
       })).then(function(results) {
@@ -292,25 +263,20 @@ function finishOnboarding() {
   );
 
   Promise.all(planPromises).then(function() {
-    // Сохраняем конфиг с createdAt и platform
     var platform = detectPlatform();
     return userDoc().set({
-      sections: selected,
-      email: currentUser.email,
+      sections:  selected,
+      email:     currentUser.email,
       createdAt: new Date().toISOString(),
-      platform: platform
+      platform:  platform
     }, { merge: true });
   }).then(function() {
-    // Уведомляем сервер о новом пользователе
     return currentUser.getIdToken().then(function(token) {
       return fetch('https://api.spring-tracker.ru:8080/notify/new-user', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token }
       });
-    }).catch(function(e) {
-      // Не критично — если упало, просто логируем
-      console.warn('notify-new-user failed:', e);
-    });
+    }).catch(function(e) { console.warn('notify-new-user failed:', e); });
   }).then(function() {
     startApp(selected);
   }).catch(function(e) {

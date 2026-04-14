@@ -223,13 +223,14 @@ function renderSettingsPlans() {
   var togglesHtml =
     '<div class="section-title">Дисциплины</div>' +
     '<div class="settings-group" style="margin-bottom:16px">' +
-      SECTION_TEMPLATES.map(function(tmpl) {
-        var active = userSections.indexOf(tmpl.id) !== -1;
+      SECTIONS.map(function(id) {
+        var meta = SECTION_META[id];
+        var active = userSections.indexOf(id) !== -1;
         return '<div class="settings-item">' +
-          '<span class="settings-item-label">' + tmpl.label + '</span>' +
+          '<span class="settings-item-label">' + meta.label + '</span>' +
           '<label class="toggle-switch">' +
             '<input type="checkbox"' + (active ? ' checked' : '') +
-            ' onchange="toggleSection(\'' + tmpl.id + '\',this.checked,this)">' +
+            ' onchange="toggleSection(\'' + id + '\',this.checked,this)">' +
             '<span class="toggle-slider"></span>' +
           '</label>' +
         '</div>';

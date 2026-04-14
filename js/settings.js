@@ -183,11 +183,11 @@ function toggleSection(sectionId, checked, el) {
   el.disabled = true;
   var newSections = userSections.concat([sectionId]);
   var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
-  var tmpl = SECTION_TEMPLATES.find(function(t) { return t.id === sectionId; });
+  var meta = SECTION_META[sectionId];
 
   userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
     if (snap.exists) return Promise.resolve();
-    var url = baseUrl + 'plans/' + tmpl.planFile + '?t=' + Date.now();
+    var url = baseUrl + meta.defaultPlan + '?t=' + Date.now();
     return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
       return userDoc().collection('plan').doc(sectionId).set({
         days: data,
