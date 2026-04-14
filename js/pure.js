@@ -84,6 +84,20 @@ var LOTUS_LEVELS = [
 ];
 
 
+var FOREST_GUMP_LEVELS = [
+  { level: 0, name: 'С дивана',          km: 0,     desc: 'Первый шаг ещё не сделан' },
+  { level: 1, name: 'Беги, Форест!',     km: 50,    desc: 'Первые километры позади' },
+  { level: 2, name: 'Ради Дженни',       km: 200,   desc: 'Есть ради чего бежать' },
+  { level: 3, name: 'Через Алабаму',     km: 500,   desc: 'Первый большой путь' },
+  { level: 4, name: 'Просто бегу',       km: 1000,  desc: 'Бег стал привычкой' },
+  { level: 5, name: 'У океана',          km: 2000,  desc: 'Добежал до большой воды' },
+  { level: 6, name: 'На Восток',         km: 5000,  desc: 'Развернулся и снова' },
+  { level: 7, name: 'Толпа за спиной',   km: 10000, desc: 'За тобой бегут люди' },
+  { level: 8, name: 'Туда и обратно',    km: 20000, desc: 'Три года в пути' },
+  { level: 9, name: 'Форест',            km: 30000, desc: 'Run, Forrest, run' },
+];
+
+
 // ─── РЕЕСТР СЕКЦИЙ ────────────────────────────────────────────────────────────
 // Единственное место для регистрации секции.
 // Добавить новую секцию = добавить запись сюда.
@@ -107,6 +121,11 @@ var SECTION_META = {
     label:        'Цигун',
     defaultPlan:  'plans/qigong_default.json',
     defaultTests: 'plans/tests_qigong_default.json',
+  },
+  cardio: {
+    label:        'Кардио',
+    defaultPlan:  'plans/cardio_default.json',
+    defaultTests: null,
   },
   // Пример добавления новой секции:
   // brain: {
@@ -216,6 +235,18 @@ var SKILLS = [
     trackerField: 'totalMinutes',
     levels: LOTUS_LEVELS,
   },
+  {
+    id: 'forest_gump',
+    name: 'Форест Гамп',
+    section: 'cardio',
+    color: '#1D9E75',
+    bgColor: '#E1F5EE',
+    valueType: 'km',
+    source: { collection: 'cardio', field: 'Бег' },
+    tracker: 'forest_gump',
+    trackerField: 'totalKm',
+    levels: FOREST_GUMP_LEVELS,
+  },
 ];
 
 var STANCE_EXERCISES = ['Всадник у стены', 'Стульчик', 'Мабу'];
@@ -232,8 +263,10 @@ function _skillValue(skill, totalValue) {
 }
 
 function _levelThreshold(levelEntry) {
-  // Уровни с полем 'reps' используют его; остальные используют 'hours'
-  return levelEntry.reps !== undefined ? levelEntry.reps : levelEntry.hours;
+  // Уровни с полем 'km'   используют его; 'reps' — повторения; иначе 'hours'
+  if (levelEntry.km   !== undefined) return levelEntry.km;
+  if (levelEntry.reps !== undefined) return levelEntry.reps;
+  return levelEntry.hours;
 }
 
 function getSkillLevel(skill, totalValue) {
@@ -309,6 +342,10 @@ function getLotusLevel(m)    { return getSkillLevel(getSkillById('lotus'), m); }
 function getLotusNextLevel(m){ return getSkillNextLevel(getSkillById('lotus'), m); }
 function getLotusProgress(m) { return getSkillProgress(getSkillById('lotus'), m); }
 
+function getForestGumpLevel(km)    { return getSkillLevel(getSkillById('forest_gump'), km); }
+function getForestGumpNextLevel(km){ return getSkillNextLevel(getSkillById('forest_gump'), km); }
+function getForestGumpProgress(km) { return getSkillProgress(getSkillById('forest_gump'), km); }
+
 
 // ─── УТИЛИТЫ ДАТ ─────────────────────────────────────────────────────────────
 
@@ -358,8 +395,9 @@ if (typeof module !== 'undefined') {
     getPullupLevel, getPullupNextLevel, getPullupProgress,
     getFormsLevel, getFormsNextLevel, getFormsProgress,
     getLotusLevel, getLotusNextLevel, getLotusProgress,
+    getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex,
