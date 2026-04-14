@@ -16,7 +16,7 @@ function showValuePopup(section, dk, exName, unit, el) {
 
 function savePopupValue() {
   if (!pendingCheck) return;
-  var val = parseInt(document.getElementById('popup-value').value) || 0;
+  var val = parseFloat((document.getElementById('popup-value').value || '').replace(',', '.')) || 0;
   var p = pendingCheck;
   if (p.section === 'tests') {
     saveTestField(p.dk, p.exName, val);
