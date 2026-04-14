@@ -129,7 +129,7 @@ function getSkillIcon(skill) {
     slt:     '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">小</span>',
     ck:      '<span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">桥</span>',
     lotus:        '<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="16" rx="10" ry="3" fill="#E8C8F0" opacity="0.4"/><path d="M12 16 Q6 10 9 1 Q13 8 12 16Z" fill="#D4A0E0"/><path d="M12 16 Q18 10 15 1 Q11 8 12 16Z" fill="#B06FC4"/><path d="M12 16 Q2 12 3 5 Q8 11 12 16Z" fill="#C880D8"/><path d="M12 16 Q22 12 21 5 Q16 11 12 16Z" fill="#9B4FB5"/><path d="M12 16 Q4 17 1 11 Q7 14 12 16Z" fill="#D4A0E0" opacity="0.7"/><path d="M12 16 Q20 17 23 11 Q17 14 12 16Z" fill="#B06FC4" opacity="0.7"/><circle cx="12" cy="15" r="2.5" fill="#F3E8FA"/><circle cx="12" cy="15" r="1.2" fill="#E8C8F0"/></svg>',
-    forest_gump:  '<img src="images/forest_gump.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%">',
+    forest_gump:  '<img src="images/forest_gump.png" style="width:100%;height:100%;object-fit:cover">',
   };
   return icons[skill.id] || '';
 }
