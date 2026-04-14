@@ -83,14 +83,15 @@ function renderTestHistory(container, items, entries) {
     var prevVal = prev ? prev.data[item.name] : null;
     var diff = (lastVal != null && prevVal != null) ? lastVal - prevVal : null;
     var badgeHtml = '';
+    var badgeStyle = 'min-width:44px;text-align:center';
     if (diff === null) {
-      badgeHtml = '<span class="t3-badge t3-badge-neutral">нет данных</span>';
+      badgeHtml = '<span class="t3-badge t3-badge-neutral" style="' + badgeStyle + '">нет данных</span>';
     } else if (diff > 0) {
-      badgeHtml = '<span class="t3-badge t3-badge-up">+' + diff + ' ↑</span>';
+      badgeHtml = '<span class="t3-badge t3-badge-up" style="' + badgeStyle + '">+' + diff + ' ↑</span>';
     } else if (diff < 0) {
-      badgeHtml = '<span class="t3-badge t3-badge-down">' + diff + ' ↓</span>';
+      badgeHtml = '<span class="t3-badge t3-badge-down" style="' + badgeStyle + '">' + diff + ' ↓</span>';
     } else {
-      badgeHtml = '<span class="t3-badge t3-badge-neutral">→ без изменений</span>';
+      badgeHtml = '<span class="t3-badge t3-badge-neutral" style="' + badgeStyle + '">0</span>';
     }
     var valHtml = lastVal != null
       ? '<span class="t3-last-val">' + lastVal + '</span><span class="t3-unit"> ' + item.unit + '</span>'
