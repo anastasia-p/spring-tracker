@@ -234,6 +234,7 @@ function _peRenderList(state, body) {
   // Карточки упражнений
   exs.forEach(function(ex, i) {
     var item = document.createElement('div');
+    item.dataset.exIdx = i;
     item.style.cssText = 'background:#f8f8f6;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px';
 
     var info = document.createElement('div');
@@ -274,6 +275,7 @@ function _peRenderList(state, body) {
         state.exercises[idx - 1] = state.exercises[idx];
         state.exercises[idx] = tmp;
         state.dirty = true;
+        state.scrollToIdx = idx - 1;
         _peRender(state);
       };
     })(i);
@@ -286,6 +288,7 @@ function _peRenderList(state, body) {
         state.exercises[idx + 1] = state.exercises[idx];
         state.exercises[idx] = tmp;
         state.dirty = true;
+        state.scrollToIdx = idx + 1;
         _peRender(state);
       };
     })(i);
@@ -326,6 +329,13 @@ function _peRenderList(state, body) {
     _peRender(state);
   };
   body.appendChild(addBtn);
+
+  // Скролл к перемещённому упражнению
+  if (state.scrollToIdx != null) {
+    var target = body.querySelector('[data-ex-idx="' + state.scrollToIdx + '"]');
+    if (target) target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    state.scrollToIdx = null;
+  }
 }
 
 // ─── Форма упражнения ─────────────────────────────────────────────────────────
