@@ -179,9 +179,35 @@ function showSkillLevels(skillId) {
   listEl.innerHTML = html;
 }
 
+// --- Plan screens (dynamic) ---
+function renderPlanScreens(sections) {
+  var planEl = document.getElementById('plan');
+  planEl.innerHTML = '';
+  sections.forEach(function(s, i) {
+    var div = document.createElement('div');
+    div.id = s;
+    div.className = 'sub-screen' + (i === 0 ? ' active' : '');
+    div.innerHTML =
+      '<div id="' + s + '-week-stars" class="week-stars"></div>' +
+      '<div class="week-nav">' +
+        '<button onclick="changeWeek(-1)">←</button>' +
+        '<span id="' + s + '-week-label"></span>' +
+        '<button onclick="changeWeek(1)">→</button>' +
+      '</div>' +
+      '<div class="summary-grid">' +
+        '<div class="summary-card"><div class="summary-num" id="' + s + '-s-days">—</div><div class="summary-lbl">дней</div></div>' +
+        '<div class="summary-card"><div class="summary-num" id="' + s + '-s-ex">—</div><div class="summary-lbl">упражнений</div></div>' +
+        '<div class="summary-card"><div class="summary-num" id="' + s + '-s-pct">—</div><div class="summary-lbl">прогресс</div></div>' +
+      '</div>' +
+      '<div id="' + s + '-days"><div class="loading">Загрузка...</div></div>';
+    planEl.appendChild(div);
+  });
+}
+
 // --- Init ---
 function initWithSections(sections) {
   userSections = sections;
+  renderPlanScreens(sections);
   // Render plan tabs (plan is default active screen)
   renderPlanTabs();
   // Show user email in settings
