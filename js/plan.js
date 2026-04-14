@@ -39,7 +39,7 @@ function renderSection(section, keepOpen) {
       card.innerHTML =
         '<div class="day-header" onclick="toggleDay(this)">' +
           '<div class="day-left">' +
-            '<span class="day-badge ' + getDayTypeCSS(dayData.type) + '">' + getDayTypeLabel(dayData.type) + '</span>' +
+            '<span class="day-badge" style="' + getDayTypeBadgeStyle(dayData.type) + '">' + getDayTypeLabel(dayData.type) + '</span>' +
             '<span class="day-name">' + DAY_NAMES[date.getDay()] + '</span>' +
           '</div>' +
           '<div class="day-right">' +

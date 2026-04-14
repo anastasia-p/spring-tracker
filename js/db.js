@@ -7,34 +7,43 @@ function userCol(name) {
   return db.collection('users').doc(currentUser.uid).collection(name);
 }
 
-// Day types loaded from day-types.json
-var dayTypes = [];
+// Цвета плашек типов дня — единственное место для добавления нового типа
+var DAY_TYPE_STYLES = {
+  legs:    { bg: 'var(--green-light)',  color: 'var(--green-text)'  },
+  legs2:   { bg: 'var(--green-light)',  color: 'var(--green-text)'  },
+  upper:   { bg: 'var(--blue-light)',   color: 'var(--blue-text)'   },
+  upper2:  { bg: 'var(--blue-light)',   color: 'var(--blue-text)'   },
+  full:    { bg: '#FAECE7',             color: '#712B13'            },
+  rest:    { bg: 'var(--gray-light)',   color: 'var(--gray-text)'   },
+  test:    { bg: 'var(--gray-light)',   color: 'var(--gray-text)'   },
+  wc:      { bg: 'var(--purple-light)', color: 'var(--purple-text)' },
+  qi:      { bg: 'var(--amber-light)',  color: 'var(--amber-text)'  },
+  cardio:  { bg: '#FCEBEB',             color: '#791F1F'            },
+  run:     { bg: '#E1F5EE',             color: '#085041'            },
+  stretch: { bg: '#FBEAF0',             color: '#72243E'            },
+  yoga:    { bg: '#EAF3DE',             color: '#27500A'            },
+};
+
+// Метки типов дня — берём из /config (parser.py), fallback — ключ как есть
+var dayTypeLabels = {};
 function loadDayTypes() {
-  var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
-  return fetch(baseUrl + 'plans/day-types.json?v=' + Date.now())
+  return fetch(API_URL + '/config')
     .then(function(r) { return r.json(); })
-    .then(function(data) { dayTypes = data; })
-    .catch(function() {
-      dayTypes = [
-        { type: 'legs',  label: 'Ноги + таз',    css: 'b-legs' },
-        { type: 'upper', label: 'Верх + кор',     css: 'b-upper' },
-        { type: 'rest',  label: 'Отдых',          css: 'b-rest' },
-        { type: 'test',  label: 'Отдых + тест',   css: 'b-rest' },
-        { type: 'wc',    label: 'Вин Чун',        css: 'b-wc' },
-        { type: 'qi',    label: 'Цигун',          css: 'b-qi' },
-        { type: 'run',   label: 'Бег',            css: 'b-run' },
-      ];
-    });
+    .then(function(data) {
+      (data.dayTypes || []).forEach(function(dt) {
+        dayTypeLabels[dt.type] = dt.label;
+      });
+    })
+    .catch(function() {});
 }
 
-function getDayTypeCSS(type) {
-  var found = dayTypes.find(function(t) { return t.type === type; });
-  return found ? found.css : 'b-rest';
+function getDayTypeBadgeStyle(type) {
+  var s = DAY_TYPE_STYLES[type] || DAY_TYPE_STYLES['rest'];
+  return 'background:' + s.bg + ';color:' + s.color;
 }
 
 function getDayTypeLabel(type) {
-  var found = dayTypes.find(function(t) { return t.type === type; });
-  return found ? found.label : type;
+  return dayTypeLabels[type] || type;
 }
 
 // Все секции + тесты — дериватив из SECTION_META (pure.js грузится раньше)
