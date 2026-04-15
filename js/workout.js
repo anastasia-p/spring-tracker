@@ -19,7 +19,12 @@ function renderTestForm() {
         '</div>' +
       '</label>' +
     '</div>';
-  }).join('');
+  }).join('') +
+  '<div style="margin-top:8px;padding-top:10px;border-top:1px solid #f0f0f0;text-align:center">' +
+    '<button onclick="openTestEditor({section:\'tests\',sectionLabel:\'Еженедельный тест\',onSave:function(){renderTestForm();}})" ' +
+      'style="background:none;border:none;color:#999;font-size:13px;cursor:pointer;padding:4px 8px">' +
+      '\u270f редактировать тесты</button>' +
+  '</div>';
 }
 
 function handleTestCheck(name, unit, el) {
