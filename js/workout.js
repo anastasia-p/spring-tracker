@@ -84,6 +84,8 @@ function renderTestHistory(container, items, entries) {
 
   var html = '<div class="t3-list">';
   items.forEach(function(item, idx) {
+    var hasAnyVal = entries.some(function(e) { return e.data[item.name] != null; });
+    if (!hasAnyVal) return;
     var lastVal = last.data[item.name];
     var prevVal = prev ? prev.data[item.name] : null;
     var diff = (lastVal != null && prevVal != null) ? lastVal - prevVal : null;
