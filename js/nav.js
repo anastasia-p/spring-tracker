@@ -165,16 +165,41 @@ function showSkillLevels(skillId) {
   var levels = skill.levels;
   var current = getLevelForSkill(skill, total);
   var html = levels.map(function(lvl) {
-    var isCur = lvl.level === current.level;
+    var isCur  = lvl.level === current.level;
     var isPast = lvl.level < current.level;
-    var opacity = lvl.level > current.level + 1 ? '0.45' : '1';
-    return '<div class="level-row" style="opacity:' + opacity + '">' +
-      '<div class="level-num' + (isCur ? ' cur' : '') + '">' + lvl.level + '</div>' +
+    var isNext = lvl.level === current.level + 1;
+
+    var numStyle;
+    if (isCur)       numStyle = 'background:' + skill.color + ';color:#fff;border-color:' + skill.color + ';font-weight:700';
+    else if (isPast) numStyle = 'background:#f0f0f0;color:#c0c0c0;border-color:#e8e8e8';
+    else             numStyle = 'background:#fff;color:#d0d0d0;border-color:#e8e8e8';
+
+    var nameStyle, descStyle, hoursStyle;
+    if (isCur) {
+      nameStyle  = 'font-weight:700;color:var(--text)';
+      descStyle  = 'color:var(--text-muted)';
+      hoursStyle = '';
+    } else if (isPast) {
+      nameStyle  = 'text-decoration:line-through;color:#c0c0c0';
+      descStyle  = 'color:#d0d0d0';
+      hoursStyle = 'color:#d0d0d0';
+    } else if (isNext) {
+      nameStyle  = 'font-weight:600;color:' + skill.color;
+      descStyle  = 'color:' + skill.color + ';opacity:0.75';
+      hoursStyle = 'color:' + skill.color;
+    } else {
+      nameStyle  = 'color:#c8c8c8';
+      descStyle  = 'color:#d8d8d8';
+      hoursStyle = 'color:#d8d8d8';
+    }
+
+    return '<div class="level-row">' +
+      '<div class="level-num" style="' + numStyle + '">' + lvl.level + '</div>' +
       '<div class="level-info">' +
-        '<div class="level-name">' + (isPast ? '<s>' : '') + lvl.name + (isPast ? '</s>' : '') + '</div>' +
-        '<div class="level-desc">' + lvl.desc + '</div>' +
+        '<div class="level-name" style="' + nameStyle + '">' + lvl.name + '</div>' +
+        '<div class="level-desc" style="' + descStyle + '">' + lvl.desc + '</div>' +
       '</div>' +
-      '<div class="level-hours">' + formatLevelThreshold(skill, lvl) + '</div>' +
+      '<div class="level-hours" style="' + hoursStyle + '">' + formatLevelThreshold(skill, lvl) + '</div>' +
     '</div>';
   }).join('');
   listEl.innerHTML = html;
