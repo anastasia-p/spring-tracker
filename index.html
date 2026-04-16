@@ -150,14 +150,12 @@
 
     .nav-btn:hover { background: var(--green-dark); }
 
-    /* HERO */
+    /* ── HERO ───────────────────────────────────── */
     .hero {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 120px 24px 56px;
+      padding: 120px 48px 72px;
       background: var(--pink);
       position: relative;
       overflow: hidden;
@@ -166,44 +164,92 @@
     .hero::before {
       content: '';
       position: absolute;
-      width: 600px; height: 600px;
+      width: 700px; height: 700px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(29,158,117,0.08) 0%, transparent 70%);
-      top: 50%; left: 50%;
+      background: radial-gradient(circle, rgba(29,158,117,0.07) 0%, transparent 65%);
+      top: 50%; left: 30%;
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
 
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      max-width: 920px;
+      width: 100%;
+      position: relative;
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .hero-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 56px;
+    }
+
+    .logo-animated {
+      display: block;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: -6px;
+    }
+
+    .hero-typewriter {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      min-height: 1.4em;
+    }
+
+    .hero-typewriter .cursor {
+      display: inline-block;
+      width: 2px; height: 1.1em;
+      background: var(--green);
+      margin-left: 2px;
+      vertical-align: middle;
+      opacity: 0;
+      animation: blink-cursor 0.8s step-end infinite;
+    }
+
+    .hero-typewriter .cursor.visible { opacity: 1; }
+
     .hero h1 {
-      font-size: clamp(36px, 7vw, 72px);
+      font-size: clamp(34px, 4.5vw, 58px);
       font-weight: 500;
       line-height: 1.1;
       color: var(--text);
-      max-width: 800px;
-      margin-bottom: 26px;
+      margin-bottom: 16px;
     }
 
     .hero h1 span { color: var(--green); }
 
     .hero-sub {
-      font-size: clamp(16px, 2.5vw, 20px);
+      font-size: 17px;
+      line-height: 1.65;
       color: var(--pink-text);
-      max-width: 520px;
-      margin-bottom: 56px;
+      max-width: 420px;
+      margin-bottom: 32px;
     }
 
     .hero-cta {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      justify-content: center;
     }
 
     .btn-primary {
       display: inline-block;
-      padding: 14px 0;
-      width: 220px;
-      text-align: center;
+      padding: 14px 32px;
       background: var(--green);
       color: #fff;
       border-radius: 12px;
@@ -217,9 +263,7 @@
 
     .btn-secondary {
       display: inline-block;
-      padding: 14px 0;
-      width: 220px;
-      text-align: center;
+      padding: 14px 32px;
       background: transparent;
       color: var(--green-dark);
       border: 1.5px solid var(--pink-mid);
@@ -232,7 +276,308 @@
 
     .btn-secondary:hover { border-color: var(--green-mid); }
 
-    /* SECTION COMMON */
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .hero-chip {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--green-dark);
+      background: var(--green-light);
+      border: 1px solid rgba(15,110,86,0.15);
+      padding: 5px 13px;
+      border-radius: 20px;
+    }
+
+    .hero-trust {
+      font-size: 12px;
+      color: var(--pink-text);
+      margin-top: 14px;
+      opacity: 0.8;
+    }
+
+    .hero-right {
+      display: flex;
+      justify-content: center;
+    }
+
+    .skill-card-hero {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      width: 284px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.09), 0 4px 16px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .sch-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .sch-title { font-size: 15px; font-weight: 600; color: var(--text); }
+
+    .sch-section-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--green-dark);
+      background: var(--green-light);
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .sch-skill-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .sch-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0; overflow: hidden;
+    }
+
+    .sch-km { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+    .sch-level-label { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .sch-bar {
+      height: 5px; background: var(--green-light);
+      border-radius: 3px; overflow: hidden; margin-bottom: 5px;
+    }
+
+    .sch-bar-fill { height: 100%; background: var(--green); border-radius: 3px; }
+
+    .sch-bar-labels {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-muted);
+    }
+
+    .sch-levels { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: 14px; }
+
+    .sch-level-row {
+      display: flex; align-items: center;
+      gap: 10px; padding: 6px 0;
+      border-top: 0.5px solid #f7f7f7;
+    }
+
+    .sch-level-row:first-child { border-top: none; }
+
+    .sch-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; flex-shrink: 0;
+    }
+
+    .sch-dot--done   { background: var(--green); color: #fff; opacity: 0.45; }
+    .sch-dot--active { background: var(--green); color: #fff; }
+    .sch-dot--next   { background: var(--green-light); color: var(--green-dark); }
+    .sch-dot--locked { background: #f0f0f0; color: #c0c0c0; }
+
+    .sch-lbody { flex: 1; }
+
+    .sch-lname { font-size: 13px; font-weight: 500; line-height: 1.25; }
+    .sch-lname--done   { color: #bbb; text-decoration: line-through; text-decoration-color: #ccc; }
+    .sch-lname--active { color: var(--text); }
+    .sch-lname--next   { color: var(--green); }
+    .sch-lname--locked { color: #c8c8c8; }
+
+    .sch-ldesc { font-size: 11px; margin-top: 1px; }
+    .sch-ldesc--done   { color: #d8d8d8; }
+    .sch-ldesc--active { color: var(--text-muted); }
+    .sch-ldesc--next   { color: var(--green-mid); }
+    .sch-ldesc--locked { color: #d8d8d8; }
+
+    .sch-lkm { font-size: 12px; font-weight: 500; color: var(--text-muted); white-space: nowrap; }
+    .sch-lkm--done   { color: #d0d0d0; }
+    .sch-lkm--locked { color: #d0d0d0; }
+
+    .sch-dots-sep {
+      text-align: center; color: #ccc;
+      font-size: 16px; letter-spacing: 5px;
+      padding: 2px 0; border-top: 0.5px solid #f7f7f7;
+    }
+
+    /* ── RPG BLOCK ───────────────────────────────── */
+    .rpg-section {
+      padding: 80px 48px;
+      background: var(--pink);
+    }
+
+    .rpg-inner {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .rpg-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .rpg-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .rpg-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 18px;
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .rpg-card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+
+    .rpg-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .rpg-card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .rpg-soon {
+      text-align: center;
+      background: var(--green-light);
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-size: 14px;
+      color: var(--green-dark);
+    }
+
+    .rpg-soon b { font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .rpg-section { padding: 56px 24px; }
+      .rpg-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .rpg-cards { grid-template-columns: 1fr; }
+    }
+
+    /* ── FOUNDER BLOCK ───────────────────────────── */
+    .founder-section {
+      padding: 80px 48px;
+      background: #fff;
+    }
+
+    .founder-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .founder-photo {
+      width: 280px;
+      height: 320px;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 20px;
+      display: block;
+    }
+
+    .founder-text-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .founder-text p {
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .founder-text p:last-child { margin-bottom: 0; }
+
+    .founder-text p b {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .founder-section { padding: 56px 24px; }
+      .founder-inner {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        text-align: center;
+      }
+      .founder-photo {
+        width: 180px;
+        height: 200px;
+        margin: 0 auto;
+      }
+    }
+
+    /* ── PHONE CAROUSEL ─────────────────────────── */
+    .carousel-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .carousel-track-outer {
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 40px;
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      padding-bottom: 4px;
+    }
+
+    .carousel-btn {
+      width: 40px; height: 40px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      color: var(--text);
+      transition: opacity 0.2s, box-shadow 0.2s;
+    }
+
+    .carousel-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+    .carousel-btn:disabled { opacity: 0.25; cursor: default; }
+
+        /* SECTION COMMON */
     .section-badge {
       display: inline-block;
       background: var(--green-light);
@@ -601,14 +946,6 @@
     .lightbox-close:hover { background: rgba(255,255,255,0.22); }
     @keyframes lb-in { from{opacity:0;transform:scale(0.92);} to{opacity:1;transform:scale(1);} }
 
-    /* HERO BRAND / TYPEWRITER */
-    .hero-brand { display: flex; align-items: center; gap: 4px; justify-content: center; margin-bottom: 26px; }
-    .logo-animated { display: block; flex-shrink: 0; margin-bottom: 12px; }
-    .hero-typewriter { font-size: 26px; font-weight: 700; color: var(--text); white-space: nowrap; min-height: 1.4em; max-width: 100%; }
-    .hero-typewriter .cursor { display: inline-block; width: 2px; height: 1.1em; background: var(--green); margin-left: 2px; vertical-align: middle; opacity: 0; animation: blink-cursor 0.8s step-end infinite; }
-    .hero-typewriter .cursor.visible { opacity: 1; }
-    @keyframes blink-cursor { 0%,100%{opacity:1;} 50%{opacity:0;} }
-
     /* LOGO ANIMATION */
     .logo-stem { stroke-dasharray: 35; stroke-dashoffset: 35; animation: draw-stem 0.7s ease forwards; }
     .logo-leaf-left { opacity: 0; transform-origin: 48px 58px; animation: appear-leaf 0.55s ease forwards 0.65s; }
@@ -622,6 +959,12 @@
       padding-right: 80px;
     }
     @media (max-width: 768px) {
+      .hero { padding: 100px 24px 56px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 0; }
+      .hero-right { display: none; }
+      .hero-left { text-align: center; }
+      .hero-left .hero-brand { justify-content: center; }
+      .hero-left .hero-cta { justify-content: center; }
       .phone-frame { border-radius: 28px; padding: 38px 9px 28px; }
       .phone-screen { width: 130px; }
       .xp-badge { display: none; }
@@ -638,7 +981,12 @@
 
     @media (max-width: 480px) {
       nav { padding: 12px 16px; }
-      .hero { padding: 100px 16px 48px; }
+      .hero { padding: 100px 20px 56px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 0; }
+      .hero-right { display: none; }
+      .hero-left { text-align: center; }
+      .hero-left .hero-brand { justify-content: center; }
+      .hero-left .hero-cta { justify-content: center; }
       .hero-typewriter { font-size: 18px; }
       .centered-section { padding: 56px 16px; }
       .feature-section { padding: 56px 16px; }
@@ -685,141 +1033,230 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-brand">
-    <svg class="logo-animated" width="72" height="72" viewBox="0 0 96 96" fill="none">
-      <rect width="96" height="96" rx="22" fill="#FBEAF0"/>
-      <path class="logo-stem" d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-      <path class="logo-leaf-left" d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-      <path class="logo-leaf-right" d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-    </svg>
-    <span class="hero-typewriter" id="typewriter"><span class="cursor" id="cursor"></span></span>
-  </div>
-  <h1>Прокачай себя<br>как <span>персонажа</span></h1>
-  <p class="hero-sub">Трекер осознанных тренировок. Фиксируй прогресс, расти по уровням, развивай навыки — каждый день.</p>
-  <div class="hero-cta">
-    <a class="btn-primary" href="/app.html#register" onclick="ym(108404687,'reachGoal','click_hero_start')">Начать</a>
-    <a class="btn-secondary" href="#skills">Как это работает</a>
-  </div>
-</div>
+  <div class="hero-inner">
 
-<!-- БЛОК 1: НАВЫКИ -->
-<div class="feature-section skills-section" id="skills">
-  <div class="skills-inner">
-
-    <div class="skills-text">
-      <div class="section-badge">Навыки</div>
-      <h2 class="section-title">Каждая тренировка — это опыт</h2>
-      <p class="section-sub" style="margin:0 auto">Копи часы и повторения, расти по уровням.<br>От Ватных рук — до Рук Титана.</p>
+    <!-- LEFT: existing content -->
+    <div class="hero-left">
+      <div class="hero-brand">
+        <svg class="logo-animated" width="48" height="58" viewBox="24 18 48 62" fill="none">
+          <path class="logo-stem" d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <path class="logo-leaf-left" d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+          <path class="logo-leaf-right" d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+        <span class="hero-typewriter" id="typewriter"><span class="cursor" id="cursor"></span></span>
+      </div>
+      <h1>Прокачай себя<br>как <span>персонажа</span></h1>
+      <p class="hero-sub">Каждая тренировка — это опыт. Фитнес-трекер с RPG-механикой: фиксируй прогресс, расти по уровням, прокачивай навыки.</p>
+      <div class="hero-chips">
+        <span class="hero-chip">Силовые</span>
+        <span class="hero-chip">Кардио</span>
+        <span class="hero-chip">Вин Чун</span>
+        <span class="hero-chip">Цигун</span>
+      </div>
+      <div class="hero-cta">
+        <a class="btn-primary" href="/app.html#register" onclick="ym(108404687,'reachGoal','click_hero_start')">Начать</a>
+        <a class="btn-secondary" href="#skills">Как это работает</a>
+      </div>
+      <p class="hero-trust">Бесплатно, без рекламы</p>
     </div>
 
-    <div class="phones-centered phones-centered--with-badge">
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-grid.webp')">
-        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
-        <div class="phone-vol"></div><div class="phone-power"></div>
-        <div class="phone-screen-wrap">
-          <img src="images/screen-skills-grid.webp" alt="Экран навыков Wing Chun и цигун в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1380">
-          <div class="phone-fade"></div>
+    <!-- RIGHT: Форрест Гамп skill card -->
+    <div class="hero-right">
+      <div class="skill-card-hero">
+
+        <div class="sch-header">
+          <span class="sch-title">Форрест Гамп</span>
+          <span class="sch-section-badge">Навык</span>
         </div>
-      </div>
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-detail.webp')">
-        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
-        <div class="phone-vol"></div><div class="phone-power"></div>
-        <div class="phone-screen-wrap">
-          <img src="images/screen-skills-detail.webp" alt="Шкала опыта и уровни навыка в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1602">
-          <div class="phone-fade"></div>
-        </div>
-        <div class="xp-badge">
-          <div class="xp-badge-circle">
-            <span class="xp-badge-num">+15</span>
-            <span class="xp-badge-xp">XP</span>
+
+        <div class="sch-skill-row">
+          <div class="sch-icon">
+            <img src="images/forest_gump.png" alt="Форрест Гамп" style="width:40px;height:40px;object-fit:cover;border-radius:10px;" onerror="this.style.display='none';this.parentNode.style.fontSize='20px';this.parentNode.textContent='🏃'">
           </div>
-          <div class="xp-badge-pill">LEVEL UP</div>
+          <div>
+            <div class="sch-km">70 км</div>
+            <div class="sch-level-label">Ур. 1 — Беги, Форрест, беги!</div>
+          </div>
         </div>
+
+        <div class="sch-bar"><div class="sch-bar-fill" style="width:13%"></div></div>
+        <div class="sch-bar-labels">
+          <span>50 км</span><span>13%</span><span>200 км</span>
+        </div>
+
+        <div class="sch-levels">
+          <div class="sch-level-row">
+            <div class="sch-dot sch-dot--done">0</div>
+            <div class="sch-lbody">
+              <div class="sch-lname sch-lname--done">Пора в путь</div>
+              <div class="sch-ldesc sch-ldesc--done">Главное — начать</div>
+            </div>
+            <span class="sch-lkm sch-lkm--done">0 км</span>
+          </div>
+          <div class="sch-level-row">
+            <div class="sch-dot sch-dot--active">1</div>
+            <div class="sch-lbody">
+              <div class="sch-lname sch-lname--active">Беги, Форрест, беги!</div>
+              <div class="sch-ldesc sch-ldesc--active">Первые километры позади</div>
+            </div>
+            <span class="sch-lkm">50 км</span>
+          </div>
+          <div class="sch-level-row">
+            <div class="sch-dot sch-dot--next">2</div>
+            <div class="sch-lbody">
+              <div class="sch-lname sch-lname--next">Ради Дженни</div>
+              <div class="sch-ldesc sch-ldesc--next">Есть причина</div>
+            </div>
+            <span class="sch-lkm">200 км</span>
+          </div>
+          <div class="sch-level-row">
+            <div class="sch-dot sch-dot--locked">3</div>
+            <div class="sch-lbody">
+              <div class="sch-lname sch-lname--locked">Через Алабаму</div>
+              <div class="sch-ldesc sch-ldesc--locked">В большой путь</div>
+            </div>
+            <span class="sch-lkm sch-lkm--locked">500 км</span>
+          </div>
+          <div class="sch-dots-sep">· · ·</div>
+          <div class="sch-level-row">
+            <div class="sch-dot sch-dot--locked">9</div>
+            <div class="sch-lbody">
+              <div class="sch-lname sch-lname--locked">Форрест</div>
+              <div class="sch-ldesc sch-ldesc--locked">Рожденный бежать</div>
+            </div>
+            <span class="sch-lkm sch-lkm--locked">30 000 км</span>
+          </div>
+        </div>
+
       </div>
     </div>
-
-    <p style="font-size:14px;color:var(--text-muted);text-align:center">
-      Состав навыков будет расширяться. Есть идея — пиши на
-      <a href="mailto:qt.trek@gmail.com" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
-    </p>
 
   </div>
 </div>
 
-<!-- БЛОК 2: ПЛАН -->
+<!-- FOUNDER -->
+<div class="founder-section">
+  <div class="founder-inner">
+    <img
+      src="images/nastya.jpg"
+      alt="Настя — создатель Spring Tracker"
+      class="founder-photo"
+    >
+    <div class="founder-text">
+      <p class="founder-text-name">Привет, я Настя <svg width="20" height="24" viewBox="24 18 48 62" fill="none" style="display:inline-block;vertical-align:middle;margin-left:4px;margin-bottom:2px"><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg></p>
+      <p>С недавнего времени занимаюсь Вин Чун. Вин Чун по-китайски — 咏春, «Вечная Весна». Отсюда Spring Tracker.</p>
+      <p>Еще я люблю дорамы и дунхуа, особенно моменты прокачки. Герой 200 лет культивирует в пещере? Дайте два! Давно думала, как бы перенести это в реальную жизнь. И вот недавно пазл сложился. Навайбкодила приложение, которое мотивирует заниматься спортом.</p>
+      <p>За 3 недели использования научилась подтягиваться. Так что можете поздравить 🎉</p>
+    </div>
+  </div>
+</div>
+
+<!-- RPG -->
+<div class="rpg-section">
+  <div class="rpg-inner">
+
+    <div class="rpg-header">
+      <div class="section-badge">Почему RPG</div>
+      <h2 class="section-title">Ты — персонаж<br>Тренировки — это опыт</h2>
+    </div>
+
+    <div class="rpg-cards">
+
+      <div class="rpg-card">
+        <div class="rpg-card-icon">⚔️</div>
+        <div class="rpg-card-title">Навыки и уровни</div>
+        <div class="rpg-card-desc">Каждое упражнение вносит вклад в навык. Подтягивания → Руки Титана. Бег → Форрест Гамп. Уровни — не просто цифры, у каждого свое имя.</div>
+      </div>
+
+      <div class="rpg-card">
+        <div class="rpg-card-icon">⭐</div>
+        <div class="rpg-card-title">Звезды за неделю</div>
+        <div class="rpg-card-desc">Выполнил весь план — 3 звезды. Частично — 2 или 1. Не просто галочка "сделал/не сделал", а честная оценка недели.</div>
+      </div>
+
+      <div class="rpg-card">
+        <div class="rpg-card-icon">🔥</div>
+        <div class="rpg-card-title">Серия дней</div>
+        <div class="rpg-card-desc">Следи сколько дней подряд не пропускал тренировки. Серия мотивирует лучше любого напоминания.</div>
+      </div>
+
+    </div>
+
+    <div class="rpg-soon">
+      <b>Скоро:</b> характеристики персонажа — Сила, Энергия и Интеллект
+    </div>
+
+  </div>
+</div>
+
+<!-- БЛОК 1: ПЛАН -->
 <div class="feature-section feature-section--alt centered-section">
   <div class="centered-inner">
 
     <div class="centered-text">
       <div class="section-badge">План</div>
       <h2 class="section-title">Тренируйся по своей программе</h2>
-      <p class="section-sub" style="margin:0 auto">Никаких чужих схем. Загружай свои планы через Excel — отдельно для каждой дисциплины.</p>
+      <p class="section-sub" style="margin:0 auto 8px">Настрой план под себя — отдельно для каждой дисциплины</p>
+      <p style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:0">* можно загрузить готовый план через Excel</p>
     </div>
 
-    <div class="phones-centered phones-centered--scroll">
-      <div class="phone-frame phone-md" onclick="openLightbox('images/mockup-plan.webp')">
-        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
-        <div class="phone-vol"></div><div class="phone-power"></div>
-        <div class="phone-screen-wrap">
-          <img src="images/mockup-plan.webp" alt="Еженедельный план тренировок в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1770">
-          <div class="phone-fade"></div>
+    <div class="carousel-wrap" id="planCarousel">
+      <button class="carousel-btn carousel-btn--prev" id="planPrev" onclick="carouselMove('planCarousel',-1)" disabled>&#8249;</button>
+      <div class="carousel-track-outer">
+        <div class="carousel-track" id="planTrack">
+          <div class="phone-frame phone-md" onclick="openLightbox('images/mockup-plan.webp', this)">
+            <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+            <div class="phone-vol"></div><div class="phone-power"></div>
+            <div class="phone-screen-wrap">
+              <img src="images/mockup-plan.webp" alt="Еженедельный план тренировок в Spring Tracker" class="phone-screen" loading="lazy">
+              <div class="phone-fade"></div>
+            </div>
+          </div>
+          <div class="phone-frame phone-md" onclick="openLightbox('images/mockup-expanded.webp', this)">
+            <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+            <div class="phone-vol"></div><div class="phone-power"></div>
+            <div class="phone-screen-wrap">
+              <img src="images/mockup-expanded.webp" alt="Развернутый день тренировки в Spring Tracker" class="phone-screen" loading="lazy">
+              <div class="phone-fade"></div>
+            </div>
+          </div>
+          <div class="phone-frame phone-md" onclick="openLightbox('images/screen-plan-editor.webp', this)">
+            <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+            <div class="phone-vol"></div><div class="phone-power"></div>
+            <div class="phone-screen-wrap">
+              <img src="images/screen-plan-editor.webp" alt="Редактор плана тренировок в Spring Tracker" class="phone-screen" loading="lazy">
+              <div class="phone-fade"></div>
+            </div>
+          </div>
+          <div class="phone-frame phone-md" onclick="openLightbox('images/screen-settings.webp', this)">
+            <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+            <div class="phone-vol"></div><div class="phone-power"></div>
+            <div class="phone-screen-wrap">
+              <img src="images/screen-settings.webp" alt="Настройки и загрузка плана в Spring Tracker" class="phone-screen" loading="lazy">
+              <div class="phone-fade"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="phone-frame phone-md" onclick="openLightbox('images/mockup-expanded.webp')">
-        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
-        <div class="phone-vol"></div><div class="phone-power"></div>
-        <div class="phone-screen-wrap">
-          <img src="images/mockup-expanded.webp" alt="Развернутый день тренировки в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1770">
-          <div class="phone-fade"></div>
-        </div>
-      </div>
-      <div class="phone-frame phone-md" onclick="openLightbox('images/screen-settings.webp')">
-        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
-        <div class="phone-vol"></div><div class="phone-power"></div>
-        <div class="phone-screen-wrap">
-          <img src="images/screen-settings.webp" alt="Загрузка плана тренировок через Excel в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1770">
-          <div class="phone-fade"></div>
-        </div>
-      </div>
+      <button class="carousel-btn carousel-btn--next" id="planNext" onclick="carouselMove('planCarousel',1)">&#8250;</button>
     </div>
-
-    <div class="plan-steps">
-      <div class="plan-step">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8L14 2z" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Скачай шаблон
-      </div>
-      <div class="plan-step-arrow">→</div>
-      <div class="plan-step">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#534AB7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#534AB7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Настрой в Excel
-      </div>
-      <div class="plan-step-arrow">→</div>
-      <div class="plan-step">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Загрузи обратно
-      </div>
-    </div>
-
-    <p style="font-size:14px;color:var(--text-muted);text-align:center">
-      Нет нужной дисциплины? Пиши на
-      <a href="mailto:qt.trek@gmail.com" style="color:var(--green);text-decoration:none">qt.trek@gmail.com</a>
-    </p>
 
   </div>
 </div>
 
-<!-- БЛОК 3: ТЕСТЫ -->
+<!-- БЛОК 2: ТЕСТЫ -->
 <div class="feature-section feature-section--accent centered-section">
   <div class="centered-inner">
 
     <div class="centered-text">
       <div class="section-badge">Тесты</div>
       <h2 class="section-title">Следи за прогрессом</h2>
-      <p class="section-sub" style="margin:0 auto">Раз в неделю — короткий срез по твоим показателям. История хранится, динамика видна.</p>
+      <p class="section-sub" style="margin:0 auto 8px">Раз в неделю — короткий срез по твоим показателям. История хранится, динамика видна</p>
+      <p style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:36px">* показатели для тестирования настраиваются</p>
     </div>
 
     <div class="phones-centered">
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-input.webp')">
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-input.webp', this)">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
@@ -827,7 +1264,7 @@
           <div class="phone-fade"></div>
         </div>
       </div>
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-history.webp')">
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-history.webp', this)">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
@@ -840,10 +1277,43 @@
   </div>
 </div>
 
+<!-- БЛОК 3: НАВЫКИ -->
+<div class="feature-section skills-section" id="skills">
+  <div class="skills-inner">
+
+    <div class="skills-text">
+      <div class="section-badge">Навыки</div>
+      <h2 class="section-title">Расти от новичка до мастера</h2>
+      <p class="section-sub" style="margin:0 auto 8px">От Ватных рук — до Рук титана</p>
+      <p style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:36px">* навык «Руки титана» растет при выполнении упражнения «Отжимания»</p>
+    </div>
+
+    <div class="phones-centered">
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-grid.webp', this)">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-skills-grid.webp" alt="Экран навыков Wing Chun и цигун в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1380">
+          <div class="phone-fade"></div>
+        </div>
+      </div>
+      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-detail.webp', this)">
+        <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+        <div class="phone-vol"></div><div class="phone-power"></div>
+        <div class="phone-screen-wrap">
+          <img src="images/screen-skills-detail.webp" alt="Шкала опыта и уровни навыка в Spring Tracker" class="phone-screen" loading="lazy" width="923" height="1602">
+          <div class="phone-fade"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- CTA -->
 <div class="cta-section">
-  <h2 class="section-title">Начни прокачку<br>сегодня</h2>
-  <p class="section-sub">Бесплатно. Без рекламы. Твои данные — только твои.</p>
+  <h2 class="section-title">Начни прокачку сегодня</h2>
+  <p class="section-sub">Бесплатно, без рекламы</p>
   <a class="btn-white" href="/app.html#register" onclick="ym(108404687,'reachGoal','click_cta_register')">Создать аккаунт</a>
 </div>
 
@@ -854,20 +1324,20 @@
 
     <div class="faq-list">
       <details class="faq-item">
-        <summary class="faq-q">Это бесплатно?</summary>
-        <p class="faq-a">Да, полностью. Никаких подписок и скрытых платежей.</p>
-      </details>
-      <details class="faq-item">
         <summary class="faq-q">Работает на iPhone и Android?</summary>
         <p class="faq-a">Spring Tracker — это PWA, то есть веб-приложение, которое работает прямо в браузере на любом устройстве. Можно добавить на главный экран — будет как обычное приложение.</p>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Можно добавить свою дисциплину или навык?</summary>
-        <p class="faq-a">Пока список фиксированный, но мы его расширяем. Пиши на <a href="mailto:qt.trek@gmail.com" style="color:var(--green)">qt.trek@gmail.com</a> — расскажи, что хочешь добавить.</p>
+        <p class="faq-a">Пока список фиксированный, но я его планирую расширять. Пиши на <a href="mailto:qt.trek@gmail.com" style="color:var(--green)">qt.trek@gmail.com</a> — расскажи, что хочешь добавить.</p>
       </details>
       <details class="faq-item">
-        <summary class="faq-q">Есть приложение в App Store или Google Play?</summary>
-        <p class="faq-a">Нет. Spring Tracker работает как PWA через браузер — установка из магазинов не нужна.</p>
+        <summary class="faq-q">А есть дефолтный план?</summary>
+        <p class="faq-a">Да, для каждой дисциплины есть план по умолчанию — можно начать сразу. Но он простой и общий, так что лучше настроить под себя.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Как узнавать об обновлениях?</summary>
+        <p class="faq-a">Все новые фичи и изменения я публикую в <a href="https://t.me/spring_tracker" target="_blank" rel="noopener noreferrer" style="color:var(--green)">Telegram-канале</a> — подписывайся, чтобы не пропустить.</p>
       </details>
     </div>
   </div>
@@ -902,21 +1372,84 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+  var track = document.getElementById('planTrack');
+  if (!track) return;
+  var outer = track.parentElement;
+  var items = track.querySelectorAll('.phone-frame');
+  var current = 0;
+  var gap = 40;
+
+  function getVisible() {
+    return window.innerWidth <= 600 ? 1 : (window.innerWidth <= 900 ? 2 : 3);
+  }
+
+  function getItemWidth() {
+    return items[0] ? items[0].offsetWidth : 220;
+  }
+
+  function setOuterWidth() {
+    var visible = getVisible();
+    var iw = getItemWidth();
+    outer.style.width = (iw * visible + gap * (visible - 1)) + 'px';
+  }
+
+  function update() {
+    var visible = getVisible();
+    var max = items.length - visible;
+    if (current > max) current = max;
+    if (current < 0) current = 0;
+    var iw = getItemWidth();
+    track.style.transform = 'translateX(-' + (current * (iw + gap)) + 'px)';
+    document.getElementById('planPrev').disabled = current <= 0;
+    document.getElementById('planNext').disabled = current >= max;
+    setOuterWidth();
+  }
+
+  window.carouselMove = function(id, dir) {
+    current += dir;
+    update();
+  };
+
+  // Wait for images to give phones their size
+  setTimeout(function() { update(); }, 50);
+  window.addEventListener('resize', function() { current = 0; update(); });
+});
+
 document.querySelectorAll('.phones-centered').forEach(function(el){
   el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
 });
 
-function openLightbox(src){
-  document.getElementById('lightbox-img').src=src;
+var lightboxImages = [];
+var lightboxIndex = 0;
+
+function openLightbox(src, el){
+  // Collect images only from the same block
+  var container = el ? (el.closest('.centered-inner') || el.closest('.skills-inner') || el.closest('.carousel-wrap') || document) : document;
+  lightboxImages = Array.from(container.querySelectorAll('.phone-frame img')).map(function(img){ return img.getAttribute('src'); });
+  lightboxIndex = lightboxImages.indexOf(src);
+  if (lightboxIndex === -1) lightboxIndex = 0;
+  document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('active');
   document.body.style.overflow='hidden';
 }
+
+function lightboxNav(dir) {
+  if (!document.getElementById('lightbox').classList.contains('active') || lightboxImages.length < 2) return;
+  lightboxIndex = (lightboxIndex + dir + lightboxImages.length) % lightboxImages.length;
+  document.getElementById('lightbox-img').src = lightboxImages[lightboxIndex];
+}
+
 function closeLightbox(e){
   if(e && e.target===document.getElementById('lightbox-img')) return;
   document.getElementById('lightbox').classList.remove('active');
   document.body.style.overflow='';
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeLightbox();
+  if(e.key==='ArrowRight') lightboxNav(1);
+  if(e.key==='ArrowLeft') lightboxNav(-1);
+});
 
 (function(){
   var boldText='Spring Tracker';
