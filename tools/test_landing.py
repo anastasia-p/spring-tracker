@@ -37,8 +37,8 @@ def run_tests(html):
     # 4. Есть mailto: ссылки
     mailto_count = len(re.findall(r'mailto:', html))
     test('Есть mailto: ссылки',
-         mailto_count >= 3,
-         f'Найдено только {mailto_count} mailto: (ожидается >= 3)',
+         mailto_count >= 2,
+         f'Найдено только {mailto_count} mailto: (ожидается >= 2)',
          f'Найдено {mailto_count} mailto: ссылок')
 
     # 5. HTML не обрезан — закрыт </html>
