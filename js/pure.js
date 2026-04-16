@@ -86,7 +86,7 @@ var LOTUS_LEVELS = [
 
 var FOREST_GUMP_LEVELS = [
   { level: 0, name: 'Пора в путь',          km: 0,     desc: 'Главное начать' },
-  { level: 1, name: 'Беги, Форест, беги!',  km: 50,    desc: 'Первые километры позади' },
+  { level: 1, name: 'Беги, Форрест, беги!',  km: 50,    desc: 'Первые километры позади' },
   { level: 2, name: 'Ради Дженни',          km: 200,   desc: 'Есть причина' },
   { level: 3, name: 'Через Алабаму',        km: 500,   desc: 'В большой путь' },
   { level: 4, name: 'Просто бегу',          km: 1000,  desc: 'Бег стал привычкой' },
@@ -94,7 +94,7 @@ var FOREST_GUMP_LEVELS = [
   { level: 6, name: 'На Восток',            km: 5000,  desc: 'Развернулся и снова' },
   { level: 7, name: 'Толпа за спиной',      km: 10000, desc: 'Тебя не догонят' },
   { level: 8, name: 'Туда и обратно',       km: 20000, desc: 'Бег не остановить' },
-  { level: 9, name: 'Форест',               km: 30000, desc: 'Рожденный бежать' },
+  { level: 9, name: 'Форрест',              km: 30000, desc: 'Рожденный бежать' },
 ];
 
 
@@ -237,7 +237,7 @@ var SKILLS = [
   },
   {
     id: 'forest_gump',
-    name: 'Форест Гамп',
+    name: 'Форрест Гамп',
     section: 'cardio',
     color: '#1D9E75',
     bgColor: '#E1F5EE',
