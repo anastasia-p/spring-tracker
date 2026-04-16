@@ -228,7 +228,7 @@
       font-weight: 500;
       line-height: 1.1;
       color: var(--text);
-      margin-bottom: 16px;
+      margin-bottom: 28px;
     }
 
     .hero h1 span { color: var(--green); }
@@ -238,6 +238,12 @@
       line-height: 1.65;
       color: var(--pink-text);
       max-width: 420px;
+      margin-bottom: 10px;
+    }
+
+    .hero-sub--small {
+      font-size: 17px;
+      color: var(--pink-text);
       margin-bottom: 32px;
     }
 
@@ -249,7 +255,9 @@
 
     .btn-primary {
       display: inline-block;
-      padding: 14px 32px;
+      padding: 14px 0;
+      width: 200px;
+      text-align: center;
       background: var(--green);
       color: #fff;
       border-radius: 12px;
@@ -259,11 +267,13 @@
       transition: background 0.2s, transform 0.15s;
     }
 
-    .btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .btn-primary:hover { background: var(--green-dark); }
 
     .btn-secondary {
       display: inline-block;
-      padding: 14px 32px;
+      padding: 14px 0;
+      width: 200px;
+      text-align: center;
       background: transparent;
       color: var(--green-dark);
       border: 1.5px solid var(--pink-mid);
@@ -1046,7 +1056,9 @@
         <span class="hero-typewriter" id="typewriter"><span class="cursor" id="cursor"></span></span>
       </div>
       <h1>Прокачай себя<br>как <span>персонажа</span></h1>
-      <p class="hero-sub">Каждая тренировка — это опыт. Фитнес-трекер с RPG-механикой: фиксируй прогресс, расти по уровням, прокачивай навыки.</p>
+      <p class="hero-sub" style="margin-bottom:0">Гном в ММО? Деревня в симуляторе?</p>
+      <p class="hero-sub" style="margin-bottom:24px">Теперь прокачай себя!</p>
+      <p class="hero-sub hero-sub--small">Фитнес-трекер с уровнями и навыками</p>
       <div class="hero-chips">
         <span class="hero-chip">Силовые</span>
         <span class="hero-chip">Кардио</span>
@@ -1055,7 +1067,7 @@
       </div>
       <div class="hero-cta">
         <a class="btn-primary" href="/app.html#register" onclick="ym(108404687,'reachGoal','click_hero_start')">Начать</a>
-        <a class="btn-secondary" href="#skills">Как это работает</a>
+        <a class="btn-secondary" href="#plan">Как это работает</a>
       </div>
       <p class="hero-trust">Бесплатно, без рекламы</p>
     </div>
@@ -1190,7 +1202,7 @@
 </div>
 
 <!-- БЛОК 1: ПЛАН -->
-<div class="feature-section feature-section--alt centered-section">
+<div class="feature-section feature-section--alt centered-section" id="plan">
   <div class="centered-inner">
 
     <div class="centered-text">
