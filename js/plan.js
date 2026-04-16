@@ -132,9 +132,15 @@ function changeWeek(d) {
 
 function computeWeekStars(results, dates) {
   var todayKey = dateKey(new Date());
+  var user = firebase.auth().currentUser;
+  var createdKey = (user && user.metadata && user.metadata.creationTime)
+    ? dateKey(new Date(user.metadata.creationTime))
+    : null;
   var hasGreen = false, hasOrange = false, hasRed = false;
   results.forEach(function(dayData, i) {
-    if (dateKey(dates[i]) >= todayKey) return;
+    var dk = dateKey(dates[i]);
+    if (dk >= todayKey) return;
+    if (createdKey && dk < createdKey) return;
     var exs = dayData.plan || [], checks = dayData.checks || {};
     var total = exs.length;
     var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
