@@ -91,6 +91,14 @@ function renderAllSkillsGrid(container) {
   var visibleSkills = SKILLS.filter(function(skill) {
     return userSections.indexOf(skill.section) !== -1;
   });
+  // Сортируем по проценту прогресса к следующему уровню (по убыванию).
+  // Навыки на максимальном уровне возвращают 100 и оказываются в начале —
+  // позже они переедут на «Доску почёта» (см. техдолг).
+  visibleSkills.sort(function(a, b) {
+    var pa = getSkillProgress(a, skillTotals[a.id] || 0);
+    var pb = getSkillProgress(b, skillTotals[b.id] || 0);
+    return pb - pa;
+  });
   visibleSkills.forEach(function(skill) {
     grid.appendChild(buildSkillCardCompact(skill));
     renderSkillCard(skill);
