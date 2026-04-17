@@ -405,6 +405,17 @@ function getDayPlanIndex(date) {
   return dow === 0 ? 6 : dow - 1;
 }
 
+// Склонение русских существительных по числу.
+// forms = [форма для 1, для 2-4, для 5+]. Пример: pluralize(3, ['день', 'дня', 'дней']) → 'дня'.
+function pluralize(n, forms) {
+  var n10 = Math.abs(n) % 10;
+  var n100 = Math.abs(n) % 100;
+  if (n100 >= 11 && n100 <= 14) return forms[2];
+  if (n10 === 1) return forms[0];
+  if (n10 >= 2 && n10 <= 4) return forms[1];
+  return forms[2];
+}
+
 
 // ─── Node.js export (для юнит-тестов) ────────────────────────────────────────
 if (typeof module !== 'undefined') {
@@ -426,6 +437,6 @@ if (typeof module !== 'undefined') {
     TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
-    dateKey, getWeekDates, getWeekLabel, getDayPlanIndex,
+    dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,
   };
 }

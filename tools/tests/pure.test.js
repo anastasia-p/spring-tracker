@@ -246,6 +246,26 @@ test('getDayPlanIndex: понедельник (1) → 0', function() {
   assert.strictEqual(p.getDayPlanIndex(mon), 0);
 });
 
+// ─── pluralize (русское склонение) ────────────────────────────────────────────
+console.log('\npluralize');
+
+var days = ['день', 'дня', 'дней'];
+
+test('1 → день', function() { assert.strictEqual(p.pluralize(1, days), 'день'); });
+test('2 → дня', function() { assert.strictEqual(p.pluralize(2, days), 'дня'); });
+test('3 → дня', function() { assert.strictEqual(p.pluralize(3, days), 'дня'); });
+test('4 → дня', function() { assert.strictEqual(p.pluralize(4, days), 'дня'); });
+test('5 → дней', function() { assert.strictEqual(p.pluralize(5, days), 'дней'); });
+test('0 → дней', function() { assert.strictEqual(p.pluralize(0, days), 'дней'); });
+test('11 → дней', function() { assert.strictEqual(p.pluralize(11, days), 'дней'); });
+test('12 → дней', function() { assert.strictEqual(p.pluralize(12, days), 'дней'); });
+test('14 → дней', function() { assert.strictEqual(p.pluralize(14, days), 'дней'); });
+test('21 → день', function() { assert.strictEqual(p.pluralize(21, days), 'день'); });
+test('22 → дня', function() { assert.strictEqual(p.pluralize(22, days), 'дня'); });
+test('25 → дней', function() { assert.strictEqual(p.pluralize(25, days), 'дней'); });
+test('101 → день', function() { assert.strictEqual(p.pluralize(101, days), 'день'); });
+test('111 → дней (исключение)', function() { assert.strictEqual(p.pluralize(111, days), 'дней'); });
+
 // ─── Итог ─────────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────');
 console.log('Итого: ' + passed + ' прошло, ' + failed + ' упало');

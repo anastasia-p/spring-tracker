@@ -81,6 +81,8 @@ function renderSection(section, keepOpen) {
     var tp = totalEx > 0 ? Math.round(doneEx / totalEx * 100) : 0;
     calcDailyStreak(section).then(function(streak) {
       document.getElementById(section + '-s-days').textContent = streak;
+      document.getElementById(section + '-s-days-lbl').textContent =
+        pluralize(streak, ['день', 'дня', 'дней']) + ' подряд';
     });
     document.getElementById(section + '-s-ex').textContent = doneEx;
     document.getElementById(section + '-s-pct').textContent = tp + '%';
