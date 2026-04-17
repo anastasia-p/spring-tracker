@@ -79,7 +79,9 @@ function renderSection(section, keepOpen) {
       container.appendChild(card);
     });
     var tp = totalEx > 0 ? Math.round(doneEx / totalEx * 100) : 0;
-    document.getElementById(section + '-s-days').textContent = doneDays;
+    calcDailyStreak(section).then(function(streak) {
+      document.getElementById(section + '-s-days').textContent = streak;
+    });
     document.getElementById(section + '-s-ex').textContent = doneEx;
     document.getElementById(section + '-s-pct').textContent = tp + '%';
     renderWeekStars(section, results, dates);
@@ -110,6 +112,7 @@ function handleExCheck(section, dk, exName, unit, el) {
     cache[section][dk].checks[exName] = false;
     cache[section][dk].values[exName] = 0;
     saveDayData(section, new Date(dk + 'T12:00:00'));
+    invalidateStreakCache(section);
     var skill = findSkillByExercise(exName, section);
     if (skill) recalcSkill(skill);
     var open = getOpenCards(section);
@@ -121,6 +124,7 @@ function toggleCheck(section, dk, exName, el) {
   if (!cache[section][dk]) return;
   cache[section][dk].checks[exName] = el.checked;
   saveDayData(section, new Date(dk + 'T12:00:00'));
+  invalidateStreakCache(section);
   var open = getOpenCards(section);
   renderSection(section, open);
 }

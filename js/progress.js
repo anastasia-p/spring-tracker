@@ -28,6 +28,7 @@ function savePopupValue() {
   cache[p.section][p.dk].checks[p.exName] = true;
   cache[p.section][p.dk].values[p.exName] = val;
   saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
+  invalidateStreakCache(p.section);
   var skill = findSkillByExercise(p.exName, p.section);
   if (skill) recalcSkill(skill);
   closePopup();

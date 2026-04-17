@@ -230,7 +230,7 @@ function renderPlanScreens(sections) {
         '<button onclick="changeWeek(1)">→</button>' +
       '</div>' +
       '<div class="summary-grid">' +
-        '<div class="summary-card"><div class="summary-num" id="' + s + '-s-days">—</div><div class="summary-lbl">дней</div></div>' +
+        '<div class="summary-card" style="background:#E1F5EE"><div class="summary-num" id="' + s + '-s-days">—</div><div class="summary-lbl">дней</div></div>' +
         '<div class="summary-card"><div class="summary-num" id="' + s + '-s-ex">—</div><div class="summary-lbl">упражнений</div></div>' +
         '<div class="summary-card"><div class="summary-num" id="' + s + '-s-pct">—</div><div class="summary-lbl">прогресс</div></div>' +
       '</div>' +

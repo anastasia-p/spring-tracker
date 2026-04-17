@@ -203,6 +203,77 @@ function findSkillByExercise(exName, collection) {
   }) || null;
 }
 
+// Подсчёт непрерывного streak для секции.
+// Идём от вчерашнего дня назад, до даты регистрации.
+// День засчитывается в streak если:
+//   — plan.length === 0 (отдых)
+//   — или хотя бы одно упражнение из плана отмечено (полностью или частично сделано)
+// Streak прерывается только если в плане дня были упражнения, но не сделано ни одного.
+// Сегодняшний день в подсчёт не входит — он «ещё идёт».
+//
+// Результат кешируется по секции — при листании недель не пересчитывается.
+// Инвалидация — через invalidateStreakCache(section) при изменении галочек.
+var streakCache = {};
+
+function invalidateStreakCache(section) {
+  delete streakCache[section];
+}
+
+function calcDailyStreak(section) {
+  if (streakCache[section] !== undefined) {
+    return Promise.resolve(streakCache[section]);
+  }
+  return userCol(section).get().then(function(snap) {
+    var docsByDate = {};
+    snap.forEach(function(doc) { docsByDate[doc.id] = doc.data(); });
+
+    var createdKey = userCreatedAt ? userCreatedAt.slice(0, 10) : null;
+    var weekPlan = plans[section];
+
+    var d = new Date();
+    d.setDate(d.getDate() - 1); // начинаем со вчера
+
+    var streak = 0;
+    for (var i = 0; i < 3650; i++) { // hard-лимит 10 лет
+      var dk = dateKey(d);
+      if (createdKey && dk < createdKey) break;
+
+      var dayData = docsByDate[dk];
+      var plan, checks;
+      if (dayData) {
+        plan = dayData.plan || [];
+        checks = dayData.checks || {};
+      } else if (weekPlan) {
+        var idx = getDayPlanIndex(d);
+        var slot = weekPlan[idx];
+        plan = slot && slot.exercises ? slot.exercises : [];
+        checks = {};
+      } else {
+        plan = [];
+        checks = {};
+      }
+
+      if (plan.length === 0) {
+        // день отдыха — streak продолжается
+        streak++;
+      } else {
+        var done = plan.filter(function(ex) { return checks[ex.name]; }).length;
+        if (done > 0) {
+          // хотя бы одно упражнение сделано (полностью или частично) — streak продолжается
+          streak++;
+        } else {
+          break; // день был запланирован, но ничего не сделано — стоп
+        }
+      }
+
+      d.setDate(d.getDate() - 1);
+    }
+
+    streakCache[section] = streak;
+    return streak;
+  }).catch(function() { return 0; });
+}
+
 function loadAllSkills() {
   // initSkillLevels() удалён — уровни теперь инлайн в SKILLS (pure.js)
   return Promise.all(SKILLS.map(function(skill) {

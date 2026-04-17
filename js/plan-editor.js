@@ -513,6 +513,7 @@ function _peSave(state) {
     .update({ days: state.allDays })
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
+      if (typeof invalidateStreakCache === 'function') invalidateStreakCache(state.section);
       state.dirty = false;
       if (typeof plans !== 'undefined') plans[state.section] = state.allDays;
       state.onSave();

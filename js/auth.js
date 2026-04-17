@@ -25,6 +25,7 @@ firebase.auth().onAuthStateChanged(function(user) {
       } else if (!config) {
         showOnboarding();
       } else {
+        userCreatedAt = config.createdAt || null;
         startApp(config.sections || ['strength']);
       }
     });
@@ -155,6 +156,8 @@ function getAuthErrorMessage(code) {
 }
 
 // --- User config ---
+var userCreatedAt = null;
+
 function userDoc() {
   return db.collection('users').doc(currentUser.uid);
 }
@@ -264,10 +267,12 @@ function finishOnboarding() {
 
   Promise.all(planPromises).then(function() {
     var platform = detectPlatform();
+    var createdAt = new Date().toISOString();
+    userCreatedAt = createdAt;
     return userDoc().set({
       sections:  selected,
       email:     currentUser.email,
-      createdAt: new Date().toISOString(),
+      createdAt: createdAt,
       platform:  platform
     }, { merge: true });
   }).then(function() {
