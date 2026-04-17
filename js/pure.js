@@ -84,6 +84,20 @@ var LOTUS_LEVELS = [
 ];
 
 
+var DUMMY1_LEVELS = [
+  { level: 0, name: 'Незнакомец',        reps: 0,     desc: 'Стоит и молчит' },
+  { level: 1, name: 'Первый стук',       reps: 50,    desc: 'Три руки и нога' },
+  { level: 2, name: 'Синяки и шишки',    reps: 200,   desc: 'Тело помнит каждый удар' },
+  { level: 3, name: 'Нахожу углы',       reps: 500,   desc: 'Обходишь, а не давишь' },
+  { level: 4, name: 'Слышу ритм',        reps: 1000,  desc: 'Форма начинает дышать' },
+  { level: 5, name: 'Уступаю и веду',    reps: 3000,  desc: 'Мягкость сильнее силы' },
+  { level: 6, name: 'Танец по кругу',    reps: 6000,  desc: 'Движение стало потоком' },
+  { level: 7, name: 'Манекен раскрылся', reps: 10000, desc: 'Знаешь каждую руку' },
+  { level: 8, name: 'Молчаливый брат',   reps: 25000, desc: 'Манекен — продолжение тебя' },
+  { level: 9, name: 'Одно целое',        reps: 50000, desc: 'Нет тебя, нет манекена' },
+];
+
+
 var FOREST_GUMP_LEVELS = [
   { level: 0, name: 'Пора в путь',          km: 0,     desc: 'Главное начать' },
   { level: 1, name: 'Беги, Форрест, беги!',  km: 50,    desc: 'Первые километры позади' },
@@ -164,7 +178,7 @@ var SKILLS = [
     id: 'mountain',
     name: 'Стойка горы',
     section: 'wingchun',
-    color: '#7F77DD',
+    color: '#534AB7',
     bgColor: '#EEEDFE',
     valueType: 'seconds',
     source: { collection: 'wingchun', fields: ['Всадник у стены', 'Стульчик у стены', 'Мабу'] },
@@ -203,7 +217,7 @@ var SKILLS = [
     id: 'slt',
     name: 'Сиу Ним Тау',
     section: 'wingchun',
-    color: '#7F77DD',
+    color: '#534AB7',
     bgColor: '#EEEDFE',
     valueType: 'reps',
     source: { collection: 'wingchun', field: 'Сиу Ним Тау' },
@@ -222,6 +236,18 @@ var SKILLS = [
     tracker: 'ck',
     trackerField: 'totalReps',
     levels: FORMS_LEVELS,
+  },
+  {
+    id: 'dummy1',
+    name: 'Манекен №1',
+    section: 'wingchun',
+    color: '#534AB7',
+    bgColor: '#EEEDFE',
+    valueType: 'reps',
+    source: { collection: 'wingchun', fields: ['Манекен №1', 'Манекен № 1', 'Манекен-1', 'Манекен 1'] },
+    tracker: 'dummy1',
+    trackerField: 'totalReps',
+    levels: DUMMY1_LEVELS,
   },
   {
     id: 'lotus',
@@ -397,7 +423,7 @@ if (typeof module !== 'undefined') {
     getLotusLevel, getLotusNextLevel, getLotusProgress,
     getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex,
