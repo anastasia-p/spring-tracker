@@ -195,7 +195,26 @@ function toggleSection(sectionId, checked, el) {
       });
     });
   }).then(function() {
+    if (!meta.defaultTests) return Promise.resolve();
+    var url = baseUrl + meta.defaultTests + '?t=' + Date.now();
+    return fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
+      if (!data || !data.items || !data.items.length) return;
+      return userDoc().collection('plan').doc('tests').get().then(function(snap) {
+        var existing = snap.exists ? (snap.data().items || []) : [];
+        var seen = {};
+        existing.forEach(function(it) { seen[it.name] = true; });
+        var toAdd = data.items.filter(function(it) { return !seen[it.name]; });
+        if (!toAdd.length) return;
+        return userDoc().collection('plan').doc('tests').set({
+          items: existing.concat(toAdd),
+          updatedAt: new Date().toISOString()
+        });
+      });
+    });
+  }).then(function() {
     return saveUserConfig(newSections);
+  }).then(function() {
+    return loadPlanFromFirebase('tests');
   }).then(function() {
     initWithSections(newSections);
     renderSettingsPlans();
