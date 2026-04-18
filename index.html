@@ -1980,8 +1980,8 @@ document.addEventListener('keydown',function(e){
   var cursor=document.getElementById('cursor');
   var i=0;
   var boldEnd=boldText.length;
-  cursor.classList.add('visible');
   function type(){
+    if(i===0) cursor.classList.add('visible');
     if(i<=full.length){
       var typed=full.substring(0,i);
       var html;
