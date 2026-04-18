@@ -198,12 +198,12 @@ function toggleSection(sectionId, checked, el) {
     if (!meta.defaultTests) return Promise.resolve();
     var url = baseUrl + meta.defaultTests + '?t=' + Date.now();
     return fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
-      if (!data || !data.items || !data.items.length) return;
+      if (!data || !data.length) return;
       return userDoc().collection('plan').doc('tests').get().then(function(snap) {
         var existing = snap.exists ? (snap.data().items || []) : [];
         var seen = {};
         existing.forEach(function(it) { seen[it.name] = true; });
-        var toAdd = data.items.filter(function(it) { return !seen[it.name]; });
+        var toAdd = data.filter(function(it) { return !seen[it.name]; });
         if (!toAdd.length) return;
         return userDoc().collection('plan').doc('tests').set({
           items: existing.concat(toAdd),
