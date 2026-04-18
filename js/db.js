@@ -65,97 +65,10 @@ ALL_DATA_SECTIONS.forEach(function(s) { plans[s] = null; });
 var skillTotals = {};
 
 function loadPlanFromFirebase(section) {
-  if (section === 'tests') {
-    // Тесты разложены по секциям: plan/tests_<section>
-    // Собираем плоский массив из всех активных секций пользователя
-    var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
-    return Promise.all(activeSections.map(function(sec) {
-      return userDoc().collection('plan').doc('tests_' + sec).get().then(function(s) {
-        if (!s.exists) return [];
-        var items = s.data().items || [];
-        // Проставляем section в памяти — в Firebase не дублируем
-        return items.map(function(it) {
-          var copy = {};
-          for (var k in it) copy[k] = it[k];
-          copy.section = sec;
-          return copy;
-        });
-      }).catch(function() { return []; });
-    })).then(function(perSection) {
-      var merged = [];
-      perSection.forEach(function(arr) { arr.forEach(function(it) { merged.push(it); }); });
-      plans.tests = merged;
-    });
-  }
-  var field = 'days';
+  var field = section === 'tests' ? 'items' : 'days';
   return userDoc().collection('plan').doc(section).get().then(function(s) {
     if (s.exists) plans[section] = s.data()[field];
   }).catch(function() {});
-}
-
-// Разбирает старый документ plan/tests на секции и записывает 4 новых документа.
-// Возвращает Promise. Вызывается один раз при логине, если миграция нужна.
-function migrateTestsIfNeeded() {
-  return userDoc().collection('plan').doc('tests').get().then(function(oldSnap) {
-    if (!oldSnap.exists) return;
-    var oldItems = oldSnap.data().items || [];
-    // Если нет старых данных — просто удаляем документ (если он вдруг пустой)
-    if (!oldItems.length) {
-      return userDoc().collection('plan').doc('tests').delete().catch(function() {});
-    }
-    // Проверяем что хотя бы один tests_<section> не существует — чтобы не перезаписать
-    return Promise.all(SECTIONS.map(function(sec) {
-      return userDoc().collection('plan').doc('tests_' + sec).get();
-    })).then(function(snaps) {
-      var someExists = snaps.some(function(s) { return s.exists; });
-      if (someExists) {
-        // Уже мигрировано частично — не трогаем, только удаляем старый документ
-        return userDoc().collection('plan').doc('tests').delete().catch(function() {});
-      }
-      // Грузим дефолты по секциям, чтобы определить куда какой показатель
-      var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
-      var defaultFetches = SECTIONS.map(function(sec) {
-        var meta = SECTION_META[sec];
-        if (!meta || !meta.defaultTests) return Promise.resolve({ sec: sec, names: [] });
-        return fetch(baseUrl + meta.defaultTests + '?t=' + Date.now())
-          .then(function(r) { return r.ok ? r.json() : []; })
-          .then(function(data) {
-            var arr = Array.isArray(data) ? data : (data.items || []);
-            return { sec: sec, names: arr.map(function(it) { return it.name; }) };
-          })
-          .catch(function() { return { sec: sec, names: [] }; });
-      });
-      return Promise.all(defaultFetches).then(function(defaults) {
-        // Строим индекс имя → секция
-        var nameToSection = {};
-        defaults.forEach(function(d) {
-          d.names.forEach(function(name) {
-            if (!nameToSection[name]) nameToSection[name] = d.sec;
-          });
-        });
-        // Раскладываем старые items по секциям; неузнанные — в strength
-        var bySection = {};
-        SECTIONS.forEach(function(sec) { bySection[sec] = []; });
-        oldItems.forEach(function(it) {
-          var sec = nameToSection[it.name] || 'strength';
-          var clean = {};
-          for (var k in it) if (k !== 'section') clean[k] = it[k];
-          bySection[sec].push(clean);
-        });
-        // Записываем 4 документа и удаляем старый
-        var now = new Date().toISOString();
-        var writes = SECTIONS.map(function(sec) {
-          return userDoc().collection('plan').doc('tests_' + sec).set({
-            items: bySection[sec],
-            updatedAt: now
-          });
-        });
-        return Promise.all(writes).then(function() {
-          return userDoc().collection('plan').doc('tests').delete().catch(function() {});
-        });
-      });
-    });
-  }).catch(function(e) { console.error('migrateTestsIfNeeded:', e); });
 }
 
 function getDayPlan(section, date) {

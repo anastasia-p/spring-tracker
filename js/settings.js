@@ -195,21 +195,26 @@ function toggleSection(sectionId, checked, el) {
       });
     });
   }).then(function() {
-    // Создаём отдельный документ plan/tests_<section> если его нет
     if (!meta.defaultTests) return Promise.resolve();
-    return userDoc().collection('plan').doc('tests_' + sectionId).get().then(function(snap) {
-      if (snap.exists) return;
-      var url = baseUrl + meta.defaultTests + '?t=' + Date.now();
-      return fetch(url).then(function(r) { return r.ok ? r.json() : []; }).then(function(data) {
-        var items = Array.isArray(data) ? data : (data.items || []);
-        return userDoc().collection('plan').doc('tests_' + sectionId).set({
-          items: items,
+    var url = baseUrl + meta.defaultTests + '?t=' + Date.now();
+    return fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
+      if (!data || !data.length) return;
+      return userDoc().collection('plan').doc('tests').get().then(function(snap) {
+        var existing = snap.exists ? (snap.data().items || []) : [];
+        var seen = {};
+        existing.forEach(function(it) { seen[it.name] = true; });
+        var toAdd = data.filter(function(it) { return !seen[it.name]; });
+        if (!toAdd.length) return;
+        return userDoc().collection('plan').doc('tests').set({
+          items: existing.concat(toAdd),
           updatedAt: new Date().toISOString()
         });
       });
     });
   }).then(function() {
     return saveUserConfig(newSections);
+  }).then(function() {
+    return loadPlanFromFirebase('tests');
   }).then(function() {
     initWithSections(newSections);
     renderSettingsPlans();
