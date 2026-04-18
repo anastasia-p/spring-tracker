@@ -174,10 +174,10 @@
 
     .hero-inner {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 40px;
       align-items: center;
-      max-width: 920px;
+      max-width: 900px;
       width: 100%;
       position: relative;
     }
@@ -427,70 +427,298 @@
     }
 
     .rpg-inner {
-      max-width: 860px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
     .rpg-header {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 24px;
     }
 
-    .rpg-cards {
+    .rpg-items {
+      margin-top: 8px;
+    }
+
+    .rpg-item {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 32px;
+      grid-template-columns: 80px 1fr;
+      gap: 40px;
+      padding: 48px 0;
     }
 
-    .rpg-card {
+    .rpg-item + .rpg-item {
+      border-top: 1px solid var(--pink-mid);
+    }
+
+    .rpg-num {
+      font-size: 56px;
+      font-weight: 600;
+      color: var(--green);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .rpg-item h3 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 10px;
+      color: var(--text);
+    }
+
+    .rpg-item p {
+      font-size: 17px;
+      color: #5a5a5a;
+      line-height: 1.55;
+      margin: 0 0 28px;
+    }
+
+    .rpg-viz {
       background: #fff;
       border-radius: 16px;
-      padding: 20px 18px;
-      border: 1px solid rgba(0,0,0,0.04);
+      padding: 28px;
     }
 
-    .rpg-card-icon {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      background: var(--green-light);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      margin-bottom: 14px;
+    /* Viz: skill cards (item 01) */
+    .skill-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
     }
 
-    .rpg-card-title {
-      font-size: 14px;
+    .skill-card-lp {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .skill-card-lp-name {
+      font-size: 13px;
       font-weight: 600;
       color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .skill-card-lp-mid {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 6px;
+    }
+
+    .skill-card-lp-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .skill-card-lp-val {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .skill-card-lp-unit {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    .skill-card-lp-lvl {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .skill-card-lp-lvl b {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .skill-card-lp-bar-wrap {
+      height: 5px;
+      background: #F1EFE8;
+      border-radius: 3px;
+      margin-bottom: 6px;
+    }
+
+    .skill-card-lp-bar {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .skill-card-lp-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #B4B2A9;
+    }
+
+    .skill-ex-labels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .skill-ex-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Viz: weekly stars examples (item 02) */
+    .weekly-examples {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .week-ex-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .week-ex {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+      border-radius: 14px;
+      width: 100%;
+      box-sizing: border-box;
+      background: #FAF8F5;
+      border: 1px solid rgba(0,0,0,0.09);
+    }
+
+    .week-ex .star {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+
+    .week-ex-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: center;
       line-height: 1.3;
     }
 
-    .rpg-card-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.55;
+    /* Viz: summary grid (item 03) */
+    .summary-grid-lp {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
     }
 
-    .rpg-soon {
-      text-align: center;
-      background: var(--green-light);
+    .summary-card-lp {
+      background: #fff;
       border-radius: 12px;
-      padding: 14px 24px;
-      font-size: 14px;
-      color: var(--green-dark);
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 18px 12px;
+      text-align: center;
     }
 
-    .rpg-soon b { font-weight: 600; }
+    .summary-card-lp--green {
+      background: var(--green-light);
+      border-color: #9FE1CB;
+    }
+
+    .summary-card-lp-num {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .summary-card-lp-lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
 
     @media (max-width: 768px) {
       .rpg-section { padding: 56px 24px; }
-      .rpg-cards { grid-template-columns: repeat(2, 1fr); }
+      .rpg-item {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 36px 0;
+      }
+      .rpg-num { font-size: 40px; }
+      .rpg-item h3 { font-size: 20px; }
+      .rpg-item p { font-size: 16px; margin-bottom: 24px; }
+      .rpg-viz { padding: 20px; }
+      .weekly-examples { gap: 8px; }
+      .week-ex { padding: 16px 10px; }
+      .week-ex-stars .star { width: 18px; height: 18px; }
+      .week-ex-label { font-size: 11px; }
     }
 
     @media (max-width: 480px) {
-      .rpg-cards { grid-template-columns: 1fr; }
+      .rpg-section { padding: 48px 16px; }
+      .rpg-item p { font-size: 15px; }
+      .skill-cards-grid { gap: 8px; }
+      .skill-card-lp { padding: 12px; }
+      .skill-card-lp-val { font-size: 15px; }
+    }
+
+    /* ── ROADMAP BLOCK ───────────────────────────── */
+    .roadmap-section {
+      padding: 88px 32px;
+      background: var(--green-light);
+      text-align: center;
+    }
+
+    .roadmap-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .roadmap-chip {
+      display: inline-block;
+      background: #fff;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .roadmap-body {
+      font-size: 17px;
+      line-height: 1.65;
+      color: #2a2a2a;
+      text-align: left;
+      margin-top: 32px;
+    }
+
+    .roadmap-body p { margin: 0 0 20px; }
+    .roadmap-body p:last-child { margin-bottom: 0; }
+
+    .roadmap-body a {
+      color: var(--green-dark);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(15, 110, 86, 0.3);
+      transition: border-color 0.15s;
+    }
+
+    .roadmap-body a:hover { border-bottom-color: var(--green-dark); }
+
+    @media (max-width: 768px) {
+      .roadmap-section { padding: 64px 24px; }
+      .roadmap-body { font-size: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .roadmap-section { padding: 56px 16px; }
     }
 
     /* ── FOUNDER BLOCK ───────────────────────────── */
@@ -500,7 +728,7 @@
     }
 
     .founder-inner {
-      max-width: 860px;
+      max-width: 900px;
       margin: 0 auto;
       display: grid;
       grid-template-columns: 280px 1fr;
@@ -525,7 +753,7 @@
     }
 
     .founder-text p {
-      font-size: 16px;
+      font-size: 17px;
       line-height: 1.75;
       color: var(--text);
       margin-bottom: 14px;
@@ -1179,30 +1407,144 @@
       <h2 class="section-title">Ты — персонаж<br>Тренировки — это опыт</h2>
     </div>
 
-    <div class="rpg-cards">
+    <div class="rpg-items">
 
-      <div class="rpg-card">
-        <div class="rpg-card-icon">⚔️</div>
-        <div class="rpg-card-title">Навыки и уровни</div>
-        <div class="rpg-card-desc">Выполняя упражнения — развиваешь навыки.<br>Подтягивания → Руки Титана<br>Бег → Форрест Гамп<br>Медитация → Лотос<br>У каждого навыка своя система уровней от нулевого до девятого.</div>
+      <!-- 01: Навыки -->
+      <div class="rpg-item">
+        <div class="rpg-num">01</div>
+        <div>
+          <h3>Навыки растут от упражнений</h3>
+          <p>Выполняя упражнения — развиваешь навыки. Отжимаешься → улучшается навык «Руки Титана». Бегаешь → «Форрест Гамп». Медитируешь → «Лотос». У каждого навыка своя система уровней от нулевого до девятого</p>
+          <div class="skill-cards-grid">
+
+            <!-- Руки Титана -->
+            <div class="skill-card-lp">
+              <div class="skill-card-lp-name">Руки Титана</div>
+              <div class="skill-card-lp-mid">
+                <div class="skill-card-lp-icon" style="background:#FAECE7;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 12h12M6 12c0-2 1.5-4 4-4M6 12c0 2 1.5 4 4 4M18 12c0-2-1.5-4-4-4M18 12c0 2-1.5 4-4 4" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="4" r="2" fill="#D85A30"/><circle cx="12" cy="20" r="2" fill="#D85A30"/></svg>
+                </div>
+                <span class="skill-card-lp-val">650<span class="skill-card-lp-unit"> повт.</span></span>
+              </div>
+              <div class="skill-card-lp-lvl">Ур. 2 — <b>Каменные руки</b></div>
+              <div class="skill-card-lp-bar-wrap">
+                <div class="skill-card-lp-bar" style="width:30%;background:#D85A30;"></div>
+              </div>
+              <div class="skill-card-lp-labels"><span>500</span><span>30%</span><span>1000</span></div>
+            </div>
+
+            <!-- Лотос -->
+            <div class="skill-card-lp">
+              <div class="skill-card-lp-name">Лотос</div>
+              <div class="skill-card-lp-mid">
+                <div class="skill-card-lp-icon" style="background:#F3E8FA;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="16" rx="10" ry="3" fill="#E8C8F0" opacity="0.4"/><path d="M12 16 Q6 10 9 1 Q13 8 12 16Z" fill="#D4A0E0"/><path d="M12 16 Q18 10 15 1 Q11 8 12 16Z" fill="#B06FC4"/><path d="M12 16 Q2 12 3 5 Q8 11 12 16Z" fill="#C880D8"/><path d="M12 16 Q22 12 21 5 Q16 11 12 16Z" fill="#9B4FB5"/><path d="M12 16 Q4 17 1 11 Q7 14 12 16Z" fill="#D4A0E0" opacity="0.7"/><path d="M12 16 Q20 17 23 11 Q17 14 12 16Z" fill="#B06FC4" opacity="0.7"/><circle cx="12" cy="15" r="2.5" fill="#F3E8FA"/><circle cx="12" cy="15" r="1.2" fill="#E8C8F0"/></svg>
+                </div>
+                <span class="skill-card-lp-val">5.0<span class="skill-card-lp-unit"> ч</span></span>
+              </div>
+              <div class="skill-card-lp-lvl">Ур. 0 — <b>Беспокойный ум</b></div>
+              <div class="skill-card-lp-bar-wrap">
+                <div class="skill-card-lp-bar" style="width:50%;background:#B06FC4;"></div>
+              </div>
+              <div class="skill-card-lp-labels"><span>0 ч</span><span>50%</span><span>10 ч</span></div>
+            </div>
+
+            <!-- Стойка горы -->
+            <div class="skill-card-lp">
+              <div class="skill-card-lp-name">Сиу Ним Тау</div>
+              <div class="skill-card-lp-mid">
+                <div class="skill-card-lp-icon" style="background:#EEEDFE;">
+                  <span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">小</span>
+                </div>
+                <span class="skill-card-lp-val">119<span class="skill-card-lp-unit"> повт.</span></span>
+              </div>
+              <div class="skill-card-lp-lvl">Ур. 1 — <b>Ученик</b></div>
+              <div class="skill-card-lp-bar-wrap">
+                <div class="skill-card-lp-bar" style="width:5%;background:#534AB7;"></div>
+              </div>
+              <div class="skill-card-lp-labels"><span>100</span><span>5%</span><span>500</span></div>
+            </div>
+
+          </div>
+          <div class="skill-ex-labels">
+            <div class="skill-ex-label">→ Отжимания</div>
+            <div class="skill-ex-label">→ Медитация</div>
+            <div class="skill-ex-label">→ Форма Вин Чун</div>
+          </div>
+        </div>
       </div>
 
-      <div class="rpg-card">
-        <div class="rpg-card-icon">⭐</div>
-        <div class="rpg-card-title">Звезды за неделю</div>
-        <div class="rpg-card-desc">Выполнил весь план — 3 звезды. Частично — 2 или 1. Не просто галочка "сделал/не сделал", а честная оценка недели.</div>
+      <!-- 02: Звезды -->
+      <div class="rpg-item">
+        <div class="rpg-num">02</div>
+        <div>
+          <h3>Звезды за неделю</h3>
+          <p>Выполнил план — три зеленые. Частично — желтые. Пропустил — красная. По цвету и числу звезд видно картину недели за секунду</p>
+          <div class="weekly-examples">
+            <div class="week-ex-col">
+              <div class="week-ex">
+                <svg class="star" viewBox="0 0 24 24" fill="#1D9E75" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="#1D9E75" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="#1D9E75" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+              </div>
+              <span class="week-ex-label">План выполнен</span>
+            </div>
+            <div class="week-ex-col">
+              <div class="week-ex">
+                <svg class="star" viewBox="0 0 24 24" fill="#F5B800" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="#F5B800" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="none" stroke="#FAC775" stroke-width="1.5" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+              </div>
+              <span class="week-ex-label">Почти</span>
+            </div>
+            <div class="week-ex-col">
+              <div class="week-ex">
+                <svg class="star" viewBox="0 0 24 24" fill="#F5B800" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="none" stroke="#FAC775" stroke-width="1.5" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="none" stroke="#FAC775" stroke-width="1.5" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+              </div>
+              <span class="week-ex-label">Частично</span>
+            </div>
+            <div class="week-ex-col">
+              <div class="week-ex">
+                <svg class="star" viewBox="0 0 24 24" fill="#E24B4A" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="none" stroke="#F0C8D4" stroke-width="1.5" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+                <svg class="star" viewBox="0 0 24 24" fill="none" stroke="#F0C8D4" stroke-width="1.5" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.6-5.1 4.6 1.5 6.6L12 16.8l-6.8 3.3 1.5-6.6-5.1-4.6 6.8-.6z"/></svg>
+              </div>
+              <span class="week-ex-label">Пропуск</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="rpg-card">
-        <div class="rpg-card-icon">🔥</div>
-        <div class="rpg-card-title">Серия дней</div>
-        <div class="rpg-card-desc">Следи сколько дней подряд не пропускал тренировки. Серия мотивирует лучше любого напоминания.</div>
+      <!-- 03: Серия -->
+      <div class="rpg-item">
+        <div class="rpg-num">03</div>
+        <div>
+          <h3>Для тех, кто любит статистику</h3>
+          <p>Серия дней без пропуска тренировок, количество выполненных упражнений и недельный прогресс — чтобы стремиться к большим цифрам</p>
+          <div class="summary-grid-lp">
+            <div class="summary-card-lp summary-card-lp--green">
+              <div class="summary-card-lp-num">24</div>
+              <div class="summary-card-lp-lbl">дня подряд</div>
+            </div>
+            <div class="summary-card-lp">
+              <div class="summary-card-lp-num">50</div>
+              <div class="summary-card-lp-lbl">упражнений</div>
+            </div>
+            <div class="summary-card-lp">
+              <div class="summary-card-lp-num">85%</div>
+              <div class="summary-card-lp-lbl">прогресс</div>
+            </div>
+          </div>
+          <div class="skill-ex-labels">
+            <div class="skill-ex-label">→ Без пропусков</div>
+            <div class="skill-ex-label">→ За эту неделю</div>
+            <div class="skill-ex-label">→ За эту неделю</div>
+          </div>
+        </div>
       </div>
 
-    </div>
-
-    <div class="rpg-soon">
-      <b>Скоро:</b> характеристики персонажа — Сила, Энергия и Интеллект
     </div>
 
   </div>
@@ -1247,6 +1589,14 @@
               <div class="phone-fade"></div>
             </div>
           </div>
+          <div class="phone-frame phone-md" onclick="openLightbox('images/screen-exercise-add.webp', this)">
+            <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
+            <div class="phone-vol"></div><div class="phone-power"></div>
+            <div class="phone-screen-wrap">
+              <img src="images/screen-exercise-add.webp" alt="Добавление упражнения в план Spring Tracker" class="phone-screen" loading="lazy">
+              <div class="phone-fade"></div>
+            </div>
+          </div>
           <div class="phone-frame phone-md" onclick="openLightbox('images/screen-settings.webp', this)">
             <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
             <div class="phone-vol"></div><div class="phone-power"></div>
@@ -1275,7 +1625,7 @@
     </div>
 
     <div class="phones-centered">
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-input.webp', this)">
+      <div class="phone-frame phone-md" onclick="openLightbox('images/screen-test-input.webp', this)">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
@@ -1283,7 +1633,7 @@
           <div class="phone-fade"></div>
         </div>
       </div>
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-test-history.webp', this)">
+      <div class="phone-frame phone-md" onclick="openLightbox('images/screen-test-history.webp', this)">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
@@ -1308,7 +1658,7 @@
     </div>
 
     <div class="phones-centered">
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-grid.webp', this)">
+      <div class="phone-frame phone-md" onclick="openLightbox('images/screen-skills-grid.webp', this)">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
@@ -1316,7 +1666,7 @@
           <div class="phone-fade"></div>
         </div>
       </div>
-      <div class="phone-frame phone-lg" onclick="openLightbox('images/screen-skills-detail.webp', this)">
+      <div class="phone-frame phone-md" onclick="openLightbox('images/screen-skills-detail.webp', this)">
         <div class="phone-cam"><div class="phone-cam-dot"></div><div class="phone-speaker"></div></div>
         <div class="phone-vol"></div><div class="phone-power"></div>
         <div class="phone-screen-wrap">
@@ -1326,6 +1676,23 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ЧТО ДАЛЬШЕ -->
+<div class="roadmap-section">
+  <div class="roadmap-inner">
+    <div class="roadmap-chip">Что дальше</div>
+    <h2 class="section-title">Продолжение следует</h2>
+    <div class="roadmap-body">
+      <p>Приложение планирую развивать дальше. Скоро появятся характеристики персонажа: Сила, Энергия и Интеллект. И новая дисциплина с навыками для прокачки Интеллекта)</p>
+
+      <p>Оставайся на связи: за обновлениями удобнее всего следить в <a href="https://t.me/spring_tracker" target="_blank" rel="noopener noreferrer" onclick="ym(108404687,'reachGoal','click_tg_roadmap')">Telegram-канале</a>.</p>
+
+      <p>Не хватает чего-то? Напиши — подумаем вместе.</p>
+
+      <p>Хочешь поучаствовать? Художник, который нарисует иконки навыков, был бы очень кстати. Пиши на <a href="mailto:qt.trek@gmail.com">qt.trek@gmail.com</a>.</p>
+    </div>
   </div>
 </div>
 
