@@ -139,7 +139,7 @@ var SECTION_META = {
   cardio: {
     label:        'Кардио',
     defaultPlan:  'plans/cardio_default.json',
-    defaultTests: null,
+    defaultTests: 'plans/tests_cardio_default.json',
   },
   // Пример добавления новой секции:
   // brain: {
