@@ -1987,6 +1987,22 @@ document.addEventListener('keydown',function(e){
   if(e.key==='ArrowLeft') lightboxNav(-1);
 });
 
+(function() {
+  var lb = document.getElementById('lightbox');
+  var startX = 0;
+  var startY = 0;
+  lb.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  lb.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return;
+    lightboxNav(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
+
 (function(){
   var boldText='Spring Tracker';
   var normalText=' — Фитнес-RPG';
