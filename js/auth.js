@@ -78,7 +78,10 @@ function startApp(sections) {
   if (authEl)    authEl.style.display    = 'none';
   if (onboardEl) onboardEl.style.display = 'none';
   if (mainEl)    mainEl.style.display    = 'block';
-  initWithSections(sections);
+  // Одноразовая миграция старого документа plan/tests → plan/tests_<section>
+  migrateTestsIfNeeded().then(function() {
+    initWithSections(sections);
+  });
 }
 
 // --- Auth actions ---
@@ -238,32 +241,24 @@ function finishOnboarding() {
     });
   });
 
-  // Загружаем тесты (только для секций у которых есть defaultTests)
-  var testFiles = selected
-    .map(function(id) { return SECTION_META[id]; })
-    .filter(function(meta) { return meta && meta.defaultTests; })
-    .map(function(meta) { return baseUrl + meta.defaultTests + '?t=' + Date.now(); });
-
-  planPromises.push(
-    userDoc().collection('plan').doc('tests').get().then(function(snap) {
-      if (snap.exists) return;
-      if (!testFiles.length) return;
-      return Promise.all(testFiles.map(function(url) {
-        return fetch(url).then(function(r) { return r.ok ? r.json() : []; });
-      })).then(function(results) {
-        var seen = {}, merged = [];
-        results.forEach(function(items) {
-          items.forEach(function(item) {
-            if (!seen[item.name]) { seen[item.name] = true; merged.push(item); }
+  // Загружаем тесты по секциям — отдельный документ plan/tests_<section> на каждую секцию у которой есть defaultTests
+  selected.forEach(function(sectionId) {
+    var meta = SECTION_META[sectionId];
+    if (!meta || !meta.defaultTests) return;
+    planPromises.push(
+      userDoc().collection('plan').doc('tests_' + sectionId).get().then(function(snap) {
+        if (snap.exists) return;
+        var url = baseUrl + meta.defaultTests + '?t=' + Date.now();
+        return fetch(url).then(function(r) { return r.ok ? r.json() : []; }).then(function(data) {
+          var items = Array.isArray(data) ? data : (data.items || []);
+          return userDoc().collection('plan').doc('tests_' + sectionId).set({
+            items: items,
+            updatedAt: new Date().toISOString()
           });
         });
-        return userDoc().collection('plan').doc('tests').set({
-          items: merged,
-          updatedAt: new Date().toISOString()
-        });
-      });
-    })
-  );
+      })
+    );
+  });
 
   Promise.all(planPromises).then(function() {
     var platform = detectPlatform();
