@@ -671,6 +671,16 @@
       .week-ex { padding: 14px 8px; gap: 4px; }
       .week-ex .star { width: 16px; height: 16px; }
       .week-ex-label { font-size: 11px; }
+      .skill-cards-grid { grid-template-columns: 1fr; gap: 8px; }
+      .skill-card-lp { padding: 12px 14px; }
+      .skill-ex-labels { display: none; }
+      .skill-card-lp[data-label]::after {
+        content: attr(data-label);
+        display: block;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
     }
 
     /* ── ROADMAP BLOCK ───────────────────────────── */
@@ -1561,7 +1571,7 @@
           <div class="skill-cards-grid">
 
             <!-- Руки Титана -->
-            <div class="skill-card-lp">
+            <div class="skill-card-lp" data-label="→ Отжимания">
               <div class="skill-card-lp-name">Руки Титана</div>
               <div class="skill-card-lp-mid">
                 <div class="skill-card-lp-icon" style="background:#FAECE7;">
@@ -1577,7 +1587,7 @@
             </div>
 
             <!-- Лотос -->
-            <div class="skill-card-lp">
+            <div class="skill-card-lp" data-label="→ Медитация">
               <div class="skill-card-lp-name">Лотос</div>
               <div class="skill-card-lp-mid">
                 <div class="skill-card-lp-icon" style="background:#F3E8FA;">
@@ -1593,7 +1603,7 @@
             </div>
 
             <!-- Стойка горы -->
-            <div class="skill-card-lp">
+            <div class="skill-card-lp" data-label="→ Форма Вин Чун">
               <div class="skill-card-lp-name">Сиу Ним Тау</div>
               <div class="skill-card-lp-mid">
                 <div class="skill-card-lp-icon" style="background:#EEEDFE;">
