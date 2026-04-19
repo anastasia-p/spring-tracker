@@ -157,6 +157,7 @@ function getAuthErrorMessage(code) {
 
 // --- User config ---
 var userCreatedAt = null;
+var SCHEMA_V2 = false;  // выставляется в loadUserConfig — используется в db.js (isSchemaV2())
 
 function userDoc() {
   return db.collection('users').doc(currentUser.uid);
@@ -168,7 +169,10 @@ function loadUserConfig() {
   });
   return Promise.race([
     userDoc().get().then(function(s) {
-      return s.exists ? s.data() : null;
+      if (!s.exists) return null;
+      var cfg = s.data();
+      SCHEMA_V2 = cfg && cfg.schema_version >= 2;
+      return cfg;
     }).catch(function(e) {
       console.error('loadUserConfig error:', e);
       return CONFIG_ERROR;

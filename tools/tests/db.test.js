@@ -377,6 +377,275 @@ function runTests() {
     });
   }); })
 
+  // ============================================================
+  // V2 ТЕСТЫ — schema_version = 2, новая структура
+  // ============================================================
+
+  // ─── isSchemaV2 ──────────────────────────────────────────────────────────
+
+  .then(function() { group('v2: isSchemaV2'); })
+
+  .then(function() { return test('returns true when schemaV2 setup flag is set', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    assert.strictEqual(ctx.api.isSchemaV2(), true);
+  }); })
+
+  .then(function() { return test('returns false when schemaV2 flag not set', function() {
+    var ctx = ts.setup();
+    assert.strictEqual(ctx.api.isSchemaV2(), false);
+  }); })
+
+  // ─── loadPlanFromFirebase v2 ─────────────────────────────────────────────
+
+  .then(function() { group('v2: loadPlanFromFirebase'); })
+
+  .then(function() { return test('v2: reads sections/{section}/plan/current.days', function() {
+    var days = [{ day: 'Пн' }];
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: { 'users/u1/sections/strength/plan/current': { days: days } }
+    });
+    return ctx.api.loadPlanFromFirebase('strength').then(function() {
+      assert.deepStrictEqual(ctx.api.plans.strength, days);
+    });
+  }); })
+
+  .then(function() { return test('v2: tests aggregates from all active sections', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/strength/tests/current': {
+          items: [{ name: 'Отжимания', unit: 'раз' }]
+        },
+        'users/u1/sections/wingchun/tests/current': {
+          items: [{ name: 'Мабу', unit: 'сек' }]
+        },
+      }
+    });
+    global.userSections = ['strength', 'wingchun'];
+    return ctx.api.loadPlanFromFirebase('tests').then(function() {
+      delete global.userSections;
+      var names = ctx.api.plans.tests.map(function(it) { return it.name; }).sort();
+      assert.deepStrictEqual(names, ['Мабу', 'Отжимания']);
+      ctx.api.plans.tests.forEach(function(it) {
+        if (it.name === 'Мабу') assert.strictEqual(it.section, 'wingchun');
+        if (it.name === 'Отжимания') assert.strictEqual(it.section, 'strength');
+      });
+    });
+  }); })
+
+  // ─── loadDayData v2 ──────────────────────────────────────────────────────
+
+  .then(function() { group('v2: loadDayData'); })
+
+  .then(function() { return test('v2: reads sections/{section}/plan/{YYYY}/history/{date}', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/strength/plan/2026/history/2026-04-18': {
+          plan: [{ name: 'Отжимания' }],
+          type: 'upper', label: 'Верх',
+          checks: { 'Отжимания': true }, values: { 'Отжимания': 25 }
+        }
+      }
+    });
+    return ctx.api.loadDayData('strength', new Date('2026-04-18T12:00:00')).then(function(d) {
+      assert.deepStrictEqual(d.checks, { 'Отжимания': true });
+      assert.strictEqual(d.values['Отжимания'], 25);
+      var gets = ctx.mock.log.filter(function(op) { return op[0] === 'GET'; });
+      assert.ok(gets.some(function(op) {
+        return op[1] === 'users/u1/sections/strength/plan/2026/history/2026-04-18';
+      }), 'expected GET on v2 path, got: ' + JSON.stringify(gets));
+    });
+  }); })
+
+  // ─── saveDayData v2 ──────────────────────────────────────────────────────
+
+  .then(function() { group('v2: saveDayData'); })
+
+  .then(function() { return test('v2: writes sections/{section}/plan/{YYYY}/history/{date}', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'X' }], type: 'legs', label: 'Ноги',
+      checks: { X: true }, values: { X: 5 }
+    };
+    ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00'));
+    return Promise.resolve().then(function() {
+      var p = 'users/u1/sections/strength/plan/2026/history/2026-04-18';
+      assert.ok(ctx.mock.store[p], 'expected write at ' + p);
+      assert.strictEqual(ctx.mock.store[p].values.X, 5);
+    });
+  }); })
+
+  // ─── loadSkill v2 ────────────────────────────────────────────────────────
+
+  .then(function() { group('v2: loadSkill'); })
+
+  .then(function() { return test('v2: reads sections/{section}/skills/{skill.id}', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: { 'users/u1/sections/strength/skills/pushups': { totalReps: 500 } }
+    });
+    var skill = pure_getSkill('pushups');
+    return ctx.api.loadSkill(skill).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 500);
+    });
+  }); })
+
+  .then(function() { return test('v2: mountain lives under wingchun section', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: { 'users/u1/sections/wingchun/skills/mountain': { totalSeconds: 9000 } }
+    });
+    var skill = pure_getSkill('mountain');
+    return ctx.api.loadSkill(skill).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.mountain, 9000);
+    });
+  }); })
+
+  // ─── recalcSkill v2 ──────────────────────────────────────────────────────
+
+  .then(function() { group('v2: recalcSkill'); })
+
+  .then(function() { return test('v2: sums from plan history and writes to sections/.../skills/', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/strength/plan/2026/history/2026-04-10': { values: { 'Отжимания': 20 } },
+        'users/u1/sections/strength/plan/2026/history/2026-04-11': { values: { 'Отжимания': 25 } },
+      }
+    });
+    var skill = pure_getSkill('pushups');
+    return waitRecalc(ctx, skill).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 45);
+      assert.strictEqual(
+        ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 45);
+    });
+  }); })
+
+  .then(function() { return test('v2: mountain sums from wingchun history AND wingchun tests history', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/wingchun/plan/2026/history/2026-04-10': {
+          values: { 'Всадник у стены': 60, 'Стульчик у стены': 40 }
+        },
+        'users/u1/sections/wingchun/tests/2026/history/2026-04-08': {
+          'Всадник у стены': 50, 'Стульчик у стены': 30
+        },
+      }
+    });
+    var skill = pure_getSkill('mountain');
+    return waitRecalc(ctx, skill).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.mountain, 180);
+      assert.strictEqual(
+        ctx.mock.store['users/u1/sections/wingchun/skills/mountain'].totalSeconds, 180);
+    });
+  }); })
+
+  // ─── loadTestsCache v2 ───────────────────────────────────────────────────
+
+  .then(function() { group('v2: loadTestsCache'); })
+
+  .then(function() { return test('v2: merges tests history from all active sections by date', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/strength/tests/2026/history/2026-04-18': { 'Отжимания': 25 },
+        'users/u1/sections/wingchun/tests/2026/history/2026-04-18': { 'Мабу': 60 },
+      }
+    });
+    global.userSections = ['strength', 'wingchun'];
+    return ctx.api.loadTestsCache().then(function() {
+      delete global.userSections;
+      assert.deepStrictEqual(ctx.api.cache.tests['2026-04-18'],
+        { 'Отжимания': 25, 'Мабу': 60 });
+    });
+  }); })
+
+  // ─── saveTestData v2 ─────────────────────────────────────────────────────
+
+  .then(function() { group('v2: saveTestData'); })
+
+  .then(function() { return test('v2: writes values to sections/{section}/tests/{YYYY}/history/{date}', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    ctx.api.plans.tests = [
+      { name: 'Отжимания', unit: 'раз', section: 'strength' },
+      { name: 'Мабу', unit: 'сек', section: 'wingchun' },
+    ];
+    ctx.api.saveTestData('2026-04-18', { 'Отжимания': 30, 'Мабу': 60 });
+    return Promise.resolve().then(function() {
+      assert.deepStrictEqual(
+        ctx.mock.store['users/u1/sections/strength/tests/2026/history/2026-04-18'],
+        { 'Отжимания': 30 });
+      assert.deepStrictEqual(
+        ctx.mock.store['users/u1/sections/wingchun/tests/2026/history/2026-04-18'],
+        { 'Мабу': 60 });
+    });
+  }); })
+
+  .then(function() { return test('v2: items without section fall into strength', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    ctx.api.plans.tests = [{ name: 'Custom', unit: 'раз' }];
+    ctx.api.saveTestData('2026-04-18', { 'Custom': 5 });
+    return Promise.resolve().then(function() {
+      assert.deepStrictEqual(
+        ctx.mock.store['users/u1/sections/strength/tests/2026/history/2026-04-18'],
+        { 'Custom': 5 });
+    });
+  }); })
+
+  // ─── calcDailyStreak v2 ──────────────────────────────────────────────────
+
+  .then(function() { group('v2: calcDailyStreak'); })
+
+  .then(function() { return test('v2: counts streak via plan history', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      config: { createdAt: '2026-04-10T00:00:00.000Z' }
+    });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-04-16', {
+      plan: [{ name: 'A' }], checks: { A: true }
+    });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-04-15', {
+      plan: [{ name: 'B' }], checks: {}
+    });
+    var origDate = Date;
+    global.Date = fakeDate('2026-04-17T12:00:00');
+    return ctx.api.calcDailyStreak('strength').then(function(streak) {
+      global.Date = origDate;
+      assert.strictEqual(streak, 1);
+    });
+  }); })
+
+  // ─── listYearsToRead ─────────────────────────────────────────────────────
+
+  .then(function() { group('v2: listYearsToRead'); })
+
+  .then(function() { return test('returns [createdYear..currentYear]', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      config: { createdAt: '2025-08-12T00:00:00.000Z' }
+    });
+    var origDate = Date;
+    global.Date = fakeDate('2026-04-19T12:00:00');
+    var years = ctx.api.listYearsToRead();
+    global.Date = origDate;
+    assert.deepStrictEqual(years, ['2025', '2026']);
+  }); })
+
+  .then(function() { return test('returns single year when created this year', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      config: { createdAt: '2026-03-01T00:00:00.000Z' }
+    });
+    var origDate = Date;
+    global.Date = fakeDate('2026-04-19T12:00:00');
+    var years = ctx.api.listYearsToRead();
+    global.Date = origDate;
+    assert.deepStrictEqual(years, ['2026']);
+  }); })
+
   // ─── Итог ────────────────────────────────────────────────────────────────
 
   .then(function() {

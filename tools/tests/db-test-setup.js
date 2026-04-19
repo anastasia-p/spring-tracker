@@ -23,6 +23,8 @@ function setup(opts) {
 
   Object.keys(seed).forEach(function(p) { mock.seed(p, seed[p]); });
 
+  global.SCHEMA_V2 = schemaV2;
+
   global.firebase = {
     firestore: function() { return mock.db; },
     auth: function() { return { currentUser: { uid: uid } }; },
@@ -49,7 +51,7 @@ function setup(opts) {
 }
 
 function teardown() {
-  ['firebase', 'currentUser', 'userCreatedAt',
+  ['firebase', 'currentUser', 'userCreatedAt', 'SCHEMA_V2',
    'SECTIONS', 'SECTION_META', 'SKILLS', 'pluralize', 'dateKey',
    'getDayPlanIndex', 'getWeekDates', 'getSkillById',
    'API_URL', 'fetch', 'userDoc', 'renderSkillById',
