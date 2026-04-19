@@ -75,10 +75,17 @@ function uploadPlan(section, input) {
 }
 
 function applyUploadedPlan(section, data) {
-  var field = section === 'tests' ? 'items' : 'days';
-  var doc = { updatedAt: new Date().toISOString() };
-  doc[field] = data;
-  userCol('plan').doc(section).set(doc).then(function() {
+  var writePromise;
+  if (section === 'tests') {
+    // TODO: загрузка Excel с тестами в v2 требует разноса по секциям.
+    // Пока передаём 'tests' как псевдо-секцию — в legacy работает напрямую,
+    // в v2 пишет в sections/tests/tests/current, что НЕПРАВИЛЬНО. Исправить
+    // после того как Excel-формат станет включать колонку "секция" для каждого теста.
+    writePromise = saveTests(section, data);
+  } else {
+    writePromise = savePlan(section, data);
+  }
+  writePromise.then(function() {
     plans[section] = null;
     resetCache(section);
     return loadPlanFromFirebase(section);
@@ -166,14 +173,14 @@ function fallbackCopy(text, btn) {
 
 function toggleSection(sectionId, checked, el) {
   if (!checked) {
-    var meta = getSectionMeta(sectionId);
-    var label = meta ? meta.label : sectionId;
+    var meta0 = getSectionMeta(sectionId);
+    var label = meta0 ? meta0.label : sectionId;
     if (!confirm('Убрать «' + label + '» из плана?\n\nДанные сохранятся — можно вернуть в любой момент.')) {
       el.checked = true;
       return;
     }
     var newSections = userSections.filter(function(s) { return s !== sectionId; });
-    saveUserConfig(newSections).then(function() {
+    disableSection(sectionId).then(function() {
       initWithSections(newSections);
       renderSettingsPlans();
     });
@@ -185,34 +192,23 @@ function toggleSection(sectionId, checked, el) {
   var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
   var meta = SECTION_META[sectionId];
 
-  userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
-    if (snap.exists) return Promise.resolve();
-    var url = baseUrl + meta.defaultPlan + '?t=' + Date.now();
-    return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-      return userDoc().collection('plan').doc(sectionId).set({
-        days: data,
-        updatedAt: new Date().toISOString()
-      });
+  // Если у секции ещё нет плана — загружаем дефолты. Иначе просто включаем.
+  loadSectionPlan(sectionId).then(function(existingPlan) {
+    if (existingPlan !== null) return Promise.resolve(); // план уже есть
+    // Загружаем дефолтный план и (если есть) дефолтные тесты с сервера
+    var planUrl = baseUrl + meta.defaultPlan + '?t=' + Date.now();
+    var promises = [fetch(planUrl).then(function(r) { return r.json(); })];
+    if (meta.defaultTests) {
+      promises.push(fetch(baseUrl + meta.defaultTests + '?t=' + Date.now())
+        .then(function(r) { return r.ok ? r.json() : []; }));
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+    return Promise.all(promises).then(function(results) {
+      return createSectionDefaults(sectionId, results[0], results[1]);
     });
   }).then(function() {
-    if (!meta.defaultTests) return Promise.resolve();
-    var url = baseUrl + meta.defaultTests + '?t=' + Date.now();
-    return fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
-      if (!data || !data.length) return;
-      return userDoc().collection('plan').doc('tests').get().then(function(snap) {
-        var existing = snap.exists ? (snap.data().items || []) : [];
-        var seen = {};
-        existing.forEach(function(it) { seen[it.name] = true; });
-        var toAdd = data.filter(function(it) { return !seen[it.name]; });
-        if (!toAdd.length) return;
-        return userDoc().collection('plan').doc('tests').set({
-          items: existing.concat(toAdd),
-          updatedAt: new Date().toISOString()
-        });
-      });
-    });
-  }).then(function() {
-    return saveUserConfig(newSections);
+    return enableSection(sectionId);
   }).then(function() {
     return loadPlanFromFirebase('tests');
   }).then(function() {

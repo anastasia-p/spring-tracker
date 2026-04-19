@@ -18,6 +18,150 @@ function isSchemaV2() {
   return typeof SCHEMA_V2 !== 'undefined' && SCHEMA_V2 === true;
 }
 
+// =============================================================================
+// API-слой для клиентских модулей (auth.js, settings.js, plan-editor.js,
+// test-editor.js). Все прямые обращения к Firebase живут здесь.
+// =============================================================================
+
+// --- Config ---
+
+function loadConfig() {
+  return userDoc().get().then(function(s) {
+    return s.exists ? s.data() : null;
+  });
+}
+
+function saveConfig(partial) {
+  return userDoc().set(partial, { merge: true });
+}
+
+// --- Section plan (план недели дисциплины) ---
+// v1: users/{uid}/plan/{section}.days
+// v2: users/{uid}/sections/{section}/plan/current.days
+
+function loadSectionPlan(section) {
+  if (isSchemaV2()) {
+    return sectionRef(section).collection('plan').doc('current').get()
+      .then(function(s) { return s.exists ? (s.data().days || []) : null; });
+  }
+  return userDoc().collection('plan').doc(section).get()
+    .then(function(s) { return s.exists ? (s.data().days || []) : null; });
+}
+
+function savePlan(section, days) {
+  // Обновим и кеш в памяти
+  plans[section] = days;
+  if (isSchemaV2()) {
+    return sectionRef(section).collection('plan').doc('current').set({
+      days: days,
+      updatedAt: new Date().toISOString()
+    });
+  }
+  return userDoc().collection('plan').doc(section).set({ days: days });
+}
+
+// --- Section tests (показатели дисциплины, общий список для секции) ---
+// v1: тесты все вместе в users/{uid}/plan/tests.items (не разбиты по секциям).
+// v2: по секциям в users/{uid}/sections/{section}/tests/current.items.
+
+function loadSectionTests(section) {
+  if (isSchemaV2()) {
+    return sectionRef(section).collection('tests').doc('current').get()
+      .then(function(s) { return s.exists ? (s.data().items || []) : []; });
+  }
+  // В legacy — берём все tests и фильтруем по имени через дефолтный JSON?
+  // На деле этот вызов нужен для редактора тестов. В legacy у нас один общий список,
+  // потому для legacy возвращаем весь plan/tests — редактор сам разбирается.
+  return userDoc().collection('plan').doc('tests').get()
+    .then(function(s) { return s.exists ? (s.data().items || []) : []; });
+}
+
+function saveTests(section, items) {
+  if (isSchemaV2()) {
+    return sectionRef(section).collection('tests').doc('current').set({
+      items: items,
+      updatedAt: new Date().toISOString()
+    });
+  }
+  // В legacy items — общий список для всех секций (на уровне plan/tests)
+  return userDoc().collection('plan').doc('tests').set({ items: items });
+}
+
+// --- Создание дефолтов секции при её включении ---
+// planDays — days из plans/{section}_default.json (или просто массив)
+// testsItems — items из plans/tests_{section}_default.json (или [])
+
+function createSectionDefaults(section, planDays, testsItems) {
+  if (!isSchemaV2()) {
+    // В legacy нет понятия default — пишем сразу в plan/{section}
+    var writes = [
+      userDoc().collection('plan').doc(section).set({ days: planDays || [] })
+    ];
+    return Promise.all(writes);
+  }
+  var ref = sectionRef(section);
+  var now = new Date().toISOString();
+  return Promise.all([
+    // plan
+    ref.collection('plan').doc('default').set({ days: planDays || [] }),
+    ref.collection('plan').doc('current').set({ days: planDays || [], updatedAt: now }),
+    // tests
+    ref.collection('tests').doc('default').set({ items: testsItems || [] }),
+    ref.collection('tests').doc('current').set({ items: testsItems || [], updatedAt: now }),
+  ]);
+}
+
+// --- Enable / disable section ---
+// Хранится параллельно в config.sections[] и sections/{section}.enabled
+// На время миграции поддерживаем оба — чтобы бэкенд/бот, которые читают config.sections,
+// видели правильное состояние.
+
+function enableSection(section) {
+  if (isSchemaV2()) {
+    return sectionRef(section).set({
+      enabled: true,
+      updatedAt: new Date().toISOString()
+    }, { merge: true }).then(function() {
+      return syncSectionsConfigList();
+    });
+  }
+  // В legacy enabled хранится только в config.sections
+  return loadConfig().then(function(cfg) {
+    var list = (cfg && cfg.sections) ? cfg.sections.slice() : [];
+    if (list.indexOf(section) === -1) list.push(section);
+    return saveConfig({ sections: list });
+  });
+}
+
+function disableSection(section) {
+  if (isSchemaV2()) {
+    return sectionRef(section).set({
+      enabled: false,
+      updatedAt: new Date().toISOString()
+    }, { merge: true }).then(function() {
+      return syncSectionsConfigList();
+    });
+  }
+  return loadConfig().then(function(cfg) {
+    var list = (cfg && cfg.sections) ? cfg.sections.filter(function(s) { return s !== section; }) : [];
+    return saveConfig({ sections: list });
+  });
+}
+
+// Вспомогательная — синхронизирует config.sections[] c enabled флагами в sections/{sec}.
+// Нужна в v2, чтобы backend (бот), который смотрит в config.sections, видел актуальный список.
+function syncSectionsConfigList() {
+  var refs = SECTIONS.map(function(s) { return sectionRef(s).get(); });
+  return Promise.all(refs).then(function(snaps) {
+    var enabled = [];
+    snaps.forEach(function(snap, i) {
+      if (snap.exists && snap.data().enabled) enabled.push(SECTIONS[i]);
+    });
+    return saveConfig({ sections: enabled });
+  });
+}
+
+
 // Цвета плашек типов дня — единственное место для добавления нового типа
 var DAY_TYPE_STYLES = {
   legs:    { bg: 'var(--green-light)',  color: 'var(--green-text)'  },
@@ -463,6 +607,17 @@ if (typeof module !== 'undefined' && module.exports) {
     userCol: userCol,
     sectionRef: sectionRef,
     isSchemaV2: isSchemaV2,
+    // API-слой
+    loadConfig: loadConfig,
+    saveConfig: saveConfig,
+    loadSectionPlan: loadSectionPlan,
+    savePlan: savePlan,
+    loadSectionTests: loadSectionTests,
+    saveTests: saveTests,
+    createSectionDefaults: createSectionDefaults,
+    enableSection: enableSection,
+    disableSection: disableSection,
+    syncSectionsConfigList: syncSectionsConfigList,
     DAY_TYPE_STYLES: DAY_TYPE_STYLES,
     getDayTypeBadgeStyle: getDayTypeBadgeStyle,
     getDayTypeLabel: getDayTypeLabel,

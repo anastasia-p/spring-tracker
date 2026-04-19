@@ -25,18 +25,14 @@ function openPlanEditor(opts) {
   var sectionLabel = opts.sectionLabel || section;
   var onSave       = opts.onSave || function() {};
 
-  var planPromise   = firebase.firestore()
-    .collection('users').doc(uid)
-    .collection('plan').doc(section)
-    .get();
+  var planPromise   = loadSectionPlan(section);
   var configPromise = new Promise(function(resolve) { _peLoadConfig(resolve); });
 
   Promise.all([planPromise, configPromise])
     .then(function(results) {
-      var snap   = results[0];
-      var config = results[1];
-      if (!snap.exists) { alert('План не найден'); return; }
-      var allDays = snap.data().days || [];
+      var allDays = results[0];
+      var config  = results[1];
+      if (allDays === null) { alert('План не найден'); return; }
       var day     = allDays[dayIndex] || {};
       var dayName = day.day || ('День ' + (dayIndex + 1));
       var exs     = JSON.parse(JSON.stringify(day.exercises || []));
@@ -507,10 +503,7 @@ function _peSave(state) {
   state.allDays[state.dayIndex].label     = typeConfig ? typeConfig.label : state.dayType;
   state.allDays[state.dayIndex].exercises = state.exercises;
 
-  firebase.firestore()
-    .collection('users').doc(state.uid)
-    .collection('plan').doc(state.section)
-    .update({ days: state.allDays })
+  savePlan(state.section, state.allDays)
     .then(function() {
       if (typeof resetCache === 'function') resetCache(state.section);
       if (typeof invalidateStreakCache === 'function') invalidateStreakCache(state.section);

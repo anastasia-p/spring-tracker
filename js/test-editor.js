@@ -24,17 +24,13 @@ function openTestEditor(opts) {
   var sectionLabel = opts.sectionLabel || 'Тесты';
   var onSave       = opts.onSave || function() {};
 
-  var planPromise   = firebase.firestore()
-    .collection('users').doc(uid)
-    .collection('plan').doc(section)
-    .get();
+  var planPromise   = loadSectionTests(section);
   var configPromise = new Promise(function(resolve) { _teLoadConfig(resolve); });
 
   Promise.all([planPromise, configPromise])
     .then(function(results) {
-      var snap   = results[0];
+      var items  = JSON.parse(JSON.stringify(results[0] || []));
       var config = results[1];
-      var items  = snap.exists ? JSON.parse(JSON.stringify(snap.data().items || [])) : [];
 
       _teOpen({
         uid:          uid,
@@ -394,10 +390,7 @@ function _teSave(state) {
     btn.textContent  = 'Сохранение...';
   }
 
-  firebase.firestore()
-    .collection('users').doc(state.uid)
-    .collection('plan').doc(state.section)
-    .set({ items: state.items })
+  saveTests(state.section, state.items)
     .then(function() {
       if (typeof resetCache === 'function') resetCache('tests');
       state.dirty = false;

@@ -159,6 +159,9 @@ function getAuthErrorMessage(code) {
 var userCreatedAt = null;
 var SCHEMA_V2 = false;  // выставляется в loadUserConfig — используется в db.js (isSchemaV2())
 
+// userDoc() оставлен для обратной совместимости — db.js использует его в некоторых ветках.
+// Клиентский код (auth.js, settings.js) НЕ должен вызывать userDoc() напрямую —
+// использует функции loadConfig/saveConfig/и т.д. из db.js.
 function userDoc() {
   return db.collection('users').doc(currentUser.uid);
 }
@@ -168,9 +171,7 @@ function loadUserConfig() {
     setTimeout(function() { resolve(CONFIG_ERROR); }, 5000);
   });
   return Promise.race([
-    userDoc().get().then(function(s) {
-      if (!s.exists) return null;
-      var cfg = s.data();
+    loadConfig().then(function(cfg) {
       SCHEMA_V2 = cfg && cfg.schema_version >= 2;
       return cfg;
     }).catch(function(e) {
@@ -182,7 +183,7 @@ function loadUserConfig() {
 }
 
 function saveUserConfig(sections) {
-  return userDoc().set({ sections: sections, email: currentUser.email }, { merge: true });
+  return saveConfig({ sections: sections, email: currentUser.email });
 }
 
 // --- Определение платформы ---
@@ -226,59 +227,50 @@ function finishOnboarding() {
 
   var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
 
-  // Загружаем дефолтные планы
-  var planPromises = selected.map(function(sectionId) {
+  // Новые пользователи сразу на schema v2. SCHEMA_V2 влияет на ветки в db.js,
+  // поэтому выставляем флаг ДО того как будем вызывать API функции.
+  SCHEMA_V2 = true;
+
+  // Загружаем дефолты с сервера и создаём структуру через createSectionDefaults.
+  // Тесты для секции — из её defaultTests (если есть).
+  var sectionPromises = selected.map(function(sectionId) {
     var meta = SECTION_META[sectionId];
     if (!meta) return Promise.resolve();
-    return userDoc().collection('plan').doc(sectionId).get().then(function(snap) {
-      if (snap.exists) return;
-      var url = baseUrl + meta.defaultPlan + '?t=' + Date.now();
-      return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-        return userDoc().collection('plan').doc(sectionId).set({
-          days: data,
-          updatedAt: new Date().toISOString()
-        });
-      });
+    var planUrl  = baseUrl + meta.defaultPlan + '?t=' + Date.now();
+    var testsUrl = meta.defaultTests ? (baseUrl + meta.defaultTests + '?t=' + Date.now()) : null;
+    var promises = [fetch(planUrl).then(function(r) { return r.json(); })];
+    if (testsUrl) {
+      promises.push(fetch(testsUrl).then(function(r) { return r.ok ? r.json() : []; }));
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+    return Promise.all(promises).then(function(results) {
+      var planDays  = results[0];
+      var testItems = results[1];
+      return createSectionDefaults(sectionId, planDays, testItems);
     });
   });
 
-  // Загружаем тесты (только для секций у которых есть defaultTests)
-  var testFiles = selected
-    .map(function(id) { return SECTION_META[id]; })
-    .filter(function(meta) { return meta && meta.defaultTests; })
-    .map(function(meta) { return baseUrl + meta.defaultTests + '?t=' + Date.now(); });
-
-  planPromises.push(
-    userDoc().collection('plan').doc('tests').get().then(function(snap) {
-      if (snap.exists) return;
-      if (!testFiles.length) return;
-      return Promise.all(testFiles.map(function(url) {
-        return fetch(url).then(function(r) { return r.ok ? r.json() : []; });
-      })).then(function(results) {
-        var seen = {}, merged = [];
-        results.forEach(function(items) {
-          items.forEach(function(item) {
-            if (!seen[item.name]) { seen[item.name] = true; merged.push(item); }
-          });
-        });
-        return userDoc().collection('plan').doc('tests').set({
-          items: merged,
-          updatedAt: new Date().toISOString()
-        });
-      });
-    })
-  );
-
-  Promise.all(planPromises).then(function() {
+  Promise.all(sectionPromises).then(function() {
     var platform = detectPlatform();
     var createdAt = new Date().toISOString();
     userCreatedAt = createdAt;
-    return userDoc().set({
-      sections:  selected,
-      email:     currentUser.email,
-      createdAt: createdAt,
-      platform:  platform
-    }, { merge: true });
+    return saveConfig({
+      sections:       selected,
+      email:          currentUser.email,
+      createdAt:      createdAt,
+      platform:       platform,
+      schema_version: 2
+    });
+  }).then(function() {
+    // После записи config выставляем enabled=true для выбранных секций
+    return Promise.all(selected.map(function(s) {
+      return sectionRef(s).set({
+        enabled: true,
+        order: selected.indexOf(s),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    }));
   }).then(function() {
     return currentUser.getIdToken().then(function(token) {
       return fetch('https://api.spring-tracker.ru:8080/notify/new-user', {

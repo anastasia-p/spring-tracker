@@ -646,6 +646,184 @@ function runTests() {
     assert.deepStrictEqual(years, ['2026']);
   }); })
 
+  // ─── API layer: loadConfig / saveConfig ──────────────────────────────────
+
+  .then(function() { group('API: loadConfig / saveConfig'); })
+
+  .then(function() { return test('loadConfig returns config data', function() {
+    var ctx = ts.setup({ config: { sections: ['strength', 'wingchun'] } });
+    return ctx.api.loadConfig().then(function(cfg) {
+      assert.deepStrictEqual(cfg.sections, ['strength', 'wingchun']);
+    });
+  }); })
+
+  .then(function() { return test('saveConfig merges with existing', function() {
+    var ctx = ts.setup({ config: { sections: ['strength'], email: 'a@b.c' } });
+    return ctx.api.saveConfig({ sections: ['strength', 'wingchun'] })
+      .then(function() {
+        var stored = ctx.mock.store['users/u1'];
+        assert.deepStrictEqual(stored.sections, ['strength', 'wingchun']);
+        assert.strictEqual(stored.email, 'a@b.c'); // сохранилось
+      });
+  }); })
+
+  // ─── API layer: loadSectionPlan / savePlan ───────────────────────────────
+
+  .then(function() { group('API: loadSectionPlan / savePlan'); })
+
+  .then(function() { return test('legacy loadSectionPlan reads plan/{section}.days', function() {
+    var days = [{ day: 'Пн' }];
+    var ctx = ts.setup({ seed: { 'users/u1/plan/strength': { days: days } } });
+    return ctx.api.loadSectionPlan('strength').then(function(d) {
+      assert.deepStrictEqual(d, days);
+    });
+  }); })
+
+  .then(function() { return test('v2 loadSectionPlan reads sections/{section}/plan/current.days', function() {
+    var days = [{ day: 'Пн' }];
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: { 'users/u1/sections/strength/plan/current': { days: days } }
+    });
+    return ctx.api.loadSectionPlan('strength').then(function(d) {
+      assert.deepStrictEqual(d, days);
+    });
+  }); })
+
+  .then(function() { return test('legacy savePlan writes plan/{section}', function() {
+    var ctx = ts.setup();
+    var days = [{ day: 'Пн' }];
+    return ctx.api.savePlan('strength', days).then(function() {
+      assert.deepStrictEqual(ctx.mock.store['users/u1/plan/strength'], { days: days });
+      assert.deepStrictEqual(ctx.api.plans.strength, days);
+    });
+  }); })
+
+  .then(function() { return test('v2 savePlan writes sections/{section}/plan/current', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var days = [{ day: 'Пн' }];
+    return ctx.api.savePlan('strength', days).then(function() {
+      var stored = ctx.mock.store['users/u1/sections/strength/plan/current'];
+      assert.deepStrictEqual(stored.days, days);
+      assert.ok(stored.updatedAt);
+    });
+  }); })
+
+  // ─── API layer: loadSectionTests / saveTests ─────────────────────────────
+
+  .then(function() { group('API: loadSectionTests / saveTests'); })
+
+  .then(function() { return test('v2 loadSectionTests reads sections/{section}/tests/current', function() {
+    var items = [{ name: 'Отжимания', unit: 'раз' }];
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: { 'users/u1/sections/strength/tests/current': { items: items } }
+    });
+    return ctx.api.loadSectionTests('strength').then(function(i) {
+      assert.deepStrictEqual(i, items);
+    });
+  }); })
+
+  .then(function() { return test('v2 saveTests writes sections/{section}/tests/current', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var items = [{ name: 'Отжимания', unit: 'раз' }];
+    return ctx.api.saveTests('strength', items).then(function() {
+      var stored = ctx.mock.store['users/u1/sections/strength/tests/current'];
+      assert.deepStrictEqual(stored.items, items);
+      assert.ok(stored.updatedAt);
+    });
+  }); })
+
+  // ─── API layer: createSectionDefaults ────────────────────────────────────
+
+  .then(function() { group('API: createSectionDefaults'); })
+
+  .then(function() { return test('v2 creates plan/default, plan/current, tests/default, tests/current', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var days = [{ day: 'Пн' }];
+    var items = [{ name: 'Мабу', unit: 'сек' }];
+    return ctx.api.createSectionDefaults('wingchun', days, items).then(function() {
+      var base = 'users/u1/sections/wingchun/';
+      assert.deepStrictEqual(ctx.mock.store[base + 'plan/default'], { days: days });
+      assert.deepStrictEqual(ctx.mock.store[base + 'plan/current'].days, days);
+      assert.deepStrictEqual(ctx.mock.store[base + 'tests/default'], { items: items });
+      assert.deepStrictEqual(ctx.mock.store[base + 'tests/current'].items, items);
+    });
+  }); })
+
+  .then(function() { return test('v2 creates empty tests when testsItems null', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    return ctx.api.createSectionDefaults('brain', [], null).then(function() {
+      var base = 'users/u1/sections/brain/';
+      assert.deepStrictEqual(ctx.mock.store[base + 'tests/default'], { items: [] });
+      assert.deepStrictEqual(ctx.mock.store[base + 'tests/current'].items, []);
+    });
+  }); })
+
+  .then(function() { return test('legacy creates only plan/{section}', function() {
+    var ctx = ts.setup();
+    var days = [{ day: 'Пн' }];
+    return ctx.api.createSectionDefaults('strength', days, []).then(function() {
+      assert.deepStrictEqual(ctx.mock.store['users/u1/plan/strength'], { days: days });
+      // Никаких sections/ в legacy
+      var hasV2 = Object.keys(ctx.mock.store).some(function(k) {
+        return k.indexOf('users/u1/sections/') === 0;
+      });
+      assert.strictEqual(hasV2, false);
+    });
+  }); })
+
+  // ─── API layer: enableSection / disableSection ───────────────────────────
+
+  .then(function() { group('API: enableSection / disableSection'); })
+
+  .then(function() { return test('v2 enableSection sets enabled=true and syncs config', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      config: { sections: ['strength'] },
+      seed: {
+        'users/u1/sections/strength': { enabled: true, order: 0 },
+        'users/u1/sections/wingchun': { enabled: false, order: 1 },
+        'users/u1/sections/qigong':   { enabled: false, order: 2 },
+      }
+    });
+    return ctx.api.enableSection('wingchun').then(function() {
+      assert.strictEqual(ctx.mock.store['users/u1/sections/wingchun'].enabled, true);
+      // config.sections должен синхронизироваться с enabled флагами
+      var cfgSections = ctx.mock.store['users/u1'].sections.slice().sort();
+      assert.deepStrictEqual(cfgSections, ['strength', 'wingchun']);
+    });
+  }); })
+
+  .then(function() { return test('v2 disableSection sets enabled=false and removes from config', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      config: { sections: ['strength', 'wingchun'] },
+      seed: {
+        'users/u1/sections/strength': { enabled: true },
+        'users/u1/sections/wingchun': { enabled: true },
+      }
+    });
+    return ctx.api.disableSection('wingchun').then(function() {
+      assert.strictEqual(ctx.mock.store['users/u1/sections/wingchun'].enabled, false);
+      assert.deepStrictEqual(ctx.mock.store['users/u1'].sections, ['strength']);
+    });
+  }); })
+
+  .then(function() { return test('legacy enableSection adds to config.sections', function() {
+    var ctx = ts.setup({ config: { sections: ['strength'] } });
+    return ctx.api.enableSection('wingchun').then(function() {
+      assert.deepStrictEqual(ctx.mock.store['users/u1'].sections, ['strength', 'wingchun']);
+    });
+  }); })
+
+  .then(function() { return test('legacy disableSection removes from config.sections', function() {
+    var ctx = ts.setup({ config: { sections: ['strength', 'wingchun'] } });
+    return ctx.api.disableSection('wingchun').then(function() {
+      assert.deepStrictEqual(ctx.mock.store['users/u1'].sections, ['strength']);
+    });
+  }); })
+
   // ─── Итог ────────────────────────────────────────────────────────────────
 
   .then(function() {
