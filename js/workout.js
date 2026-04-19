@@ -92,8 +92,8 @@ function saveTestField(dk, name, value) {
   } else {
     cache.tests[dk][name] = value;
   }
-  // Save to Firebase
-  userCol('tests').doc(dk).set(cache.tests[dk]).catch(function() {});
+  // Save to Firebase через db.js (sait legacy/v2 сам распределит)
+  saveTestData(dk, cache.tests[dk]);
   // Recalc relevant skills
   var skill = SKILLS.find(function(s) {
     if (!s.sourceExtra || s.sourceExtra.collection !== 'tests') return false;
@@ -107,11 +107,11 @@ function loadAndRenderHistory() {
   var c = document.getElementById('history-container');
   if (!c) return;
   c.innerHTML = '<div class="loading">Загрузка...</div>';
-  userCol('tests').get().then(function(snap) {
-    var entries = [];
-    snap.forEach(function(doc) {
-      cache.tests[doc.id] = doc.data();
-      entries.push({ dk: doc.id, data: doc.data() });
+  // Чистим кеш чтобы перечитать всё заново
+  resetCache('tests');
+  loadTestsCache().then(function() {
+    var entries = Object.keys(cache.tests).map(function(dk) {
+      return { dk: dk, data: cache.tests[dk] };
     });
     entries.sort(function(a, b) { return a.dk < b.dk ? -1 : 1; });
     var items = plans.tests || [];
