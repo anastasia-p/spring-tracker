@@ -92,15 +92,20 @@ function saveTestField(dk, name, value) {
   } else {
     cache.tests[dk][name] = value;
   }
-  // Save to Firebase через db.js (sait legacy/v2 сам распределит)
-  saveTestData(dk, cache.tests[dk]);
-  // Recalc relevant skills
+  // Сначала сохраняем, потом пересчитываем — иначе recalcSkill прочитает старые данные
+  var savePromise = saveTestData(dk, cache.tests[dk]);
   var skill = SKILLS.find(function(s) {
     if (!s.sourceExtra || s.sourceExtra.collection !== 'tests') return false;
     var fields = s.sourceExtra.fields || (s.sourceExtra.field ? [s.sourceExtra.field] : []);
     return fields.indexOf(name) !== -1;
   });
-  if (skill) recalcSkill(skill);
+  if (skill) {
+    if (savePromise && savePromise.then) {
+      savePromise.then(function() { recalcSkill(skill); });
+    } else {
+      recalcSkill(skill);
+    }
+  }
 }
 
 function loadAndRenderHistory() {

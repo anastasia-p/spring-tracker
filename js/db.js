@@ -214,13 +214,13 @@ function saveTestData(dk, data) {
       }
     });
     var year = dk.slice(0, 4);
-    Object.keys(bySection).forEach(function(sec) {
-      sectionRef(sec).collection('tests').doc(year).collection('history').doc(dk)
+    var writes = Object.keys(bySection).map(function(sec) {
+      return sectionRef(sec).collection('tests').doc(year).collection('history').doc(dk)
         .set(bySection[sec]).catch(function() {});
     });
-    return;
+    return Promise.all(writes);
   }
-  userCol('tests').doc(dk).set(data).catch(function() {});
+  return userCol('tests').doc(dk).set(data).catch(function() {});
 }
 
 // --- Universal skill load/recalc ---
