@@ -884,6 +884,68 @@ function runTests() {
     });
   }); })
 
+  // ─── Promise contracts (защита от race conditions) ──────────────────────
+
+  .then(function() { group('Promise contracts'); })
+
+  .then(function() { return test('saveDayData returns a Promise', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [], type: 'rest', label: '', checks: {}, values: {}
+    };
+    var result = ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00'));
+    assert.ok(result, 'expected return value');
+    assert.ok(typeof result.then === 'function', 'expected thenable');
+    return result;
+  }); })
+
+  .then(function() { return test('saveDayData returns resolved Promise when cache missing', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var result = ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00'));
+    assert.ok(result && typeof result.then === 'function');
+    return result;
+  }); })
+
+  .then(function() { return test('saveTestData returns a Promise', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    ctx.api.plans.tests = [{ name: 'X', section: 'strength' }];
+    var result = ctx.api.saveTestData('2026-04-18', { X: 5 });
+    assert.ok(result && typeof result.then === 'function');
+    return result;
+  }); })
+
+  .then(function() { return test('v2: after saveDayData resolves, recalcSkill sees fresh data', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: { 'Отжимания': true }, values: { 'Отжимания': 10 }
+    };
+    return ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00'))
+      .then(function() { return ctx.api.recalcSkill(pushups); })
+      .then(function() {
+        assert.strictEqual(ctx.api.skillTotals.pushups, 10);
+        assert.strictEqual(
+          ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 10);
+      });
+  }); })
+
+  .then(function() { return test('v2: after saveTestData resolves, recalcSkill for mountain sees Мабу', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    global.userSections = ['wingchun'];
+    ctx.api.plans.tests = [{ name: 'Мабу', unit: 'сек', section: 'wingchun' }];
+    var mountain = pure_getSkill('mountain');
+    return ctx.api.saveTestData('2026-04-18', { 'Мабу': 60 })
+      .then(function() { return ctx.api.recalcSkill(mountain); })
+      .then(function() {
+        delete global.userSections;
+        assert.strictEqual(ctx.api.skillTotals.mountain, 60);
+        assert.strictEqual(
+          ctx.mock.store['users/u1/sections/wingchun/skills/mountain'].totalSeconds, 60);
+      });
+  }); })
+
+
 
 
   .then(function() {

@@ -113,10 +113,14 @@ function handleExCheck(section, dk, exName, unit, el) {
     if (!cache[section][dk]) return;
     cache[section][dk].checks[exName] = false;
     cache[section][dk].values[exName] = 0;
-    saveDayData(section, new Date(dk + 'T12:00:00'));
+    var saveP = saveDayData(section, new Date(dk + 'T12:00:00'));
     invalidateStreakCache(section);
     var skill = findSkillByExercise(exName, section);
-    if (skill) recalcSkill(skill);
+    if (skill && saveP && saveP.then) {
+      saveP.then(function() { recalcSkill(skill); });
+    } else if (skill) {
+      recalcSkill(skill);
+    }
     var open = getOpenCards(section);
     renderSection(section, open);
   }

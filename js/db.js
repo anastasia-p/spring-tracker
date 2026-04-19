@@ -348,8 +348,8 @@ function loadDayData(section, date) {
 
 function saveDayData(section, date) {
   var dk = dateKey(date), data = cache[section][dk];
-  if (!data) return;
-  dayDocRef(section, dk).set({
+  if (!data) return Promise.resolve();
+  return dayDocRef(section, dk).set({
     plan: data.plan, type: data.type, label: data.label,
     checks: data.checks, values: data.values
   }).catch(function() {});
@@ -536,17 +536,19 @@ function recalcSkill(skill) {
       }));
     }
   }
-  Promise.all(sources).then(function(totals) {
+  return Promise.all(sources).then(function(totals) {
     var total = totals.reduce(function(a, b) { return a + b; }, 0);
     skillTotals[skill.id] = total;
     var doc = {};
     doc[skill.trackerField] = total;
+    var writePromise;
     if (isSchemaV2()) {
-      sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function() {});
+      writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function() {});
     } else {
-      userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
+      writePromise = userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
     }
     renderSkillById(skill.id);
+    return writePromise;
   }).catch(function() {});
 }
 

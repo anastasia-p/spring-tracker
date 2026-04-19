@@ -27,10 +27,14 @@ function savePopupValue() {
   if (!cache[p.section][p.dk]) return;
   cache[p.section][p.dk].checks[p.exName] = true;
   cache[p.section][p.dk].values[p.exName] = val;
-  saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
+  var saveP = saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
   invalidateStreakCache(p.section);
   var skill = findSkillByExercise(p.exName, p.section);
-  if (skill) recalcSkill(skill);
+  if (skill && saveP && saveP.then) {
+    saveP.then(function() { recalcSkill(skill); });
+  } else if (skill) {
+    recalcSkill(skill);
+  }
   closePopup();
   var open = getOpenCards(p.section);
   renderSection(p.section, open);
