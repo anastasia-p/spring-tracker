@@ -830,12 +830,14 @@ function runTests() {
 
   .then(function() { return test('v2 saveAllTests spreads items across sections by item.section', function() {
     var ctx = ts.setup({ schemaV2: true });
+    global.userSections = ['strength', 'wingchun', 'qigong'];
     var items = [
       { name: 'Отжимания', unit: 'раз', section: 'strength' },
       { name: 'Подтягивания', unit: 'раз', section: 'strength' },
       { name: 'Мабу', unit: 'сек', section: 'wingchun' },
     ];
     return ctx.api.saveAllTests(items).then(function() {
+      delete global.userSections;
       var strItems = ctx.mock.store['users/u1/sections/strength/tests/current'].items;
       var wcItems  = ctx.mock.store['users/u1/sections/wingchun/tests/current'].items;
       assert.strictEqual(strItems.length, 2);
@@ -845,13 +847,32 @@ function runTests() {
     });
   }); })
 
-  .then(function() { return test('v2 saveAllTests empties sections without items', function() {
+  .then(function() { return test('v2 saveAllTests empties active sections without items', function() {
     var ctx = ts.setup({ schemaV2: true });
-    // Передаём только strength — qigong должен стать пустым
+    global.userSections = ['strength', 'qigong'];
     var items = [{ name: 'X', section: 'strength' }];
     return ctx.api.saveAllTests(items).then(function() {
+      delete global.userSections;
       var qi = ctx.mock.store['users/u1/sections/qigong/tests/current'];
       assert.deepStrictEqual(qi.items, []);
+    });
+  }); })
+
+  .then(function() { return test('v2 saveAllTests does not touch inactive sections', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/cardio/tests/current': { items: [{ name: 'old-cardio-test' }] }
+      }
+    });
+    global.userSections = ['strength']; // cardio не активна
+    return ctx.api.saveAllTests([{ name: 'X', section: 'strength' }]).then(function() {
+      delete global.userSections;
+      // Данные неактивной секции остались нетронутыми
+      assert.deepStrictEqual(
+        ctx.mock.store['users/u1/sections/cardio/tests/current'].items,
+        [{ name: 'old-cardio-test' }]
+      );
     });
   }); })
 

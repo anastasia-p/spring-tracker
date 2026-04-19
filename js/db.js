@@ -90,16 +90,20 @@ function saveTests(section, items) {
 // Сохраняет общий агрегированный список тестов (как в plans.tests) —
 // разносит по секциям через item.section. Используется общим редактором тестов в v2.
 // В legacy — пишет одним документом plan/tests.
+// В v2 пишет только в АКТИВНЫЕ секции (userSections). Неактивные не трогаем —
+// их данные остаются нетронутыми до повторного включения.
 function saveAllTests(items) {
   if (!isSchemaV2()) {
     return userDoc().collection('plan').doc('tests').set({ items: items });
   }
-  // Группируем по section
+  var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
+  // Группируем только по активным секциям
   var bySection = {};
-  SECTIONS.forEach(function(s) { bySection[s] = []; });
+  activeSections.forEach(function(s) { bySection[s] = []; });
   items.forEach(function(it) {
     var sec = it.section || 'strength';
-    if (!bySection[sec]) bySection[sec] = [];
+    if (!bySection[sec]) return; // неактивная секция — пропускаем (не должно случаться,
+                                 // но подстрахуемся от мусора в items)
     // Сохраняем без поля section — в v2 оно избыточно внутри секции
     var copy = {};
     for (var k in it) if (k !== 'section') copy[k] = it[k];

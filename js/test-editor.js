@@ -255,6 +255,11 @@ function _teRenderList(state, body) {
   addBtn.onclick = function() {
     state.editIdx  = null;
     state.formData = { name: '', note: '', unit: '' };
+    // В v2 общем редакторе дефолтная дисциплина — первая в списке активных
+    if (state.section === 'tests' && typeof isSchemaV2 === 'function' && isSchemaV2()) {
+      var activeList = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
+      state.formData.section = activeList[0] || 'strength';
+    }
     state.mode     = 'form';
     _teRender(state);
   };
@@ -356,7 +361,46 @@ function _teRenderForm(state, body) {
   unitWrap.appendChild(unitEl);
   body.appendChild(unitWrap);
 
-  state.formEls = { name: nameEl, note: noteEl, unit: unitEl };
+  // Селектор секции — только в v2, и только когда редактор общий (section === 'tests')
+  var sectionEl = null;
+  if (state.section === 'tests' && typeof isSchemaV2 === 'function' && isSchemaV2()) {
+    var secWrap = document.createElement('div');
+    secWrap.style.marginBottom = '14px';
+    var secLbl = document.createElement('label');
+    secLbl.textContent = 'Дисциплина';
+    secLbl.style.cssText = 'display:block;font-size:12px;color:#999;margin-bottom:5px';
+    // Варианты — активные секции с человеческими подписями
+    var options = [];
+    var activeList = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
+    activeList.forEach(function(s) {
+      var meta = (typeof SECTION_META !== 'undefined' && SECTION_META[s]) ? SECTION_META[s] : null;
+      options.push({ value: s, label: meta ? meta.label : s });
+    });
+    var sel = document.createElement('select');
+    sel.style.cssText = [
+      'width:100%;box-sizing:border-box',
+      'padding:10px 36px 10px 12px',
+      'border:0.5px solid #ddd;border-radius:10px',
+      'font-size:14px;color:#222',
+      'outline:none;cursor:pointer',
+      'appearance:none;-webkit-appearance:none',
+      'background:#fff url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center'
+    ].join(';');
+    var currentSec = fd.section || (activeList[0] || 'strength');
+    options.forEach(function(opt) {
+      var o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      if (opt.value === currentSec) o.selected = true;
+      sel.appendChild(o);
+    });
+    secWrap.appendChild(secLbl);
+    secWrap.appendChild(sel);
+    body.appendChild(secWrap);
+    sectionEl = sel;
+  }
+
+  state.formEls = { name: nameEl, note: noteEl, unit: unitEl, section: sectionEl };
 }
 
 // ─── Применить форму → в список ───────────────────────────────────────────────
@@ -373,6 +417,8 @@ function _teApplyForm(state) {
   var item = { name: name, unit: els.unit.value };
   var note = els.note.value.trim();
   if (note) item.note = note;
+  // В v2 общем редакторе добавляем поле section (для последующего разноса в saveAllTests)
+  if (els.section) item.section = els.section.value;
 
   if (state.editIdx === null) {
     state.items.push(item);
