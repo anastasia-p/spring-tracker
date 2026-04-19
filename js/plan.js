@@ -111,16 +111,14 @@ function handleExCheck(section, dk, exName, unit, el) {
     showValuePopup(section, dk, exName, unit, el);
   } else {
     if (!cache[section][dk]) return;
+    var oldVal = cache[section][dk].values[exName] || 0;
     cache[section][dk].checks[exName] = false;
     cache[section][dk].values[exName] = 0;
-    var saveP = saveDayData(section, new Date(dk + 'T12:00:00'));
+    saveDayData(section, new Date(dk + 'T12:00:00'));
     invalidateStreakCache(section);
+    // Инкрементальное обновление навыка: было oldVal, стало 0 → delta = -oldVal
     var skill = findSkillByExercise(exName, section);
-    if (skill && saveP && saveP.then) {
-      saveP.then(function() { recalcSkill(skill); });
-    } else if (skill) {
-      recalcSkill(skill);
-    }
+    if (skill) adjustSkillTotal(skill, -oldVal);
     var open = getOpenCards(section);
     renderSection(section, open);
   }

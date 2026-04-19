@@ -487,37 +487,35 @@ function listYearsToRead() {
 // предыдущего для того же скила. Это защищает от race condition при быстрых
 // кликах (поставил/снял галочку), когда параллельные пересчёты могут записать
 // старое значение поверх свежего.
-var _recalcChain = {};
+// Инкрементальное обновление навыка — delta прибавляется к текущему total.
+// Используется при изменении отдельного значения (галочка/ввод в плане, тест).
+// Не читает историю из базы → нет race conditions.
+// Предполагается что skillTotals[skill.id] — актуальный baseline
+// (был загружен при loadSkill/loadAllSkills в момент входа в приложение).
+function adjustSkillTotal(skill, delta) {
+  if (!delta) return Promise.resolve();
+  var current = skillTotals[skill.id] || 0;
+  var next = Math.max(0, current + delta);
+  skillTotals[skill.id] = next;
+  if (typeof renderSkillById === 'function') renderSkillById(skill.id);
+  var doc = {};
+  doc[skill.trackerField] = next;
+  if (isSchemaV2()) {
+    return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function() {});
+  }
+  return userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
+}
 
+// Полный пересчёт навыка из всей истории. Используется:
+// — при редакторе тестов (меняется состав тестов — нужен полный пересчёт)
+// — при явной команде «пересчитать»
+// Не используется при обычных изменениях (там adjustSkillTotal).
+// Fire-and-forget: запускается и не мешает UI.
 function recalcSkill(skill) {
-  var prev = _recalcChain[skill.id] || Promise.resolve();
-  var next = prev.catch(function() {}).then(function() {
-    return _doRecalcSkill(skill);
-  });
-  _recalcChain[skill.id] = next;
-  return next;
-}
-
-function _doRecalcSkill(skill) {
-  // Перед чтением истории дожидаемся что все pending-записи ушли на сервер.
-  // Firestore с enablePersistence резолвит .set() локально сразу, а server ACK
-  // приходит позже. Если читать до server ACK — увидим старое серверное состояние.
-  var waitWrites = (db && typeof db.waitForPendingWrites === 'function')
-    ? db.waitForPendingWrites() : Promise.resolve();
-
-  return waitWrites.then(function() {
-    return _doRecalcSkillCore(skill);
-  });
-}
-
-function _doRecalcSkillCore(skill) {
   var sources = [];
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
-  // fromServer: true — обходим локальный снимок, читаем актуальное серверное состояние.
-  // Вместе с waitForPendingWrites (см. _doRecalcSkill) это гарантирует что к моменту
-  // чтения мы: (1) дождались что наша запись ушла на сервер, (2) читаем напрямую с сервера.
-  sources.push(loadSectionHistoryAll(src.collection, { fromServer: true }).then(function(docs) {
+  sources.push(loadSectionHistoryAll(src.collection).then(function(docs) {
     var total = 0;
     docs.forEach(function(d) {
       var data = d.data;
@@ -532,8 +530,9 @@ function _doRecalcSkillCore(skill) {
   if (skill.sourceExtra) {
     var ext = skill.sourceExtra;
     var extFields = ext.fields || (ext.field ? [ext.field] : []);
-    // Кеш тестов используется только в legacy — в v2 тесты разнесены по секциям
-    if (!isSchemaV2() && ext.collection === 'tests') {
+    if (ext.collection === 'tests') {
+      // Для tests используем in-memory cache.tests (всегда актуален —
+      // обновляется в saveTestData/loadTestsCache синхронно)
       var cachedDocs = cache[ext.collection];
       if (cachedDocs && Object.keys(cachedDocs).length > 0) {
         var cachedTotal = 0;
@@ -542,8 +541,17 @@ function _doRecalcSkillCore(skill) {
           extFields.forEach(function(f) { if (data[f]) cachedTotal += data[f]; });
         });
         sources.push(Promise.resolve(cachedTotal));
+      } else if (isSchemaV2()) {
+        // v2: собираем из sections/{skill.section}/tests/*/history
+        sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
+          var total = 0;
+          docs.forEach(function(d) {
+            extFields.forEach(function(f) { if (d.data[f]) total += d.data[f]; });
+          });
+          return total;
+        }));
       } else {
-        sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
+        sources.push(userCol(ext.collection).get().then(function(snap) {
           var total = 0;
           snap.forEach(function(doc) {
             var data = doc.data();
@@ -552,19 +560,8 @@ function _doRecalcSkillCore(skill) {
           return total;
         }));
       }
-    } else if (isSchemaV2() && ext.collection === 'tests') {
-      // v2: читаем историю тестов ИМЕННО той секции, в которой живёт навык
-      sources.push(loadTestsHistoryForSection(skill.section, { fromServer: true }).then(function(docs) {
-        var total = 0;
-        docs.forEach(function(d) {
-          var data = d.data;
-          extFields.forEach(function(f) { if (data[f]) total += data[f]; });
-        });
-        return total;
-      }));
     } else {
-      // Другая sourceExtra.collection — legacy поведение
-      sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
+      sources.push(userCol(ext.collection).get().then(function(snap) {
         var total = 0;
         snap.forEach(function(doc) {
           var data = doc.data();
@@ -585,7 +582,7 @@ function _doRecalcSkillCore(skill) {
     } else {
       writePromise = userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
     }
-    renderSkillById(skill.id);
+    if (typeof renderSkillById === 'function') renderSkillById(skill.id);
     return writePromise;
   }).catch(function() {});
 }
@@ -713,6 +710,7 @@ if (typeof module !== 'undefined' && module.exports) {
     saveTestData: saveTestData,
     loadSkill: loadSkill,
     recalcSkill: recalcSkill,
+    adjustSkillTotal: adjustSkillTotal,
     findSkillByExercise: findSkillByExercise,
     streakCache: streakCache,
     invalidateStreakCache: invalidateStreakCache,

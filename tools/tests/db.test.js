@@ -1014,6 +1014,81 @@ function runTests() {
     });
   }); })
 
+  // ─── adjustSkillTotal (инкрементальное обновление) ──────────────────────
+
+  .then(function() { group('adjustSkillTotal'); })
+
+  .then(function() { return test('v2: adjustSkillTotal adds delta and persists', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 100;
+    return ctx.api.adjustSkillTotal(pushups, 25).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 125);
+      assert.strictEqual(
+        ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 125);
+    });
+  }); })
+
+  .then(function() { return test('v2: adjustSkillTotal subtracts correctly', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 100;
+    return ctx.api.adjustSkillTotal(pushups, -30).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 70);
+    });
+  }); })
+
+  .then(function() { return test('adjustSkillTotal never goes below zero', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 10;
+    return ctx.api.adjustSkillTotal(pushups, -50).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 0);
+    });
+  }); })
+
+  .then(function() { return test('adjustSkillTotal with 0 delta is no-op', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 42;
+    return ctx.api.adjustSkillTotal(pushups, 0).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 42);
+      // Нет записи в базу — не должно быть в логе операций SET
+      var sets = ctx.mock.log.filter(function(op) { return op[0] === 'SET' && op[1].indexOf('skills/pushups') !== -1; });
+      assert.strictEqual(sets.length, 0);
+    });
+  }); })
+
+  .then(function() { return test('adjustSkillTotal parallel calls do not race', function() {
+    // Ключевой тест: много быстрых вызовов подряд — результат детерминирован
+    // потому что функция не читает из базы
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 0;
+    return Promise.all([
+      ctx.api.adjustSkillTotal(pushups, 100),   // 0 → 100
+      ctx.api.adjustSkillTotal(pushups, -100),  // 100 → 0
+      ctx.api.adjustSkillTotal(pushups, 200),   // 0 → 200
+      ctx.api.adjustSkillTotal(pushups, -200),  // 200 → 0
+    ]).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 0);
+      assert.strictEqual(
+        ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 0);
+    });
+  }); })
+
+  .then(function() { return test('legacy: adjustSkillTotal writes to tracker doc', function() {
+    var ctx = ts.setup();  // schemaV2: false
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 50;
+    return ctx.api.adjustSkillTotal(pushups, 10).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 60);
+      assert.strictEqual(
+        ctx.mock.store['users/u1/tracker/pushups'].totalReps, 60);
+    });
+  }); })
+
+
 
 
 
