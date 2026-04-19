@@ -499,12 +499,22 @@ function recalcSkill(skill) {
 }
 
 function _doRecalcSkill(skill) {
+  // Перед чтением истории дожидаемся что все pending-записи ушли на сервер.
+  // Firestore с enablePersistence резолвит .set() локально сразу, а server ACK
+  // приходит позже. Если читать до server ACK — увидим старое серверное состояние.
+  var waitWrites = (db && typeof db.waitForPendingWrites === 'function')
+    ? db.waitForPendingWrites() : Promise.resolve();
+
+  return waitWrites.then(function() {
+    return _doRecalcSkillCore(skill);
+  });
+}
+
+function _doRecalcSkillCore(skill) {
   var sources = [];
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
-  // Читаем с сервера — обходим локальный кеш Firestore, который может быть устаревшим
-  // сразу после .set() (race с enablePersistence).
-  sources.push(loadSectionHistoryAll(src.collection, { fromServer: true }).then(function(docs) {
+  sources.push(loadSectionHistoryAll(src.collection).then(function(docs) {
     var total = 0;
     docs.forEach(function(d) {
       var data = d.data;
@@ -530,7 +540,7 @@ function _doRecalcSkill(skill) {
         });
         sources.push(Promise.resolve(cachedTotal));
       } else {
-        sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
+        sources.push(userCol(ext.collection).get().then(function(snap) {
           var total = 0;
           snap.forEach(function(doc) {
             var data = doc.data();
@@ -541,7 +551,7 @@ function _doRecalcSkill(skill) {
       }
     } else if (isSchemaV2() && ext.collection === 'tests') {
       // v2: читаем историю тестов ИМЕННО той секции, в которой живёт навык
-      sources.push(loadTestsHistoryForSection(skill.section, { fromServer: true }).then(function(docs) {
+      sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
         var total = 0;
         docs.forEach(function(d) {
           var data = d.data;
@@ -551,7 +561,7 @@ function _doRecalcSkill(skill) {
       }));
     } else {
       // Другая sourceExtra.collection — legacy поведение
-      sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
+      sources.push(userCol(ext.collection).get().then(function(snap) {
         var total = 0;
         snap.forEach(function(doc) {
           var data = doc.data();
