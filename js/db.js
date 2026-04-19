@@ -1,6 +1,6 @@
 // Firebase init and data access layer
-var db = firebase.firestore();
-db.enablePersistence().catch(function() {});
+var db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : db;
+if (db && db.enablePersistence) db.enablePersistence().catch(function() {});
 
 // Helper: returns subcollection scoped to current user
 function userCol(name) {
@@ -279,4 +279,34 @@ function loadAllSkills() {
   return Promise.all(SKILLS.map(function(skill) {
     return loadSkill(skill);
   }));
+}
+
+// Node.js экспорт (для юнит-тестов) — в браузере module не определён
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    userCol: userCol,
+    DAY_TYPE_STYLES: DAY_TYPE_STYLES,
+    getDayTypeBadgeStyle: getDayTypeBadgeStyle,
+    getDayTypeLabel: getDayTypeLabel,
+    ALL_DATA_SECTIONS: ALL_DATA_SECTIONS,
+    cache: cache,
+    resetCache: resetCache,
+    plans: plans,
+    skillTotals: skillTotals,
+    loadPlanFromFirebase: loadPlanFromFirebase,
+    getDayPlan: getDayPlan,
+    loadDayData: loadDayData,
+    saveDayData: saveDayData,
+    loadTestsCache: loadTestsCache,
+    saveTestData: saveTestData,
+    loadSkill: loadSkill,
+    recalcSkill: recalcSkill,
+    findSkillByExercise: findSkillByExercise,
+    streakCache: streakCache,
+    invalidateStreakCache: invalidateStreakCache,
+    calcDailyStreak: calcDailyStreak,
+    loadAllSkills: loadAllSkills,
+    // Доступ к db для ручной инициализации под Node
+    _setDb: function(newDb) { db = newDb; },
+  };
 }
