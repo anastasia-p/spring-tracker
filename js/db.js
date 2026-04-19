@@ -514,7 +514,10 @@ function _doRecalcSkillCore(skill) {
   var sources = [];
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
-  sources.push(loadSectionHistoryAll(src.collection).then(function(docs) {
+  // fromServer: true — обходим локальный снимок, читаем актуальное серверное состояние.
+  // Вместе с waitForPendingWrites (см. _doRecalcSkill) это гарантирует что к моменту
+  // чтения мы: (1) дождались что наша запись ушла на сервер, (2) читаем напрямую с сервера.
+  sources.push(loadSectionHistoryAll(src.collection, { fromServer: true }).then(function(docs) {
     var total = 0;
     docs.forEach(function(d) {
       var data = d.data;
@@ -540,7 +543,7 @@ function _doRecalcSkillCore(skill) {
         });
         sources.push(Promise.resolve(cachedTotal));
       } else {
-        sources.push(userCol(ext.collection).get().then(function(snap) {
+        sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
           var total = 0;
           snap.forEach(function(doc) {
             var data = doc.data();
@@ -551,7 +554,7 @@ function _doRecalcSkillCore(skill) {
       }
     } else if (isSchemaV2() && ext.collection === 'tests') {
       // v2: читаем историю тестов ИМЕННО той секции, в которой живёт навык
-      sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
+      sources.push(loadTestsHistoryForSection(skill.section, { fromServer: true }).then(function(docs) {
         var total = 0;
         docs.forEach(function(d) {
           var data = d.data;
@@ -561,7 +564,7 @@ function _doRecalcSkillCore(skill) {
       }));
     } else {
       // Другая sourceExtra.collection — legacy поведение
-      sources.push(userCol(ext.collection).get().then(function(snap) {
+      sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
         var total = 0;
         snap.forEach(function(doc) {
           var data = doc.data();
