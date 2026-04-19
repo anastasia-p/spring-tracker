@@ -428,9 +428,10 @@ function loadSkill(skill) {
 // v1: читает одну коллекцию {section}/*.
 // v2: читает коллекции sections/{section}/plan/{year}/history для каждого года в диапазоне
 //     [createdAt.year .. currentYear], объединяет.
-function loadSectionHistoryAll(section) {
+function loadSectionHistoryAll(section, opts) {
+  var getOpts = (opts && opts.fromServer) ? { source: 'server' } : undefined;
   if (!isSchemaV2()) {
-    return userCol(section).get().then(function(snap) {
+    return userCol(section).get(getOpts).then(function(snap) {
       var out = [];
       snap.forEach(function(doc) { out.push({ id: doc.id, data: doc.data() }); });
       return out;
@@ -438,7 +439,7 @@ function loadSectionHistoryAll(section) {
   }
   var years = listYearsToRead();
   return Promise.all(years.map(function(y) {
-    return sectionRef(section).collection('plan').doc(y).collection('history').get();
+    return sectionRef(section).collection('plan').doc(y).collection('history').get(getOpts);
   })).then(function(snaps) {
     var out = [];
     snaps.forEach(function(snap) {
@@ -449,9 +450,10 @@ function loadSectionHistoryAll(section) {
 }
 
 // То же самое для тестов. v1: tests/*. v2: sections/{section}/tests/*/history/*.
-function loadTestsHistoryForSection(section) {
+function loadTestsHistoryForSection(section, opts) {
+  var getOpts = (opts && opts.fromServer) ? { source: 'server' } : undefined;
   if (!isSchemaV2()) {
-    return userCol('tests').get().then(function(snap) {
+    return userCol('tests').get(getOpts).then(function(snap) {
       var out = [];
       snap.forEach(function(doc) { out.push({ id: doc.id, data: doc.data() }); });
       return out;
@@ -459,7 +461,7 @@ function loadTestsHistoryForSection(section) {
   }
   var years = listYearsToRead();
   return Promise.all(years.map(function(y) {
-    return sectionRef(section).collection('tests').doc(y).collection('history').get();
+    return sectionRef(section).collection('tests').doc(y).collection('history').get(getOpts);
   })).then(function(snaps) {
     var out = [];
     snaps.forEach(function(snap) {
@@ -500,7 +502,9 @@ function _doRecalcSkill(skill) {
   var sources = [];
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
-  sources.push(loadSectionHistoryAll(src.collection).then(function(docs) {
+  // Читаем с сервера — обходим локальный кеш Firestore, который может быть устаревшим
+  // сразу после .set() (race с enablePersistence).
+  sources.push(loadSectionHistoryAll(src.collection, { fromServer: true }).then(function(docs) {
     var total = 0;
     docs.forEach(function(d) {
       var data = d.data;
@@ -526,7 +530,7 @@ function _doRecalcSkill(skill) {
         });
         sources.push(Promise.resolve(cachedTotal));
       } else {
-        sources.push(userCol(ext.collection).get().then(function(snap) {
+        sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
           var total = 0;
           snap.forEach(function(doc) {
             var data = doc.data();
@@ -537,7 +541,7 @@ function _doRecalcSkill(skill) {
       }
     } else if (isSchemaV2() && ext.collection === 'tests') {
       // v2: читаем историю тестов ИМЕННО той секции, в которой живёт навык
-      sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
+      sources.push(loadTestsHistoryForSection(skill.section, { fromServer: true }).then(function(docs) {
         var total = 0;
         docs.forEach(function(d) {
           var data = d.data;
@@ -547,7 +551,7 @@ function _doRecalcSkill(skill) {
       }));
     } else {
       // Другая sourceExtra.collection — legacy поведение
-      sources.push(userCol(ext.collection).get().then(function(snap) {
+      sources.push(userCol(ext.collection).get({ source: 'server' }).then(function(snap) {
         var total = 0;
         snap.forEach(function(doc) {
           var data = doc.data();
