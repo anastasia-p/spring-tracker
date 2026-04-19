@@ -986,6 +986,35 @@ function runTests() {
       });
   }); })
 
+  .then(function() { return test('v2: parallel recalcSkill calls serialize — last wins', function() {
+    // Баг: поставил значение и сразу снял. Два recalcSkill параллельно.
+    // Должно быть сериализовано — последний вызов победит.
+    var ctx = ts.setup({ schemaV2: true });
+    var pushups = pure_getSkill('pushups');
+    var date = new Date('2026-04-18T12:00:00');
+
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: { 'Отжимания': true }, values: { 'Отжимания': 100 }
+    };
+    var save1 = ctx.api.saveDayData('strength', date);
+    var recalc1 = save1.then(function() { return ctx.api.recalcSkill(pushups); });
+
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: { 'Отжимания': false }, values: { 'Отжимания': 0 }
+    };
+    var save2 = ctx.api.saveDayData('strength', date);
+    var recalc2 = save2.then(function() { return ctx.api.recalcSkill(pushups); });
+
+    return Promise.all([recalc1, recalc2]).then(function() {
+      assert.strictEqual(
+        ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 0);
+      assert.strictEqual(ctx.api.skillTotals.pushups, 0);
+    });
+  }); })
+
+
 
 
 

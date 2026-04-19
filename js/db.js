@@ -481,7 +481,22 @@ function listYearsToRead() {
   return years;
 }
 
+// Сериализация recalcSkill по skill.id: каждый новый вызов ждёт окончания
+// предыдущего для того же скила. Это защищает от race condition при быстрых
+// кликах (поставил/снял галочку), когда параллельные пересчёты могут записать
+// старое значение поверх свежего.
+var _recalcChain = {};
+
 function recalcSkill(skill) {
+  var prev = _recalcChain[skill.id] || Promise.resolve();
+  var next = prev.catch(function() {}).then(function() {
+    return _doRecalcSkill(skill);
+  });
+  _recalcChain[skill.id] = next;
+  return next;
+}
+
+function _doRecalcSkill(skill) {
   var sources = [];
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
