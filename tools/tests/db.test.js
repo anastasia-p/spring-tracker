@@ -595,6 +595,47 @@ function runTests() {
     });
   }); })
 
+  .then(function() { return test('v2: removing a value re-writes section doc without it', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/strength/tests/2026/history/2026-04-18': {
+          'Отжимания': 5, 'Подтягивания': 3
+        }
+      }
+    });
+    global.userSections = ['strength'];
+    ctx.api.plans.tests = [
+      { name: 'Отжимания', section: 'strength' },
+      { name: 'Подтягивания', section: 'strength' },
+    ];
+    // Снимаем галочку с Подтягивания — осталось только Отжимания
+    return ctx.api.saveTestData('2026-04-18', { 'Отжимания': 5 })
+      .then(function() {
+        delete global.userSections;
+        var stored = ctx.mock.store['users/u1/sections/strength/tests/2026/history/2026-04-18'];
+        assert.deepStrictEqual(stored, { 'Отжимания': 5 });
+        assert.strictEqual(stored['Подтягивания'], undefined);
+      });
+  }); })
+
+  .then(function() { return test('v2: clearing all values in a section writes empty doc', function() {
+    var ctx = ts.setup({
+      schemaV2: true,
+      seed: {
+        'users/u1/sections/wingchun/tests/2026/history/2026-04-18': { 'Мабу': 60 }
+      }
+    });
+    global.userSections = ['wingchun'];
+    ctx.api.plans.tests = [{ name: 'Мабу', section: 'wingchun' }];
+    return ctx.api.saveTestData('2026-04-18', {})
+      .then(function() {
+        delete global.userSections;
+        assert.deepStrictEqual(
+          ctx.mock.store['users/u1/sections/wingchun/tests/2026/history/2026-04-18'], {});
+      });
+  }); })
+
   // ─── calcDailyStreak v2 ──────────────────────────────────────────────────
 
   .then(function() { group('v2: calcDailyStreak'); })

@@ -385,14 +385,20 @@ function saveTestData(dk, data) {
   cache.tests[dk] = data;
   if (isSchemaV2()) {
     // В v2 значения показателей хранятся отдельно по секциям.
-    // Для записи нужно знать к какой секции относится каждое имя — через plans.tests[*].section.
+    // Для записи идём по ВСЕМ активным секциям — чтобы удалённые поля тоже стёрлись.
+    // (Если бы шли только по секциям у которых есть значения — старые записи в
+    // других секциях остались бы жить.)
+    var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
     var bySection = {};
+    activeSections.forEach(function(s) { bySection[s] = {}; });
     (plans.tests || []).forEach(function(item) {
+      var sec = item.section || 'strength';
+      if (!bySection.hasOwnProperty(sec)) return;
       if (data[item.name] !== undefined) {
-        var sec = item.section || 'strength';
-        if (!bySection[sec]) bySection[sec] = {};
         bySection[sec][item.name] = data[item.name];
       }
+      // Если в data нет значения (удалено) — ничего не добавляем в bySection[sec].
+      // При .set() документ перезапишется без этого поля.
     });
     var year = dk.slice(0, 4);
     var writes = Object.keys(bySection).map(function(sec) {
