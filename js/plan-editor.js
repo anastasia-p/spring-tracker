@@ -209,7 +209,10 @@ function _peRenderList(state, body) {
       'cursor:pointer;text-align:left'
     ].join(';');
     pasteBtn.onclick = function() {
-      state.exercises.push(JSON.parse(JSON.stringify(_planEditorClipboard)));
+      var copy = JSON.parse(JSON.stringify(_planEditorClipboard));
+      // Убираем служебные поля редактора — они не должны попасть в упражнение
+      delete copy._sourceKey;
+      state.exercises.push(copy);
       state.pastedThisSession = true;
       state.dirty = true;
       _peRender(state);
@@ -499,7 +502,12 @@ function _peSave(state) {
   var typeConfig = dayTypes.filter(function(dt) { return dt.type === state.dayType; })[0];
   state.allDays[state.dayIndex].type      = state.dayType;
   state.allDays[state.dayIndex].label     = typeConfig ? typeConfig.label : state.dayType;
-  state.allDays[state.dayIndex].exercises = state.exercises;
+  // Чистим служебные поля редактора (например _sourceKey) со всех упражнений
+  state.allDays[state.dayIndex].exercises = state.exercises.map(function(ex) {
+    var copy = {};
+    for (var k in ex) if (k.charAt(0) !== '_') copy[k] = ex[k];
+    return copy;
+  });
 
   savePlan(state.section, state.allDays)
     .then(function() {
