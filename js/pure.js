@@ -170,6 +170,7 @@ var SKILLS = [
     bgColor: '#EEEDFE',
     valueType: 'minutes',
     source: { collection: 'qigong', field: 'Дерево' },
+    sourceExtra: { collection: 'tests', field: 'Дерево' },
     tracker: 'tree',
     trackerField: 'totalMinutes',
     levels: TREE_LEVELS,
