@@ -7,6 +7,11 @@ function userCol(name) {
   return db.collection('users').doc(currentUser.uid).collection(name);
 }
 
+// Helper: returns reference to current user's main document
+function userDoc() {
+  return db.collection('users').doc(currentUser.uid);
+}
+
 // Helper: returns reference to user's section doc (v2 only)
 function sectionRef(section) {
   return db.collection('users').doc(currentUser.uid).collection('sections').doc(section);

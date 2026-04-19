@@ -17,8 +17,7 @@ function _peLoadConfig(cb) {
 // ─── Публичный API ────────────────────────────────────────────────────────────
 
 function openPlanEditor(opts) {
-  var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-  if (!uid) return;
+  if (typeof currentUser === 'undefined' || !currentUser) return;
 
   var section      = opts.section;
   var dayIndex     = opts.dayIndex;
@@ -38,7 +37,6 @@ function openPlanEditor(opts) {
       var exs     = JSON.parse(JSON.stringify(day.exercises || []));
 
       _peOpen({
-        uid:          uid,
         section:      section,
         sectionLabel: sectionLabel,
         dayIndex:     dayIndex,

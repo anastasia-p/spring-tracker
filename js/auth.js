@@ -159,12 +159,7 @@ function getAuthErrorMessage(code) {
 var userCreatedAt = null;
 var SCHEMA_V2 = false;  // выставляется в loadUserConfig — используется в db.js (isSchemaV2())
 
-// userDoc() оставлен для обратной совместимости — db.js использует его в некоторых ветках.
-// Клиентский код (auth.js, settings.js) НЕ должен вызывать userDoc() напрямую —
-// использует функции loadConfig/saveConfig/и т.д. из db.js.
-function userDoc() {
-  return db.collection('users').doc(currentUser.uid);
-}
+// userDoc() живёт в db.js — клиентский код не должен работать с БД напрямую.
 
 function loadUserConfig() {
   var timeout = new Promise(function(resolve) {

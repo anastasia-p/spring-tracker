@@ -17,8 +17,8 @@ function _teLoadConfig(cb) {
 // ─── Публичный API ────────────────────────────────────────────────────────────
 
 function openTestEditor(opts) {
-  var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-  if (!uid) return;
+  // currentUser должен быть установлен (auth.js) — иначе ни db.js не сработает, ни onSave
+  if (typeof currentUser === 'undefined' || !currentUser) return;
 
   var section      = opts.section || 'tests';
   var sectionLabel = opts.sectionLabel || 'Тесты';
@@ -40,7 +40,6 @@ function openTestEditor(opts) {
       var config = results[1];
 
       _teOpen({
-        uid:          uid,
         section:      section,
         sectionLabel: sectionLabel,
         items:        items,
@@ -448,7 +447,8 @@ function _teSave(state) {
     : saveTests(state.section, state.items);
   savePromise
     .then(function() {
-      if (typeof resetCache === 'function') resetCache('tests');
+      // cache.tests содержит ЗНАЧЕНИЯ (за даты), а мы сохранили ОПРЕДЕЛЕНИЯ теста.
+      // Поэтому cache.tests не трогаем — иначе галочки за сегодня сбросятся до перезагрузки.
       state.dirty = false;
       if (typeof plans !== 'undefined') plans.tests = state.items;
       state.onSave();

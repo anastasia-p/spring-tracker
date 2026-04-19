@@ -41,7 +41,7 @@ function setup(opts) {
   global.getSkillById = pure.getSkillById;
   global.API_URL = 'http://mock.api';
   global.fetch = function() { return Promise.reject(new Error('fetch disabled in tests')); };
-  global.userDoc = function() { return mock.db.collection('users').doc(uid); };
+  // userDoc теперь живёт в db.js — сам подхватится при require
   global.renderSkillById = function() {};
 
   delete require.cache[DB_PATH];
