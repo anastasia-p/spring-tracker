@@ -24,7 +24,14 @@ function openTestEditor(opts) {
   var sectionLabel = opts.sectionLabel || 'Тесты';
   var onSave       = opts.onSave || function() {};
 
-  var planPromise   = loadSectionTests(section);
+  // В v2 при section='tests' (общий редактор всех тестов) берём из plans.tests —
+  // это уже агрегированный список из sections/*/tests/current с полем section у каждого
+  var planPromise;
+  if (section === 'tests' && isSchemaV2()) {
+    planPromise = Promise.resolve(plans.tests || []);
+  } else {
+    planPromise = loadSectionTests(section);
+  }
   var configPromise = new Promise(function(resolve) { _teLoadConfig(resolve); });
 
   Promise.all([planPromise, configPromise])
@@ -390,11 +397,14 @@ function _teSave(state) {
     btn.textContent  = 'Сохранение...';
   }
 
-  saveTests(state.section, state.items)
+  var savePromise = (state.section === 'tests')
+    ? saveAllTests(state.items)
+    : saveTests(state.section, state.items);
+  savePromise
     .then(function() {
       if (typeof resetCache === 'function') resetCache('tests');
       state.dirty = false;
-      if (typeof plans !== 'undefined') plans[state.section] = state.items;
+      if (typeof plans !== 'undefined') plans.tests = state.items;
       state.onSave();
       if (btn) {
         btn.disabled         = false;

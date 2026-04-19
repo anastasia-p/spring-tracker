@@ -824,7 +824,46 @@ function runTests() {
     });
   }); })
 
-  // ─── Итог ────────────────────────────────────────────────────────────────
+  // ─── API layer: saveAllTests ─────────────────────────────────────────────
+
+  .then(function() { group('API: saveAllTests'); })
+
+  .then(function() { return test('v2 saveAllTests spreads items across sections by item.section', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    var items = [
+      { name: 'Отжимания', unit: 'раз', section: 'strength' },
+      { name: 'Подтягивания', unit: 'раз', section: 'strength' },
+      { name: 'Мабу', unit: 'сек', section: 'wingchun' },
+    ];
+    return ctx.api.saveAllTests(items).then(function() {
+      var strItems = ctx.mock.store['users/u1/sections/strength/tests/current'].items;
+      var wcItems  = ctx.mock.store['users/u1/sections/wingchun/tests/current'].items;
+      assert.strictEqual(strItems.length, 2);
+      assert.strictEqual(wcItems.length, 1);
+      // Поле section не должно попасть в хранилище — оно только в памяти
+      strItems.forEach(function(it) { assert.strictEqual(it.section, undefined); });
+    });
+  }); })
+
+  .then(function() { return test('v2 saveAllTests empties sections without items', function() {
+    var ctx = ts.setup({ schemaV2: true });
+    // Передаём только strength — qigong должен стать пустым
+    var items = [{ name: 'X', section: 'strength' }];
+    return ctx.api.saveAllTests(items).then(function() {
+      var qi = ctx.mock.store['users/u1/sections/qigong/tests/current'];
+      assert.deepStrictEqual(qi.items, []);
+    });
+  }); })
+
+  .then(function() { return test('legacy saveAllTests writes plan/tests as single doc', function() {
+    var ctx = ts.setup();
+    var items = [{ name: 'Отжимания' }, { name: 'Мабу' }];
+    return ctx.api.saveAllTests(items).then(function() {
+      assert.deepStrictEqual(ctx.mock.store['users/u1/plan/tests'], { items: items });
+    });
+  }); })
+
+
 
   .then(function() {
     console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -87,6 +87,34 @@ function saveTests(section, items) {
   return userDoc().collection('plan').doc('tests').set({ items: items });
 }
 
+// Сохраняет общий агрегированный список тестов (как в plans.tests) —
+// разносит по секциям через item.section. Используется общим редактором тестов в v2.
+// В legacy — пишет одним документом plan/tests.
+function saveAllTests(items) {
+  if (!isSchemaV2()) {
+    return userDoc().collection('plan').doc('tests').set({ items: items });
+  }
+  // Группируем по section
+  var bySection = {};
+  SECTIONS.forEach(function(s) { bySection[s] = []; });
+  items.forEach(function(it) {
+    var sec = it.section || 'strength';
+    if (!bySection[sec]) bySection[sec] = [];
+    // Сохраняем без поля section — в v2 оно избыточно внутри секции
+    var copy = {};
+    for (var k in it) if (k !== 'section') copy[k] = it[k];
+    bySection[sec].push(copy);
+  });
+  var now = new Date().toISOString();
+  var writes = Object.keys(bySection).map(function(sec) {
+    return sectionRef(sec).collection('tests').doc('current').set({
+      items: bySection[sec],
+      updatedAt: now
+    });
+  });
+  return Promise.all(writes);
+}
+
 // --- Создание дефолтов секции при её включении ---
 // planDays — days из plans/{section}_default.json (или просто массив)
 // testsItems — items из plans/tests_{section}_default.json (или [])
@@ -614,6 +642,7 @@ if (typeof module !== 'undefined' && module.exports) {
     savePlan: savePlan,
     loadSectionTests: loadSectionTests,
     saveTests: saveTests,
+    saveAllTests: saveAllTests,
     createSectionDefaults: createSectionDefaults,
     enableSection: enableSection,
     disableSection: disableSection,
