@@ -220,3 +220,23 @@ function toggleSection(sectionId, checked, el) {
     el.disabled = false;
   });
 }
+
+// --- О приложении (в самом низу экрана настроек) ---
+
+function renderAboutApp(container) {
+  if (!container) return;
+  var existing = container.querySelector('.about-app');
+  if (existing) existing.remove();
+
+  var v = window.APP_VERSION || { sha: 'unknown', date: 'unknown' };
+  var block = document.createElement('div');
+  block.className = 'about-app';
+  block.style.cssText = 'margin-top:28px;padding:14px 0 8px;border-top:1px solid #ebebeb;font-size:13px;color:#888';
+  block.innerHTML =
+    '<div style="font-weight:500;margin-bottom:8px;color:#555">О приложении</div>' +
+    '<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 12px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)">' +
+      '<span style="color:#aaa">Версия</span><span>' + v.sha + '</span>' +
+      '<span style="color:#aaa">Собрано</span><span>' + v.date + '</span>' +
+    '</div>';
+  container.appendChild(block);
+}

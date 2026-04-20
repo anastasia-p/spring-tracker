@@ -308,4 +308,5 @@ function renderSettingsPlans() {
     : '';
 
   container.innerHTML = togglesHtml + plansHtml;
+  renderAboutApp(container);
 }
