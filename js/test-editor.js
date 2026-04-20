@@ -24,10 +24,10 @@ function openTestEditor(opts) {
   var sectionLabel = opts.sectionLabel || 'Тесты';
   var onSave       = opts.onSave || function() {};
 
-  // В v2 при section='tests' (общий редактор всех тестов) берём из plans.tests —
+  // При section='tests' (общий редактор всех тестов) берём из plans.tests —
   // это уже агрегированный список из sections/*/tests/current с полем section у каждого
   var planPromise;
-  if (section === 'tests' && isSchemaV2()) {
+  if (section === 'tests') {
     planPromise = Promise.resolve(plans.tests || []);
   } else {
     planPromise = loadSectionTests(section);
@@ -254,8 +254,8 @@ function _teRenderList(state, body) {
   addBtn.onclick = function() {
     state.editIdx  = null;
     state.formData = { name: '', note: '', unit: '' };
-    // В v2 общем редакторе дефолтная дисциплина — первая в списке активных
-    if (state.section === 'tests' && typeof isSchemaV2 === 'function' && isSchemaV2()) {
+    // В общем редакторе дефолтная дисциплина — первая в списке активных
+    if (state.section === 'tests') {
       var activeList = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
       state.formData.section = activeList[0] || 'strength';
     }
@@ -360,9 +360,9 @@ function _teRenderForm(state, body) {
   unitWrap.appendChild(unitEl);
   body.appendChild(unitWrap);
 
-  // Селектор секции — только в v2, и только когда редактор общий (section === 'tests')
+  // Селектор секции — только когда редактор общий (section === 'tests')
   var sectionEl = null;
-  if (state.section === 'tests' && typeof isSchemaV2 === 'function' && isSchemaV2()) {
+  if (state.section === 'tests') {
     var secWrap = document.createElement('div');
     secWrap.style.marginBottom = '14px';
     var secLbl = document.createElement('label');

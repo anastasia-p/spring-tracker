@@ -15,15 +15,9 @@ function userDoc() {
   return db.collection('users').doc(currentUser.uid);
 }
 
-// Helper: returns reference to user's section doc (v2 only)
+// Helper: returns reference to user's section doc
 function sectionRef(section) {
   return db.collection('users').doc(currentUser.uid).collection('sections').doc(section);
-}
-
-// Schema v2 flag — выставляется в auth.js при загрузке config.
-// В тестах устанавливается вручную через setup({schemaV2:true}).
-function isSchemaV2() {
-  return typeof SCHEMA_V2 !== 'undefined' && SCHEMA_V2 === true;
 }
 
 // =============================================================================
@@ -44,66 +38,42 @@ function saveConfig(partial) {
 }
 
 // --- Section plan (план недели дисциплины) ---
-// v1: users/{uid}/plan/{section}.days
-// v2: users/{uid}/sections/{section}/plan/current.days
+// users/{uid}/sections/{section}/plan/current.days
 
 function loadSectionPlan(section) {
-  if (isSchemaV2()) {
-    return sectionRef(section).collection('plan').doc('current').get()
-      .then(function(s) { return s.exists ? (s.data().days || []) : null; });
-  }
-  return userDoc().collection('plan').doc(section).get()
+  return sectionRef(section).collection('plan').doc('current').get()
     .then(function(s) { return s.exists ? (s.data().days || []) : null; });
 }
 
 function savePlan(section, days) {
   // Обновим и кеш в памяти
   plans[section] = days;
-  if (isSchemaV2()) {
-    return sectionRef(section).collection('plan').doc('current').set({
-      days: days,
-      updatedAt: new Date().toISOString()
-    });
-  }
-  return userDoc().collection('plan').doc(section).set({ days: days });
+  return sectionRef(section).collection('plan').doc('current').set({
+    days: days,
+    updatedAt: new Date().toISOString()
+  });
 }
 
 // --- Section tests (показатели дисциплины, общий список для секции) ---
-// v1: тесты все вместе в users/{uid}/plan/tests.items (не разбиты по секциям).
-// v2: по секциям в users/{uid}/sections/{section}/tests/current.items.
+// users/{uid}/sections/{section}/tests/current.items.
 
 function loadSectionTests(section) {
-  if (isSchemaV2()) {
-    return sectionRef(section).collection('tests').doc('current').get()
-      .then(function(s) { return s.exists ? (s.data().items || []) : []; });
-  }
-  // В legacy — берём все tests и фильтруем по имени через дефолтный JSON?
-  // На деле этот вызов нужен для редактора тестов. В legacy у нас один общий список,
-  // потому для legacy возвращаем весь plan/tests — редактор сам разбирается.
-  return userDoc().collection('plan').doc('tests').get()
+  return sectionRef(section).collection('tests').doc('current').get()
     .then(function(s) { return s.exists ? (s.data().items || []) : []; });
 }
 
 function saveTests(section, items) {
-  if (isSchemaV2()) {
-    return sectionRef(section).collection('tests').doc('current').set({
-      items: items,
-      updatedAt: new Date().toISOString()
-    });
-  }
-  // В legacy items — общий список для всех секций (на уровне plan/tests)
-  return userDoc().collection('plan').doc('tests').set({ items: items });
+  return sectionRef(section).collection('tests').doc('current').set({
+    items: items,
+    updatedAt: new Date().toISOString()
+  });
 }
 
 // Сохраняет общий агрегированный список тестов (как в plans.tests) —
-// разносит по секциям через item.section. Используется общим редактором тестов в v2.
-// В legacy — пишет одним документом plan/tests.
-// В v2 пишет только в АКТИВНЫЕ секции (userSections). Неактивные не трогаем —
+// разносит по секциям через item.section. Используется общим редактором тестов.
+// Пишет только в АКТИВНЫЕ секции (userSections). Неактивные не трогаем —
 // их данные остаются нетронутыми до повторного включения.
 function saveAllTests(items) {
-  if (!isSchemaV2()) {
-    return userDoc().collection('plan').doc('tests').set({ items: items });
-  }
   var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
   // Группируем только по активным секциям
   var bySection = {};
@@ -112,7 +82,7 @@ function saveAllTests(items) {
     var sec = it.section || 'strength';
     if (!bySection[sec]) return; // неактивная секция — пропускаем (не должно случаться,
                                  // но подстрахуемся от мусора в items)
-    // Сохраняем без поля section — в v2 оно избыточно внутри секции
+    // Сохраняем без поля section — оно избыточно внутри секции
     var copy = {};
     for (var k in it) if (k !== 'section') copy[k] = it[k];
     bySection[sec].push(copy);
@@ -132,13 +102,6 @@ function saveAllTests(items) {
 // testsItems — items из plans/tests_{section}_default.json (или [])
 
 function createSectionDefaults(section, planDays, testsItems) {
-  if (!isSchemaV2()) {
-    // В legacy нет понятия default — пишем сразу в plan/{section}
-    var writes = [
-      userDoc().collection('plan').doc(section).set({ days: planDays || [] })
-    ];
-    return Promise.all(writes);
-  }
   var ref = sectionRef(section);
   var now = new Date().toISOString();
   return Promise.all([
@@ -152,39 +115,24 @@ function createSectionDefaults(section, planDays, testsItems) {
 }
 
 // --- Enable / disable section ---
-// Хранится параллельно в config.sections[] и sections/{section}.enabled
-// На время миграции поддерживаем оба — чтобы бэкенд/бот, которые читают config.sections,
-// видели правильное состояние.
+// Хранится параллельно в config.sections[] и sections/{section}.enabled —
+// бэкенд/бот читают config.sections, фронт — sections/{section}.
 
 function enableSection(section) {
-  if (isSchemaV2()) {
-    return sectionRef(section).set({
-      enabled: true,
-      updatedAt: new Date().toISOString()
-    }, { merge: true }).then(function() {
-      return syncSectionsConfigList();
-    });
-  }
-  // В legacy enabled хранится только в config.sections
-  return loadConfig().then(function(cfg) {
-    var list = (cfg && cfg.sections) ? cfg.sections.slice() : [];
-    if (list.indexOf(section) === -1) list.push(section);
-    return saveConfig({ sections: list });
+  return sectionRef(section).set({
+    enabled: true,
+    updatedAt: new Date().toISOString()
+  }, { merge: true }).then(function() {
+    return syncSectionsConfigList();
   });
 }
 
 function disableSection(section) {
-  if (isSchemaV2()) {
-    return sectionRef(section).set({
-      enabled: false,
-      updatedAt: new Date().toISOString()
-    }, { merge: true }).then(function() {
-      return syncSectionsConfigList();
-    });
-  }
-  return loadConfig().then(function(cfg) {
-    var list = (cfg && cfg.sections) ? cfg.sections.filter(function(s) { return s !== section; }) : [];
-    return saveConfig({ sections: list });
+  return sectionRef(section).set({
+    enabled: false,
+    updatedAt: new Date().toISOString()
+  }, { merge: true }).then(function() {
+    return syncSectionsConfigList();
   });
 }
 
@@ -260,14 +208,6 @@ ALL_DATA_SECTIONS.forEach(function(s) { plans[s] = null; });
 var skillTotals = {};
 
 function loadPlanFromFirebase(section) {
-  if (isSchemaV2()) return loadPlanFromFirebaseV2(section);
-  var field = section === 'tests' ? 'items' : 'days';
-  return userDoc().collection('plan').doc(section).get().then(function(s) {
-    if (s.exists) plans[section] = s.data()[field];
-  }).catch(function(e) { console.error('loadPlanFromFirebase(' + section + '):', e); });
-}
-
-function loadPlanFromFirebaseV2(section) {
   if (section === 'tests') {
     // Тесты собираются из sections/*/tests/current.items
     var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
@@ -291,7 +231,7 @@ function loadPlanFromFirebaseV2(section) {
   }
   return sectionRef(section).collection('plan').doc('current').get().then(function(s) {
     if (s.exists) plans[section] = s.data().days;
-  }).catch(function(e) { console.error('loadPlanFromFirebaseV2(' + section + '):', e); });
+  }).catch(function(e) { console.error('loadPlanFromFirebase(' + section + '):', e); });
 }
 
 function getDayPlan(section, date) {
@@ -301,13 +241,10 @@ function getDayPlan(section, date) {
   return plan[idx] || null;
 }
 
-// Helper: возвращает ссылку на документ истории дня (v1 — legacy, v2 — новая структура)
+// Helper: возвращает ссылку на документ истории дня
 function dayDocRef(section, dk) {
-  if (isSchemaV2()) {
-    var year = dk.slice(0, 4);
-    return sectionRef(section).collection('plan').doc(year).collection('history').doc(dk);
-  }
-  return userCol(section).doc(dk);
+  var year = dk.slice(0, 4);
+  return sectionRef(section).collection('plan').doc(year).collection('history').doc(dk);
 }
 
 function loadDayData(section, date) {
@@ -358,19 +295,12 @@ function saveDayData(section, date) {
   }).catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); });
 }
 
-function loadTestsCache() {
-  if (isSchemaV2()) return loadTestsCacheV2();
-  return userCol('tests').get().then(function(snap) {
-    snap.forEach(function(doc) { cache.tests[doc.id] = doc.data(); });
-  }).catch(function(e) { console.error('loadTestsCache:', e); });
-}
-
-// v2: склеиваем историю тестов всех активных секций по датам.
+// Склеиваем историю тестов всех активных секций по датам.
 // Например, для одной даты "2026-04-18" пользователь мог ввести:
 //   sections/strength/tests/2026/history/2026-04-18 → { "Отжимания": 25 }
 //   sections/wingchun/tests/2026/history/2026-04-18 → { "Мабу": 60 }
 // Результат в cache.tests["2026-04-18"] = { "Отжимания": 25, "Мабу": 60 }
-function loadTestsCacheV2() {
+function loadTestsCache() {
   var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
   return Promise.all(activeSections.map(function(sec) {
     return loadTestsHistoryForSection(sec);
@@ -381,65 +311,49 @@ function loadTestsCacheV2() {
         Object.keys(d.data).forEach(function(k) { cache.tests[d.id][k] = d.data[k]; });
       });
     });
-  }).catch(function(e) { console.error('loadTestsCacheV2:', e); });
+  }).catch(function(e) { console.error('loadTestsCache:', e); });
 }
 
 function saveTestData(dk, data) {
   cache.tests[dk] = data;
-  if (isSchemaV2()) {
-    // В v2 значения показателей хранятся отдельно по секциям.
-    // Для записи идём по ВСЕМ активным секциям — чтобы удалённые поля тоже стёрлись.
-    // (Если бы шли только по секциям у которых есть значения — старые записи в
-    // других секциях остались бы жить.)
-    var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
-    var bySection = {};
-    activeSections.forEach(function(s) { bySection[s] = {}; });
-    (plans.tests || []).forEach(function(item) {
-      var sec = item.section || 'strength';
-      if (!bySection.hasOwnProperty(sec)) return;
-      if (data[item.name] !== undefined) {
-        bySection[sec][item.name] = data[item.name];
-      }
-      // Если в data нет значения (удалено) — ничего не добавляем в bySection[sec].
-      // При .set() документ перезапишется без этого поля.
-    });
-    var year = dk.slice(0, 4);
-    var writes = Object.keys(bySection).map(function(sec) {
-      return sectionRef(sec).collection('tests').doc(year).collection('history').doc(dk)
-        .set(bySection[sec]).catch(function(e) { console.error('saveTestData(' + sec + ',' + dk + '):', e); });
-    });
-    return Promise.all(writes);
-  }
-  return userCol('tests').doc(dk).set(data).catch(function(e) { console.error('saveTestData(legacy,' + dk + '):', e); });
+  // Значения показателей хранятся отдельно по секциям.
+  // Для записи идём по ВСЕМ активным секциям — чтобы удалённые поля тоже стёрлись.
+  // (Если бы шли только по секциям у которых есть значения — старые записи в
+  // других секциях остались бы жить.)
+  var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
+  var bySection = {};
+  activeSections.forEach(function(s) { bySection[s] = {}; });
+  (plans.tests || []).forEach(function(item) {
+    var sec = item.section || 'strength';
+    if (!bySection.hasOwnProperty(sec)) return;
+    if (data[item.name] !== undefined) {
+      bySection[sec][item.name] = data[item.name];
+    }
+    // Если в data нет значения (удалено) — ничего не добавляем в bySection[sec].
+    // При .set() документ перезапишется без этого поля.
+  });
+  var year = dk.slice(0, 4);
+  var writes = Object.keys(bySection).map(function(sec) {
+    return sectionRef(sec).collection('tests').doc(year).collection('history').doc(dk)
+      .set(bySection[sec]).catch(function(e) { console.error('saveTestData(' + sec + ',' + dk + '):', e); });
+  });
+  return Promise.all(writes);
 }
 
 // --- Universal skill load/recalc ---
 
 function loadSkill(skill) {
-  var ref;
-  if (isSchemaV2()) {
-    ref = sectionRef(skill.section).collection('skills').doc(skill.id);
-  } else {
-    ref = userCol('tracker').doc(skill.tracker);
-  }
+  var ref = sectionRef(skill.section).collection('skills').doc(skill.id);
   return ref.get().then(function(s) {
     skillTotals[skill.id] = s.exists ? (s.data()[skill.trackerField] || 0) : 0;
   }).catch(function() { skillTotals[skill.id] = 0; });
 }
 
 // Загружает всю историю дней секции (массив { id, data } где id = date).
-// v1: читает одну коллекцию {section}/*.
-// v2: читает коллекции sections/{section}/plan/{year}/history для каждого года в диапазоне
-//     [createdAt.year .. currentYear], объединяет.
+// Читает коллекции sections/{section}/plan/{year}/history для каждого года в диапазоне
+// [createdAt.year .. currentYear], объединяет.
 function loadSectionHistoryAll(section, opts) {
   var getOpts = (opts && opts.fromServer) ? { source: 'server' } : undefined;
-  if (!isSchemaV2()) {
-    return userCol(section).get(getOpts).then(function(snap) {
-      var out = [];
-      snap.forEach(function(doc) { out.push({ id: doc.id, data: doc.data() }); });
-      return out;
-    });
-  }
   var years = listYearsToRead();
   return Promise.all(years.map(function(y) {
     return sectionRef(section).collection('plan').doc(y).collection('history').get(getOpts);
@@ -452,16 +366,9 @@ function loadSectionHistoryAll(section, opts) {
   });
 }
 
-// То же самое для тестов. v1: tests/*. v2: sections/{section}/tests/*/history/*.
+// То же самое для тестов. sections/{section}/tests/*/history/*.
 function loadTestsHistoryForSection(section, opts) {
   var getOpts = (opts && opts.fromServer) ? { source: 'server' } : undefined;
-  if (!isSchemaV2()) {
-    return userCol('tests').get(getOpts).then(function(snap) {
-      var out = [];
-      snap.forEach(function(doc) { out.push({ id: doc.id, data: doc.data() }); });
-      return out;
-    });
-  }
   var years = listYearsToRead();
   return Promise.all(years.map(function(y) {
     return sectionRef(section).collection('tests').doc(y).collection('history').get(getOpts);
@@ -503,10 +410,8 @@ function adjustSkillTotal(skill, delta) {
   if (typeof renderSkillById === 'function') renderSkillById(skill.id);
   var doc = {};
   doc[skill.trackerField] = next;
-  if (isSchemaV2()) {
-    return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function(e) { console.error('adjustSkillTotal(' + skill.id + '):', e); });
-  }
-  return userCol('tracker').doc(skill.tracker).set(doc).catch(function(e) { console.error('adjustSkillTotal(' + skill.id + ',legacy):', e); });
+  return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
+    .catch(function(e) { console.error('adjustSkillTotal(' + skill.id + '):', e); });
 }
 
 // Полный пересчёт навыка из всей истории. Используется:
@@ -533,42 +438,23 @@ function recalcSkill(skill) {
   if (skill.sourceExtra) {
     var ext = skill.sourceExtra;
     var extFields = ext.fields || (ext.field ? [ext.field] : []);
-    if (ext.collection === 'tests') {
-      // Для tests используем in-memory cache.tests (всегда актуален —
-      // обновляется в saveTestData/loadTestsCache синхронно)
-      var cachedDocs = cache[ext.collection];
-      if (cachedDocs && Object.keys(cachedDocs).length > 0) {
-        var cachedTotal = 0;
-        Object.keys(cachedDocs).forEach(function(dk) {
-          var data = cachedDocs[dk];
-          extFields.forEach(function(f) { if (data[f]) cachedTotal += data[f]; });
-        });
-        sources.push(Promise.resolve(cachedTotal));
-      } else if (isSchemaV2()) {
-        // v2: собираем из sections/{skill.section}/tests/*/history
-        sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
-          var total = 0;
-          docs.forEach(function(d) {
-            extFields.forEach(function(f) { if (d.data[f]) total += d.data[f]; });
-          });
-          return total;
-        }));
-      } else {
-        sources.push(userCol(ext.collection).get().then(function(snap) {
-          var total = 0;
-          snap.forEach(function(doc) {
-            var data = doc.data();
-            extFields.forEach(function(f) { if (data[f]) total += data[f]; });
-          });
-          return total;
-        }));
-      }
+    // В текущих SKILLS все sourceExtra имеют collection === 'tests'.
+    // Для tests используем in-memory cache.tests (всегда актуален —
+    // обновляется в saveTestData/loadTestsCache синхронно)
+    var cachedDocs = cache[ext.collection];
+    if (cachedDocs && Object.keys(cachedDocs).length > 0) {
+      var cachedTotal = 0;
+      Object.keys(cachedDocs).forEach(function(dk) {
+        var data = cachedDocs[dk];
+        extFields.forEach(function(f) { if (data[f]) cachedTotal += data[f]; });
+      });
+      sources.push(Promise.resolve(cachedTotal));
     } else {
-      sources.push(userCol(ext.collection).get().then(function(snap) {
+      // Кеш пуст — собираем из sections/{skill.section}/tests/*/history
+      sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
         var total = 0;
-        snap.forEach(function(doc) {
-          var data = doc.data();
-          extFields.forEach(function(f) { if (data[f]) total += data[f]; });
+        docs.forEach(function(d) {
+          extFields.forEach(function(f) { if (d.data[f]) total += d.data[f]; });
         });
         return total;
       }));
@@ -579,12 +465,8 @@ function recalcSkill(skill) {
     skillTotals[skill.id] = total;
     var doc = {};
     doc[skill.trackerField] = total;
-    var writePromise;
-    if (isSchemaV2()) {
-      writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function(e) { console.error('recalcSkill write(' + skill.id + '):', e); });
-    } else {
-      writePromise = userCol('tracker').doc(skill.tracker).set(doc).catch(function(e) { console.error('recalcSkill write(' + skill.id + ',legacy):', e); });
-    }
+    var writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
+      .catch(function(e) { console.error('recalcSkill write(' + skill.id + '):', e); });
     if (typeof renderSkillById === 'function') renderSkillById(skill.id);
     return writePromise;
   }).catch(function(e) { console.error('recalcSkill(' + skill.id + '):', e); });
@@ -683,7 +565,6 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     userCol: userCol,
     sectionRef: sectionRef,
-    isSchemaV2: isSchemaV2,
     // API-слой
     loadConfig: loadConfig,
     saveConfig: saveConfig,

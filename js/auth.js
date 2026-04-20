@@ -157,7 +157,6 @@ function getAuthErrorMessage(code) {
 
 // --- User config ---
 var userCreatedAt = null;
-var SCHEMA_V2 = false;  // выставляется в loadUserConfig — используется в db.js (isSchemaV2())
 
 // userDoc() живёт в db.js — клиентский код не должен работать с БД напрямую.
 
@@ -167,7 +166,6 @@ function loadUserConfig() {
   });
   return Promise.race([
     loadConfig().then(function(cfg) {
-      SCHEMA_V2 = cfg && cfg.schema_version >= 2;
       return cfg;
     }).catch(function(e) {
       console.error('loadUserConfig error:', e);
@@ -221,10 +219,6 @@ function finishOnboarding() {
   btn.textContent = 'Загрузка...';
 
   var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
-
-  // Новые пользователи сразу на schema v2. SCHEMA_V2 влияет на ветки в db.js,
-  // поэтому выставляем флаг ДО того как будем вызывать API функции.
-  SCHEMA_V2 = true;
 
   // Загружаем дефолты с сервера и создаём структуру через createSectionDefaults.
   // Тесты для секции — из её defaultTests (если есть).

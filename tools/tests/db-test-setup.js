@@ -9,21 +9,19 @@ var DB_PATH = path.resolve(__dirname, '../../js/db.js');
 
 function setup(opts) {
   opts = opts || {};
-  var schemaV2 = !!opts.schemaV2;
   var uid = opts.uid || 'u1';
   var seed = opts.seed || {};
 
   var mock = createMockFirestore();
 
   var configPath = 'users/' + uid;
-  var config = Object.assign({ email: 'test@test', createdAt: '2026-01-01T00:00:00.000Z' },
-                             opts.config || {});
-  if (schemaV2) config.schema_version = 2;
+  var config = Object.assign(
+    { email: 'test@test', createdAt: '2026-01-01T00:00:00.000Z', schema_version: 2 },
+    opts.config || {}
+  );
   mock.seed(configPath, config);
 
   Object.keys(seed).forEach(function(p) { mock.seed(p, seed[p]); });
-
-  global.SCHEMA_V2 = schemaV2;
 
   global.firebase = {
     firestore: function() { return mock.db; },
@@ -51,7 +49,7 @@ function setup(opts) {
 }
 
 function teardown() {
-  ['firebase', 'currentUser', 'userCreatedAt', 'SCHEMA_V2',
+  ['firebase', 'currentUser', 'userCreatedAt',
    'SECTIONS', 'SECTION_META', 'SKILLS', 'pluralize', 'dateKey',
    'getDayPlanIndex', 'getWeekDates', 'getSkillById',
    'API_URL', 'fetch', 'userDoc', 'renderSkillById',
