@@ -140,10 +140,7 @@ function changeWeek(d) {
 
 function computeWeekStars(results, dates) {
   var todayKey = dateKey(new Date());
-  var user = firebase.auth().currentUser;
-  var createdKey = (user && user.metadata && user.metadata.creationTime)
-    ? dateKey(new Date(user.metadata.creationTime))
-    : null;
+  var createdKey = userCreatedAt ? dateKey(new Date(userCreatedAt)) : null;
   var hasGreen = false, hasOrange = false, hasRed = false;
   results.forEach(function(dayData, i) {
     var dk = dateKey(dates[i]);
