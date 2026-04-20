@@ -264,7 +264,7 @@ function loadPlanFromFirebase(section) {
   var field = section === 'tests' ? 'items' : 'days';
   return userDoc().collection('plan').doc(section).get().then(function(s) {
     if (s.exists) plans[section] = s.data()[field];
-  }).catch(function() {});
+  }).catch(function(e) { console.error('loadPlanFromFirebase(' + section + '):', e); });
 }
 
 function loadPlanFromFirebaseV2(section) {
@@ -291,7 +291,7 @@ function loadPlanFromFirebaseV2(section) {
   }
   return sectionRef(section).collection('plan').doc('current').get().then(function(s) {
     if (s.exists) plans[section] = s.data().days;
-  }).catch(function() {});
+  }).catch(function(e) { console.error('loadPlanFromFirebaseV2(' + section + '):', e); });
 }
 
 function getDayPlan(section, date) {
@@ -355,14 +355,14 @@ function saveDayData(section, date) {
   return dayDocRef(section, dk).set({
     plan: data.plan, type: data.type, label: data.label,
     checks: data.checks, values: data.values
-  }).catch(function() {});
+  }).catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); });
 }
 
 function loadTestsCache() {
   if (isSchemaV2()) return loadTestsCacheV2();
   return userCol('tests').get().then(function(snap) {
     snap.forEach(function(doc) { cache.tests[doc.id] = doc.data(); });
-  }).catch(function() {});
+  }).catch(function(e) { console.error('loadTestsCache:', e); });
 }
 
 // v2: склеиваем историю тестов всех активных секций по датам.
@@ -381,7 +381,7 @@ function loadTestsCacheV2() {
         Object.keys(d.data).forEach(function(k) { cache.tests[d.id][k] = d.data[k]; });
       });
     });
-  }).catch(function() {});
+  }).catch(function(e) { console.error('loadTestsCacheV2:', e); });
 }
 
 function saveTestData(dk, data) {
@@ -406,11 +406,11 @@ function saveTestData(dk, data) {
     var year = dk.slice(0, 4);
     var writes = Object.keys(bySection).map(function(sec) {
       return sectionRef(sec).collection('tests').doc(year).collection('history').doc(dk)
-        .set(bySection[sec]).catch(function() {});
+        .set(bySection[sec]).catch(function(e) { console.error('saveTestData(' + sec + ',' + dk + '):', e); });
     });
     return Promise.all(writes);
   }
-  return userCol('tests').doc(dk).set(data).catch(function() {});
+  return userCol('tests').doc(dk).set(data).catch(function(e) { console.error('saveTestData(legacy,' + dk + '):', e); });
 }
 
 // --- Universal skill load/recalc ---
@@ -504,9 +504,9 @@ function adjustSkillTotal(skill, delta) {
   var doc = {};
   doc[skill.trackerField] = next;
   if (isSchemaV2()) {
-    return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function() {});
+    return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function(e) { console.error('adjustSkillTotal(' + skill.id + '):', e); });
   }
-  return userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
+  return userCol('tracker').doc(skill.tracker).set(doc).catch(function(e) { console.error('adjustSkillTotal(' + skill.id + ',legacy):', e); });
 }
 
 // Полный пересчёт навыка из всей истории. Используется:
@@ -581,13 +581,13 @@ function recalcSkill(skill) {
     doc[skill.trackerField] = total;
     var writePromise;
     if (isSchemaV2()) {
-      writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function() {});
+      writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc).catch(function(e) { console.error('recalcSkill write(' + skill.id + '):', e); });
     } else {
-      writePromise = userCol('tracker').doc(skill.tracker).set(doc).catch(function() {});
+      writePromise = userCol('tracker').doc(skill.tracker).set(doc).catch(function(e) { console.error('recalcSkill write(' + skill.id + ',legacy):', e); });
     }
     if (typeof renderSkillById === 'function') renderSkillById(skill.id);
     return writePromise;
-  }).catch(function() {});
+  }).catch(function(e) { console.error('recalcSkill(' + skill.id + '):', e); });
 }
 
 // Find skill by exercise name (used in plan.js)
