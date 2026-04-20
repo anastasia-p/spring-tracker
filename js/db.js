@@ -1,6 +1,9 @@
 // Firebase init and data access layer
-var db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : db;
-if (db && db.enablePersistence) db.enablePersistence().catch(function() {});
+var db;
+if (typeof firebase !== 'undefined' && firebase.firestore) {
+  db = firebase.firestore();
+  if (db.enablePersistence) db.enablePersistence().catch(function() {});
+}
 
 // Helper: returns subcollection scoped to current user
 function userCol(name) {
