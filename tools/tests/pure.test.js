@@ -133,6 +133,11 @@ test('getSkillsBySection возвращает только навыки нужн
   wc.forEach(function(s) { assert.strictEqual(s.section, 'wingchun'); });
 });
 
+test('getSkillsBySection — wingchun содержит snake1', function() {
+  var ids = p.getSkillsBySection('wingchun').map(function(s) { return s.id; });
+  assert.ok(ids.includes('snake1'), 'нет snake1');
+});
+
 test('getSkillsBySection — strength содержит pushups и pullups', function() {
   var ids = p.getSkillsBySection('strength').map(function(s) { return s.id; });
   assert.ok(ids.includes('pushups'), 'нет pushups');
@@ -196,6 +201,18 @@ test('1000000 повт → уровень 9', function() { assert.strictEqual(p.
 test('getSkillProgress: 750 повт между уровнями 2(500) и 3(1000) → 50%', function() {
   assert.strictEqual(p.getSkillProgress(pu, 750), 50);
 });
+
+// ─── getSkillLevel (reps) — snake1 ───────────────────────────────────────────
+console.log('\ngetSkillLevel — reps (snake1)');
+var sn = p.getSkillById('snake1');
+
+test('snake1: 0 повт → уровень 0', function() { assert.strictEqual(p.getSkillLevel(sn, 0).level, 0); });
+test('snake1: 49 повт → уровень 0', function() { assert.strictEqual(p.getSkillLevel(sn, 49).level, 0); });
+test('snake1: 50 повт → уровень 1', function() { assert.strictEqual(p.getSkillLevel(sn, 50).level, 1); });
+test('snake1: 200 повт → уровень 2', function() { assert.strictEqual(p.getSkillLevel(sn, 200).level, 2); });
+test('snake1: 10000 повт → уровень 9 (максимум)', function() { assert.strictEqual(p.getSkillLevel(sn, 10000).level, 9); });
+test('snake1: 99999 повт → уровень 9 (не выходим за максимум)', function() { assert.strictEqual(p.getSkillLevel(sn, 99999).level, 9); });
+test('snake1: getSkillProgress на максимуме → 100%', function() { assert.strictEqual(p.getSkillProgress(sn, 10000), 100); });
 
 // ─── getSkillLevel (km) — forest_gump ────────────────────────────────────────
 console.log('\ngetSkillLevel — km (forest_gump)');

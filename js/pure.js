@@ -98,6 +98,20 @@ var DUMMY1_LEVELS = [
 ];
 
 
+var SNAKE1_LEVELS = [
+  { level: 0, name: 'Яйцо в траве',         reps: 0,     desc: 'Свернулась и ждет' },
+  { level: 1, name: 'Первый изгиб',         reps: 50,    desc: 'Тело учится течь' },
+  { level: 2, name: 'Сбрасываю кожу',       reps: 200,   desc: 'Старое уходит, новое приходит' },
+  { level: 3, name: 'Бесшумный ход',        reps: 500,   desc: 'Скольжу, не тревожа траву' },
+  { level: 4, name: 'Чешуя блестит',        reps: 1000,  desc: 'Форма отражает свет' },
+  { level: 5, name: 'Стойка кобры',         reps: 2000,  desc: 'Собрана и готова' },
+  { level: 6, name: 'Молниеносный бросок',  reps: 4000,  desc: 'Удар раньше мысли' },
+  { level: 7, name: 'Кольцо вокруг жертвы', reps: 6000,  desc: 'Контроль без усилия' },
+  { level: 8, name: 'Белая змея',           reps: 8000,  desc: 'Госпожа Бай Сучжэнь' },
+  { level: 9, name: 'Змея-дракон',          reps: 10000, desc: 'Золотая чешуя' },
+];
+
+
 var FOREST_GUMP_LEVELS = [
   { level: 0, name: 'Пора в путь',          km: 0,     desc: 'Главное начать' },
   { level: 1, name: 'Беги, Форрест, беги!',  km: 50,    desc: 'Первые километры позади' },
@@ -256,6 +270,19 @@ var SKILLS = [
     tracker: 'dummy1',
     trackerField: 'totalReps',
     levels: DUMMY1_LEVELS,
+  },
+  {
+    id: 'snake1',
+    name: 'Змея №1',
+    section: 'wingchun',
+    color: '#0F7C3A',
+    bgColor: '#DDF0E2',
+    icon: '<span style="font-size:18px;font-family:serif;color:#0F7C3A;line-height:1">蛇<sup style="font-size:10px;font-family:sans-serif">1</sup></span>',
+    valueType: 'reps',
+    source: { collection: 'wingchun', fields: ['Змея №1', 'Змея № 1', 'Змея-1', 'Змея 1'] },
+    tracker: 'snake1',
+    trackerField: 'totalReps',
+    levels: SNAKE1_LEVELS,
   },
   {
     id: 'lotus',
@@ -444,7 +471,7 @@ if (typeof module !== 'undefined') {
     getLotusLevel, getLotusNextLevel, getLotusProgress,
     getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SNAKE1_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,
