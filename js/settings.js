@@ -237,6 +237,7 @@ function renderAboutApp(container) {
     '<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 12px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)">' +
       '<span style="color:#aaa">Версия</span><span>' + v.sha + '</span>' +
       '<span style="color:#aaa">Собрано</span><span>' + v.date + '</span>' +
-    '</div>';
+    '</div>' +
+    '<div style="margin-top:10px">Обратная связь: <a href="https://t.me/Ponomareva_Anastasia" target="_blank" rel="noopener noreferrer" style="color:#378ADD;text-decoration:none">@Ponomareva_Anastasia</a></div>';
   container.appendChild(block);
 }
