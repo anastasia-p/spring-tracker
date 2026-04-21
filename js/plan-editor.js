@@ -236,8 +236,8 @@ function _peRenderList(state, body) {
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0;overflow:hidden';
     info.innerHTML =
-      '<div style="font-size:14px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ex.name + '</div>' +
-      (ex.note ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ex.note + '</div>' : '');
+      '<div style="font-size:14px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(ex.name) + '</div>' +
+      (ex.note ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(ex.note) + '</div>' : '');
 
     var btnCopy = _peIconBtn('⎘', 'Копировать');
     btnCopy.onclick = (function(idx, btn) {

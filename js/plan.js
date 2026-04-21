@@ -39,7 +39,7 @@ function renderSection(section, keepOpen) {
       card.innerHTML =
         '<div class="day-header" onclick="toggleDay(this)">' +
           '<div class="day-left">' +
-            '<span class="day-badge" style="' + getDayTypeBadgeStyle(dayData.type) + '">' + getDayTypeLabel(dayData.type) + '</span>' +
+            '<span class="day-badge" style="' + getDayTypeBadgeStyle(dayData.type) + '">' + escapeHtml(getDayTypeLabel(dayData.type)) + '</span>' +
             '<span class="day-name">' + DAY_NAMES[date.getDay()] + '</span>' +
           '</div>' +
           '<div class="day-right">' +
@@ -53,17 +53,21 @@ function renderSection(section, keepOpen) {
           '<div class="ex-list">' +
           exs.map(function(ex) {
             var hasValue = ex.trackValue && checks[ex.name] && values[ex.name] > 0;
-            var valueLine = hasValue ? '<div class="ex-value">' + values[ex.name] + ' ' + (ex.unit || '') + '</div>' : '';
-            var safeExName = ex.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            var onchange = ex.trackValue
-              ? 'onchange="handleExCheck(\'' + section + '\',\'' + dk + '\',\'' + safeExName + '\',\'' + (ex.unit || '') + '\',this)"'
-              : 'onchange="toggleCheck(\'' + section + '\',\'' + dk + '\',\'' + safeExName + '\',this)"';
+            var valueLine = hasValue ? '<div class="ex-value">' + escapeHtml(values[ex.name]) + ' ' + escapeHtml(ex.unit || '') + '</div>' : '';
+            // Все пользовательские поля передаются через data-*, диспетчер читает их в handleExCheckbox(this).
+            // Это исключает JS-injection через кавычки в имени упражнения.
+            var dataAttrs =
+              ' data-section="' + escapeHtml(section) + '"' +
+              ' data-dk="' + escapeHtml(dk) + '"' +
+              ' data-ex-name="' + escapeHtml(ex.name) + '"' +
+              ' data-ex-unit="' + escapeHtml(ex.unit || '') + '"' +
+              ' data-ex-track="' + (ex.trackValue ? '1' : '0') + '"';
             return '<div class="ex-item">' +
-              '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + ' ' + onchange + '>' +
+              '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + dataAttrs + ' onchange="handleExCheckbox(this)">' +
               '<div class="ex-info">' +
-                '<div class="ex-name">' + ex.name + '</div>' +
-                (ex.desc ? '<div class="ex-desc">' + ex.desc + '</div>' : '') +
-                (ex.note ? '<div class="ex-note">' + ex.note + '</div>' : '') +
+                '<div class="ex-name">' + escapeHtml(ex.name) + '</div>' +
+                (ex.desc ? '<div class="ex-desc">' + escapeHtml(ex.desc) + '</div>' : '') +
+                (ex.note ? '<div class="ex-note">' + escapeHtml(ex.note) + '</div>' : '') +
                 valueLine +
               '</div>' +
             '</div>';
@@ -104,6 +108,22 @@ function getOpenCards(section) {
 
 function toggleDay(el) {
   el.closest('.day-card').classList.toggle('open');
+}
+
+// Диспетчер галочки упражнения — читает параметры из data-* атрибутов
+// вместо получения их через inline-handler. Это исключает JS-injection
+// через кавычки в имени упражнения (см. техдолг: XSS).
+function handleExCheckbox(el) {
+  var section = el.dataset.section;
+  var dk = el.dataset.dk;
+  var exName = el.dataset.exName;
+  var unit = el.dataset.exUnit || '';
+  var track = el.dataset.exTrack === '1';
+  if (track) {
+    handleExCheck(section, dk, exName, unit, el);
+  } else {
+    toggleCheck(section, dk, exName, el);
+  }
 }
 
 function handleExCheck(section, dk, exName, unit, el) {

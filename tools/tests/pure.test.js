@@ -307,6 +307,44 @@ test('25 → дней', function() { assert.strictEqual(p.pluralize(25, days), '
 test('101 → день', function() { assert.strictEqual(p.pluralize(101, days), 'день'); });
 test('111 → дней (исключение)', function() { assert.strictEqual(p.pluralize(111, days), 'дней'); });
 
+// ─── escapeHtml (защита от XSS) ───────────────────────────────────────────────
+console.log('\nescapeHtml');
+
+test('обычный текст без изменений', function() {
+  assert.strictEqual(p.escapeHtml('Отжимания'), 'Отжимания');
+});
+test('< и > экранируются', function() {
+  assert.strictEqual(p.escapeHtml('<img src=x>'), '&lt;img src=x&gt;');
+});
+test('амперсанд экранируется первым (без двойного кодирования)', function() {
+  assert.strictEqual(p.escapeHtml('A & B'), 'A &amp; B');
+  assert.strictEqual(p.escapeHtml('<&>'), '&lt;&amp;&gt;');
+});
+test('двойные кавычки экранируются (для атрибутов)', function() {
+  assert.strictEqual(p.escapeHtml('say "hi"'), 'say &quot;hi&quot;');
+});
+test('одинарные кавычки экранируются (для атрибутов)', function() {
+  assert.strictEqual(p.escapeHtml("it's ok"), 'it&#39;s ok');
+});
+test('null → пустая строка', function() {
+  assert.strictEqual(p.escapeHtml(null), '');
+});
+test('undefined → пустая строка', function() {
+  assert.strictEqual(p.escapeHtml(undefined), '');
+});
+test('число приводится к строке', function() {
+  assert.strictEqual(p.escapeHtml(42), '42');
+});
+test('XSS-вектор из техдолга нейтрализуется', function() {
+  assert.strictEqual(
+    p.escapeHtml('<img src=x onerror=alert(1)>'),
+    '&lt;img src=x onerror=alert(1)&gt;'
+  );
+});
+test('пустая строка остается пустой', function() {
+  assert.strictEqual(p.escapeHtml(''), '');
+});
+
 // ─── Итог ─────────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────');
 console.log('Итого: ' + passed + ' прошло, ' + failed + ' упало');

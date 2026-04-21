@@ -9,13 +9,16 @@ function renderTestForm() {
   grid.innerHTML = items.map(function(item, i) {
     var isChecked = !!saved[item.name];
     var val = saved[item.name] || '';
+    var dataAttrs =
+      ' data-test-name="' + escapeHtml(item.name) + '"' +
+      ' data-test-unit="' + escapeHtml(item.unit || '') + '"';
     return '<div class="test-item">' +
       '<label class="ex-row">' +
         '<input type="checkbox" class="ex-check" id="tc_' + i + '" ' + (isChecked ? 'checked' : '') +
-          ' onchange="handleTestCheck(\'' + item.name + '\', \'' + item.unit + '\', this)">' +
+          dataAttrs + ' onchange="handleTestCheckbox(this)">' +
         '<div class="ex-info">' +
-          '<div class="ex-name">' + item.name + (item.note ? '<span style="color:var(--text-hint);font-size:10px;display:block">' + item.note + '</span>' : '') + '</div>' +
-          (isChecked && val ? '<div class="ex-value">' + val + ' ' + item.unit + '</div>' : '') +
+          '<div class="ex-name">' + escapeHtml(item.name) + (item.note ? '<span style="color:var(--text-hint);font-size:10px;display:block">' + escapeHtml(item.note) + '</span>' : '') + '</div>' +
+          (isChecked && val ? '<div class="ex-value">' + escapeHtml(val) + ' ' + escapeHtml(item.unit || '') + '</div>' : '') +
         '</div>' +
       '</label>' +
     '</div>';
@@ -25,6 +28,14 @@ function renderTestForm() {
       'style="background:none;border:none;color:#999;font-size:13px;cursor:pointer;padding:4px 8px">' +
       '\u270f редактировать тесты</button>' +
   '</div>';
+}
+
+// Диспетчер галочки теста — читает параметры из data-* атрибутов
+// (см. техдолг: XSS — имя теста может содержать кавычки / HTML).
+function handleTestCheckbox(el) {
+  var name = el.dataset.testName;
+  var unit = el.dataset.testUnit || '';
+  handleTestCheck(name, unit, el);
 }
 
 function handleTestCheck(name, unit, el) {
@@ -51,13 +62,14 @@ function showTextTestPopup(name, unit, dk, checkboxEl) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center';
   overlay.innerHTML =
     '<div style="background:#fff;border-radius:16px;padding:24px 20px;width:280px;box-shadow:0 8px 32px rgba(0,0,0,.18)">' +
-      '<div style="font-size:15px;font-weight:600;margin-bottom:4px">' + name + '</div>' +
-      '<div style="font-size:12px;color:#999;margin-bottom:16px">' + unit + '</div>' +
-      '<input id="text-test-input" type="text" placeholder="например 6:30" value="' + existing + '" ' +
+      '<div style="font-size:15px;font-weight:600;margin-bottom:4px">' + escapeHtml(name) + '</div>' +
+      '<div style="font-size:12px;color:#999;margin-bottom:16px">' + escapeHtml(unit) + '</div>' +
+      '<input id="text-test-input" type="text" placeholder="например 6:30" value="' + escapeHtml(existing) + '" ' +
         'style="width:100%;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:8px;padding:10px 12px;font-size:16px;outline:none">' +
       '<div style="display:flex;gap:8px;margin-top:16px">' +
         '<button onclick="cancelTextTestPopup()" style="flex:1;padding:10px;border:1.5px solid #e0e0e0;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;color:#666">Отмена</button>' +
-        '<button onclick="confirmTextTestPopup(\'' + name + '\',\'' + dk + '\')" style="flex:1;padding:10px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Сохранить</button>' +
+        '<button data-test-name="' + escapeHtml(name) + '" data-test-dk="' + escapeHtml(dk) + '"' +
+          ' onclick="confirmTextTestPopupFromBtn(this)" style="flex:1;padding:10px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Сохранить</button>' +
       '</div>' +
     '</div>';
   overlay.id = 'text-test-overlay';
@@ -72,6 +84,10 @@ function cancelTextTestPopup() {
   var ov = document.getElementById('text-test-overlay');
   if (ov) ov.remove();
   renderTestForm();
+}
+
+function confirmTextTestPopupFromBtn(btn) {
+  confirmTextTestPopup(btn.dataset.testName, btn.dataset.testDk);
 }
 
 function confirmTextTestPopup(name, dk) {
@@ -152,7 +168,7 @@ function renderTestHistory(container, items, entries) {
       badgeHtml = '<span class="t3-badge t3-badge-neutral" style="' + badgeStyle + '">0</span>';
     }
     var valHtml = lastVal != null
-      ? '<span class="t3-last-val">' + lastVal + '</span><span class="t3-unit"> ' + item.unit + '</span>'
+      ? '<span class="t3-last-val">' + escapeHtml(lastVal) + '</span><span class="t3-unit"> ' + escapeHtml(item.unit || '') + '</span>'
       : '<span class="t3-last-val" style="color:var(--text-muted)">—</span>';
 
     // History rows
@@ -176,12 +192,12 @@ function renderTestHistory(container, items, entries) {
         : (isUp   ? '<span style="font-size:11px;color:#1D9E75;width:30px">+' + ediff + '</span>'
         : (isDown ? '<span style="font-size:11px;color:#D85A30;width:30px">' + ediff + '</span>'
         :           '<span style="font-size:11px;color:var(--text-muted);width:30px">0</span>')));
-      var unit = item.unit && item.unit !== 'раз' ? '<span style="font-size:11px;color:var(--text-muted)"> ' + item.unit + '</span>' : '';
+      var unit = item.unit && item.unit !== 'раз' ? '<span style="font-size:11px;color:var(--text-muted)"> ' + escapeHtml(item.unit) + '</span>' : '';
       var barHtml = isTextType ? '' : '<div class="t3-bar-wrap"><div class="t3-bar-inner" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
       histHtml += '<div class="t3-hist-row">' +
-        '<div class="t3-hist-date">' + (e.data.date || e.dk) + '</div>' +
+        '<div class="t3-hist-date">' + escapeHtml(e.data.date || e.dk) + '</div>' +
         barHtml +
-        '<div class="t3-hist-val" style="color:' + valColor + ';font-weight:' + valWeight + '">' + (v != null ? v : '—') + unit + '</div>' +
+        '<div class="t3-hist-val" style="color:' + valColor + ';font-weight:' + valWeight + '">' + (v != null ? escapeHtml(v) : '—') + unit + '</div>' +
         diffHtml +
       '</div>';
     });
@@ -189,7 +205,7 @@ function renderTestHistory(container, items, entries) {
 
     html += '<div class="t3-item' + (idx === items.length - 1 ? ' t3-item-last' : '') + '" onclick="toggleTestHistory(' + idx + ', this)">' +
       '<div class="t3-row-main">' +
-        '<div class="t3-item-name">' + item.name + '</div>' +
+        '<div class="t3-item-name">' + escapeHtml(item.name) + '</div>' +
         '<div style="display:flex;align-items:center;gap:8px">' +
           valHtml + badgeHtml +
           '<span class="t3-chevron">▼</span>' +

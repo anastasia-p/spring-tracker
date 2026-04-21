@@ -17,9 +17,9 @@
 <meta name="apple-mobile-web-app-title" content="Spring Tracker">
 <link rel="apple-touch-icon" href="./icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <style>
 :root{--green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;--blue-light:#E6F1FB;--blue-text:#0C447C;--purple-light:#EEEDFE;--purple-text:#3C3489;--gray-light:#F1EFE8;--gray-text:#444441;--amber-light:#FAEEDA;--amber-text:#633806;--bg:#F7F6F2;--card:#FFFFFF;--border:rgba(0,0,0,0.1);--text:#1a1a18;--text-muted:#888780;--text-hint:#B4B2A9;--radius:12px;--radius-sm:8px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -365,18 +365,18 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
-<script src="./js/version.js"></script>
-<script src="./js/firebase-init.js"></script>
-<script src="./js/auth.js"></script>
-<script src="./js/pure.js"></script>
-<script src="./js/db.js"></script>
-<script src="./js/progress.js"></script>
-<script src="./js/plan.js"></script>
-<script src="./js/workout.js"></script>
-<script src="./js/settings.js"></script>
-<script src="./js/plan-editor.js"></script>
-<script src="./js/test-editor.js"></script>
-<script src="./js/nav.js"></script>
+<script defer src="./js/version.js"></script>
+<script defer src="./js/firebase-init.js"></script>
+<script defer src="./js/pure.js"></script>
+<script defer src="./js/db.js"></script>
+<script defer src="./js/auth.js"></script>
+<script defer src="./js/progress.js"></script>
+<script defer src="./js/plan.js"></script>
+<script defer src="./js/workout.js"></script>
+<script defer src="./js/settings.js"></script>
+<script defer src="./js/plan-editor.js"></script>
+<script defer src="./js/test-editor.js"></script>
+<script defer src="./js/nav.js"></script>
 
   <!-- Validation popup -->
   <div id="validation-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000" onclick="closeValidationPopup()"></div>
@@ -391,6 +391,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
   </div>
 
-<script>if(location.hash==='#register'){showRegisterForm();}</script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(location.hash==='#register'){showRegisterForm();}});</script>
 </body>
 </html>

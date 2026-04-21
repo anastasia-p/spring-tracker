@@ -174,12 +174,12 @@ function _teRenderList(state, body) {
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0;overflow:hidden';
     info.innerHTML =
-      '<div style="font-size:14px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + item.name + '</div>' +
+      '<div style="font-size:14px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(item.name) + '</div>' +
       (item.note
-        ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + item.note + '</div>'
+        ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(item.note) + '</div>'
         : '') +
       (item.unit
-        ? '<div style="font-size:12px;color:#bbb;margin-top:1px">' + item.unit + '</div>'
+        ? '<div style="font-size:12px;color:#bbb;margin-top:1px">' + escapeHtml(item.unit) + '</div>'
         : '');
 
     var btnEdit = _teIconBtn('✏', 'Редактировать');

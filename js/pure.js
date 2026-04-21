@@ -363,6 +363,22 @@ function getSkillProgress(skill, totalValue) {
 }
 
 
+// ─── HTML ESCAPE ──────────────────────────────────────────────────────────────
+// Используется везде, где пользовательский текст (имя упражнения, название теста,
+// название плана, единицы измерения) вставляется в innerHTML. Защита от XSS при
+// Excel-импорте: юзер может назвать упражнение `<img src=x onerror=alert(1)>`.
+// Null/undefined → пустая строка. Числа и прочее приводятся к строке.
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+
 // ─── LOOKUP HELPERS ───────────────────────────────────────────────────────────
 
 function getSkillById(id) {
@@ -475,5 +491,6 @@ if (typeof module !== 'undefined') {
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,
+    escapeHtml,
   };
 }

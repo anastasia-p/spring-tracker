@@ -116,8 +116,8 @@ function showValidationPopup(filename, errors, warnings) {
     errors.forEach(function(e) {
       var loc = e.sheet ? (e.sheet + (e.row ? ', строка ' + e.row : '')) : '';
       html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
-      if (loc) html += '<span style="font-weight:500">' + loc + '</span> — ';
-      html += e.message + '</div>';
+      if (loc) html += '<span style="font-weight:500">' + escapeHtml(loc) + '</span> — ';
+      html += escapeHtml(e.message) + '</div>';
     });
   }
   if (warnings.length > 0) {
@@ -125,8 +125,8 @@ function showValidationPopup(filename, errors, warnings) {
     warnings.forEach(function(w) {
       var loc = w.sheet ? (w.sheet + (w.row ? ', строка ' + w.row : '')) : '';
       html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
-      if (loc) html += '<span style="font-weight:500">' + loc + '</span> — ';
-      html += w.message + '</div>';
+      if (loc) html += '<span style="font-weight:500">' + escapeHtml(loc) + '</span> — ';
+      html += escapeHtml(w.message) + '</div>';
     });
   }
   list.innerHTML = html;
@@ -235,8 +235,8 @@ function renderAboutApp(container) {
   block.innerHTML =
     '<div style="font-weight:500;margin-bottom:8px;color:#555">О приложении</div>' +
     '<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 12px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)">' +
-      '<span style="color:#aaa">Версия</span><span>' + v.sha + '</span>' +
-      '<span style="color:#aaa">Собрано</span><span>' + v.date + '</span>' +
+      '<span style="color:#aaa">Версия</span><span>' + escapeHtml(v.sha) + '</span>' +
+      '<span style="color:#aaa">Собрано</span><span>' + escapeHtml(v.date) + '</span>' +
     '</div>' +
     '<div style="margin-top:10px">Обратная связь: <a href="https://t.me/Ponomareva_Anastasia" target="_blank" rel="noopener noreferrer" style="color:#378ADD;text-decoration:none">@Ponomareva_Anastasia</a></div>';
   container.appendChild(block);
