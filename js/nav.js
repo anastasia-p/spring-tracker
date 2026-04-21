@@ -219,12 +219,12 @@ function showSkillInfo(skillId) {
   popup.style.display = 'flex';
   popup.onclick = function() { popup.remove(); };
   popup.innerHTML = '<div class="popup-box" style="text-align:center">'
-    + '<div style="position:relative;padding:28px 16px 0">'
+    + '<div style="position:relative;padding:36px 16px 0">'
     + '<button class="popup-close" style="position:absolute;top:8px;right:8px" onclick="document.getElementById(\'dynamic-info-popup\').remove()">×</button>'
     + iconHtml
-    + '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px">' + skill.name + '</div>'
+    + '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:20px">' + skill.name + '</div>'
     + '</div>'
-    + '<div class="popup-body" style="padding-top:0;padding-bottom:28px">'
+    + '<div class="popup-body" style="padding-top:0;padding-bottom:40px">'
     + '<p style="margin:0;font-size:14px;line-height:1.5;color:var(--text-muted)">' + sourceText + '</p>'
     + '</div>'
     + '</div>';
