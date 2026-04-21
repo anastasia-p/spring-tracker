@@ -200,9 +200,18 @@ function showSkillInfo(skillId) {
     ? 'Навык складывается из упражнения «' + fields[0] + '»'
     : 'Навык складывается из упражнений: ' + fields.map(function(f) { return '«' + f + '»'; }).join(', ');
 
-  var iconHtml = '<div style="width:64px;height:64px;border-radius:16px;background:' + skill.bgColor
-    + ';display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px">'
-    + getSkillIcon(skill) + '</div>';
+  // Масштабируем иконку для крупного отображения:
+  // — у SVG убираем inline width/height и ставим 100%
+  // — у span увеличиваем font-size пропорционально (18px→56px, 10px→31px)
+  var scaledIcon = getSkillIcon(skill)
+    .replace(/ width="\d+"| height="\d+"/g, '')
+    .replace(/<svg /g, '<svg width="100%" height="100%" ')
+    .replace(/font-size:18px/g, 'font-size:56px')
+    .replace(/font-size:10px/g, 'font-size:31px');
+
+  var iconHtml = '<div style="width:128px;height:128px;border-radius:24px;background:' + skill.bgColor
+    + ';display:flex;align-items:center;justify-content:center;margin:0 auto 16px;overflow:hidden">'
+    + scaledIcon + '</div>';
 
   var popup = document.createElement('div');
   popup.id = 'dynamic-info-popup';
@@ -210,12 +219,12 @@ function showSkillInfo(skillId) {
   popup.style.display = 'flex';
   popup.onclick = function() { popup.remove(); };
   popup.innerHTML = '<div class="popup-box" style="text-align:center">'
-    + '<div style="position:relative;padding:16px 16px 0">'
+    + '<div style="position:relative;padding:28px 16px 0">'
     + '<button class="popup-close" style="position:absolute;top:8px;right:8px" onclick="document.getElementById(\'dynamic-info-popup\').remove()">×</button>'
     + iconHtml
-    + '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:12px">' + skill.name + '</div>'
+    + '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px">' + skill.name + '</div>'
     + '</div>'
-    + '<div class="popup-body" style="padding-top:0">'
+    + '<div class="popup-body" style="padding-top:0;padding-bottom:28px">'
     + '<p style="margin:0;font-size:14px;line-height:1.5;color:var(--text-muted)">' + sourceText + '</p>'
     + '</div>'
     + '</div>';
