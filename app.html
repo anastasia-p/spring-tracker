@@ -211,6 +211,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .level-desc{font-size:11px;color:var(--text-muted);margin-top:1px}
 .level-hours{font-size:12px;color:var(--text-muted);white-space:nowrap}
 .levels-scroll{overflow-y:auto}
+    .toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}.toggle-switch input{opacity:0;width:0;height:0}.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.2s}.toggle-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.toggle-switch input:checked+.toggle-slider{background:#1D9E75}.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}.toggle-switch input:disabled+.toggle-slider{opacity:0.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -250,28 +251,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <div id="progress-content" class="section-pad"></div>
   </div>
 
-  <div id="settings" class="screen">
-    <div class="section-pad">
-      <div class="settings-group" style="margin-bottom:16px">
-        <div class="settings-item">
-          <div>
-            <div class="settings-item-desc">Аккаунт</div>
-            <div class="settings-item-label" id="settings-user-email" style="font-size:13px;font-weight:400;color:var(--text-muted)"></div>
-          </div>
-          <button class="update-btn" onclick="doLogout()">Выйти</button>
-        </div>
-      </div>
-      <div id="settings-plans-list"></div>
-      <div class="section-title">Тесты</div>
-      <div class="settings-group">
-        <div class="settings-item">
-          <div><div class="settings-item-label">Список показателей</div><div class="update-status" id="status-tests"></div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="update-btn" onclick="downloadPlan('tests')">Скачать</button><label class="update-btn" style="cursor:pointer">Загрузить<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan('tests', this)"></label></div>
-        </div>
-      </div>
-      <div id="settings-about"></div>
-    </div>
-  </div>
+  <div id="settings" class="screen"></div>
 
 </div>
 

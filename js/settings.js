@@ -2,10 +2,7 @@ var API_URL = 'https://api.spring-tracker.ru:8080';
 
 function downloadPlan(section) {
   var plan = plans[section];
-  if (!plan || !plan.length) {
-    alert('План не загружен. Сначала обнови план.');
-    return;
-  }
+  if (!plan || !plan.length) { alert('План не загружен. Сначала обнови план.'); return; }
   var btn = event.target;
   btn.disabled = true;
   btn.textContent = '...';
@@ -14,67 +11,48 @@ function downloadPlan(section) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ data: plan }),
   })
-  .then(function(r) {
-    if (!r.ok) throw new Error('Ошибка сервера');
-    return r.blob();
-  })
-  .then(function(blob) {
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = section + '_plan.xlsx';
-    a.click();
-    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-  })
-  .catch(function(e) {
-    console.error('downloadPlan:', e);
-    alert('Извините, что-то сломалось. Напишите @Ponomareva_Anastasia');
-  })
-  .finally(function() {
-    btn.disabled = false;
-    btn.textContent = 'Скачать';
-  });
+    .then(function(r) { if (!r.ok) throw new Error('Ошибка сервера'); return r.blob(); })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = section + '_plan.xlsx';
+      a.click();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    })
+    .catch(function(e) {
+      console.error('downloadPlan:', e);
+      alert('Извините, что-то сломалось. Напишите @Ponomareva_Anastasia');
+    })
+    .finally(function() { btn.disabled = false; btn.textContent = 'Скачать'; });
 }
 
 // --- Загрузка плана из Excel ---
-
 function uploadPlan(section, input) {
   var file = input.files[0];
   if (!file) return;
   input.value = '';
-
   var label = input.closest('label');
   if (label) { label.style.opacity = '0.6'; label.style.pointerEvents = 'none'; }
-
-  // Получаем ID токен и только потом делаем запрос
   currentUser.getIdToken().then(function(token) {
     var formData = new FormData();
     formData.append('file', file);
-
     return fetch(API_URL + '/upload/' + section, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token },
       body: formData,
     });
   })
-  .then(function(r) {
-    if (!r.ok) throw new Error('Ошибка сервера');
-    return r.json();
-  })
-  .then(function(result) {
-    if (!result.valid) {
-      showValidationPopup(file.name, result.errors, result.warnings);
-      return;
-    }
-    if (result.warnings.length > 0) {
-      showValidationPopup(file.name, [], result.warnings);
-    }
-    applyUploadedPlan(section, result.data);
-  })
-  .catch(function(e) { alert('Ошибка: ' + e.message); })
-  .finally(function() {
-    if (label) { label.style.opacity = ''; label.style.pointerEvents = ''; }
-  });
+    .then(function(r) { if (!r.ok) throw new Error('Ошибка сервера'); return r.json(); })
+    .then(function(result) {
+      if (!result.valid) { showValidationPopup(file.name, result.errors, result.warnings); return; }
+      if (result.warnings.length > 0) { showValidationPopup(file.name, [], result.warnings); }
+      applyUploadedPlan(section, result.data);
+    })
+    .catch(function(e) { alert('Ошибка: ' + e.message); })
+    .finally(function() {
+      if (label) { label.style.opacity = ''; label.style.pointerEvents = ''; }
+    });
 }
 
 function applyUploadedPlan(section, data) {
@@ -100,15 +78,12 @@ function applyUploadedPlan(section, data) {
 }
 
 // --- Попап валидации ---
-
 function showValidationPopup(filename, errors, warnings) {
   var title = document.getElementById('validation-title');
   var list = document.getElementById('validation-list');
-
   var hasErrors = errors.length > 0;
   var count = errors.length + warnings.length;
   title.textContent = (hasErrors ? 'Ошибки в файле' : 'Предупреждения') + ' (' + count + ')';
-
   var html = '';
   if (errors.length > 0) {
     html += '<div style="font-weight:500;color:var(--red,#E24B4A);margin-bottom:8px">Ошибки — файл не загружен:</div>';
@@ -129,7 +104,6 @@ function showValidationPopup(filename, errors, warnings) {
     });
   }
   list.innerHTML = html;
-
   document.getElementById('validation-overlay').style.display = 'block';
   var popup = document.getElementById('validation-popup');
   popup.style.display = 'flex';
@@ -169,7 +143,6 @@ function fallbackCopy(text, btn) {
 }
 
 // --- Управление дисциплинами ---
-
 function toggleSection(sectionId, checked, el) {
   if (!checked) {
     var meta0 = getSectionMeta(sectionId);
@@ -181,20 +154,16 @@ function toggleSection(sectionId, checked, el) {
     var newSections = userSections.filter(function(s) { return s !== sectionId; });
     disableSection(sectionId).then(function() {
       initWithSections(newSections);
-      renderSettingsPlans();
+      renderSettings();
     });
     return;
   }
-
   el.disabled = true;
   var newSections = userSections.concat([sectionId]);
   var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
   var meta = SECTION_META[sectionId];
-
-  // Если у секции ещё нет плана — загружаем дефолты. Иначе просто включаем.
   loadSectionPlan(sectionId).then(function(existingPlan) {
-    if (existingPlan !== null) return Promise.resolve(); // план уже есть
-    // Загружаем дефолтный план и (если есть) дефолтные тесты с сервера
+    if (existingPlan !== null) return Promise.resolve();
     var planUrl = baseUrl + meta.defaultPlan + '?t=' + Date.now();
     var promises = [fetch(planUrl).then(function(r) { return r.json(); })];
     if (meta.defaultTests) {
@@ -212,7 +181,7 @@ function toggleSection(sectionId, checked, el) {
     return loadPlanFromFirebase('tests');
   }).then(function() {
     initWithSections(newSections);
-    renderSettingsPlans();
+    renderSettings();
   }).catch(function(e) {
     console.error('toggleSection:', e);
     el.checked = false;
@@ -220,23 +189,123 @@ function toggleSection(sectionId, checked, el) {
   });
 }
 
-// --- О приложении (в самом низу экрана настроек) ---
+// --- Рендер экрана настроек ---
 
+function renderAccount(container) {
+  var email = (currentUser && currentUser.email) || '';
+  var div = document.createElement('div');
+  div.className = 'settings-group';
+  div.style.marginBottom = '16px';
+  div.innerHTML = '<div class="settings-item">'
+    + '<div>'
+    + '<div class="settings-item-desc">Аккаунт</div>'
+    + '<div id="settings-user-email" style="font-size:13px;font-weight:400;color:var(--text-muted)">' + escapeHtml(email) + '</div>'
+    + '</div>'
+    + '<button class="update-btn" onclick="doLogout()">Выйти</button>'
+    + '</div>';
+  container.appendChild(div);
+}
+
+function renderDisciplines(container) {
+  var title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Дисциплины';
+  container.appendChild(title);
+
+  var group = document.createElement('div');
+  group.className = 'settings-group';
+  group.style.marginBottom = '16px';
+  group.innerHTML = SECTIONS.map(function(id) {
+    var meta = SECTION_META[id];
+    var active = userSections.indexOf(id) !== -1;
+    return '<div class="settings-item">'
+      + '<span class="settings-item-label">' + meta.label + '</span>'
+      + '<label class="toggle-switch">'
+      + '<input type="checkbox"' + (active ? ' checked' : '') + ' onchange="toggleSection(\'' + id + '\',this.checked,this)">'
+      + '<span class="toggle-slider"></span>'
+      + '</label>'
+      + '</div>';
+  }).join('');
+  container.appendChild(group);
+}
+
+function renderPlans(container) {
+  if (!userSections.length) return;
+
+  var title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Планы';
+  container.appendChild(title);
+
+  var group = document.createElement('div');
+  group.className = 'settings-group';
+  group.style.marginBottom = '16px';
+  group.innerHTML = userSections.map(function(section) {
+    var meta = getSectionMeta(section);
+    var label = meta ? meta.label : section;
+    return '<div class="settings-item">'
+      + '<div><div class="settings-item-label">' + label + '</div>'
+      + '<div class="update-status" id="status-' + section + '"></div></div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>'
+      + '<label class="update-btn" style="cursor:pointer">Загрузить'
+      + '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'' + section + '\', this)">'
+      + '</label>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+  container.appendChild(group);
+}
+
+function renderTests(container) {
+  var title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Тесты';
+  container.appendChild(title);
+
+  var group = document.createElement('div');
+  group.className = 'settings-group';
+  group.style.marginBottom = '16px';
+  group.innerHTML = '<div class="settings-item">'
+    + '<div><div class="settings-item-label">Список показателей</div>'
+    + '<div class="update-status" id="status-tests"></div></div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<button class="update-btn" onclick="downloadPlan(\'tests\')">Скачать</button>'
+    + '<label class="update-btn" style="cursor:pointer">Загрузить'
+    + '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'tests\', this)">'
+    + '</label>'
+    + '</div>'
+    + '</div>';
+  container.appendChild(group);
+}
+
+// --- О приложении (в самом низу экрана настроек) ---
 function renderAboutApp(container) {
   if (!container) return;
   var existing = container.querySelector('.about-app');
   if (existing) existing.remove();
-
   var v = window.APP_VERSION || { sha: 'unknown', date: 'unknown' };
   var block = document.createElement('div');
   block.className = 'about-app';
   block.style.cssText = 'margin-top:28px;padding:14px 0 8px;border-top:1px solid #ebebeb;font-size:13px;color:#888';
-  block.innerHTML =
-    '<div style="font-weight:500;margin-bottom:8px;color:#555">О приложении</div>' +
-    '<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 12px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)">' +
-      '<span style="color:#aaa">Версия</span><span>' + escapeHtml(v.sha) + '</span>' +
-      '<span style="color:#aaa">Собрано</span><span>' + escapeHtml(v.date) + '</span>' +
-    '</div>' +
-    '<div style="margin-top:10px">Обратная связь: <a href="https://t.me/Ponomareva_Anastasia" target="_blank" rel="noopener noreferrer" style="color:#378ADD;text-decoration:none">@Ponomareva_Anastasia</a></div>';
+  block.innerHTML = '<div style="font-weight:500;margin-bottom:8px;color:#555">О приложении</div>'
+    + '<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 12px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)">'
+    + '<span style="color:#aaa">Версия</span><span>' + escapeHtml(v.sha) + '</span>'
+    + '<span style="color:#aaa">Собрано</span><span>' + escapeHtml(v.date) + '</span>'
+    + '</div>'
+    + '<div style="margin-top:10px">Обратная связь: <a href="https://t.me/Ponomareva_Anastasia" target="_blank" rel="noopener noreferrer" style="color:#378ADD;text-decoration:none">@Ponomareva_Anastasia</a></div>';
   container.appendChild(block);
+}
+
+// --- Главная функция — рендерит весь экран настроек ---
+function renderSettings() {
+  var screen = document.getElementById('settings');
+  if (!screen) return;
+  screen.innerHTML = '<div class="section-pad" id="settings-content"></div>';
+  var container = document.getElementById('settings-content');
+  renderAccount(container);
+  renderDisciplines(container);
+  renderPlans(container);
+  renderTests(container);
+  renderAboutApp(container);
 }
