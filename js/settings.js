@@ -26,7 +26,10 @@ function downloadPlan(section) {
     a.click();
     setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
   })
-  .catch(function(e) { alert('Ошибка: ' + e.message); })
+  .catch(function(e) {
+    console.error('downloadPlan:', e);
+    alert('Извините, что-то сломалось. Напишите @Ponomareva_Anastasia');
+  })
   .finally(function() {
     btn.disabled = false;
     btn.textContent = 'Скачать';
