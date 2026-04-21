@@ -242,7 +242,10 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <div id="test" class="screen">
     <div class="section-pad">
-      <div class="section-title">Еженедельный тест</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Еженедельный тест</div>
+        <button class="sk-q" style="position:relative;top:auto;right:auto" onclick="showTestInfo()">i</button>
+      </div>
       <div class="test-list" id="test-grid"><div class="loading">Загрузка...</div></div>
     </div>
   </div>
@@ -320,6 +323,21 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="onboard-desc">Выбери разделы которые хочешь тренировать</div>
     <div id="onboarding-list"></div>
     <button class="auth-btn" id="onboarding-btn" onclick="finishOnboarding()" disabled style="opacity:0.5">Начать</button>
+  </div>
+</div>
+
+<!-- Test info popup -->
+<div class="popup-overlay" id="test-info-popup" onclick="closeTestInfo()">
+  <div class="popup-box" onclick="event.stopPropagation()">
+    <div class="popup-header">
+      <span class="popup-title">Тесты и навыки</span>
+      <button class="popup-close" onclick="closeTestInfo()">×</button>
+    </div>
+    <div class="popup-body">
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.5;color:var(--text)">Если назвать тест так же, как упражнение из плана, которое засчитывается в навык, — результаты теста тоже будут суммироваться в этот навык.</p>
+      <hr style="border:none;border-top:1px solid var(--border);margin:0 0 12px">
+      <p style="margin:0;font-size:13px;line-height:1.5;color:var(--text-muted)">Например: упражнение «Отжимания» в плане силовых идёт в навык «Руки титана». Тест с названием «Отжимания» — тоже.</p>
+    </div>
   </div>
 </div>
 

@@ -212,3 +212,11 @@ function toggleTestHistory(idx, el) {
   if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
   el.style.background = '';
 }
+
+function showTestInfo() {
+  document.getElementById('test-info-popup').style.display = 'flex';
+}
+
+function closeTestInfo() {
+  document.getElementById('test-info-popup').style.display = 'none';
+}
