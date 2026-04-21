@@ -420,10 +420,11 @@ function adjustSkillTotal(skill, delta) {
 // Не используется при обычных изменениях (там adjustSkillTotal).
 // Fire-and-forget: запускается и не мешает UI.
 function recalcSkill(skill) {
-  var sources = [];
   var src = skill.source;
   var fields = src.fields || (src.field ? [src.field] : []);
-  sources.push(loadSectionHistoryAll(src.collection).then(function(docs) {
+
+  // 1. История плана
+  var planPromise = loadSectionHistoryAll(src.collection).then(function(docs) {
     var total = 0;
     docs.forEach(function(d) {
       var data = d.data;
@@ -434,33 +435,30 @@ function recalcSkill(skill) {
       });
     });
     return total;
-  }));
-  if (skill.sourceExtra) {
-    var ext = skill.sourceExtra;
-    var extFields = ext.fields || (ext.field ? [ext.field] : []);
-    // В текущих SKILLS все sourceExtra имеют collection === 'tests'.
-    // Для tests используем in-memory cache.tests (всегда актуален —
-    // обновляется в saveTestData/loadTestsCache синхронно)
-    var cachedDocs = cache[ext.collection];
-    if (cachedDocs && Object.keys(cachedDocs).length > 0) {
-      var cachedTotal = 0;
-      Object.keys(cachedDocs).forEach(function(dk) {
-        var data = cachedDocs[dk];
-        extFields.forEach(function(f) { if (data[f]) cachedTotal += data[f]; });
+  });
+
+  // 2. История тестов — всегда, те же поля.
+  // cache.tests актуален (обновляется в saveTestData/loadTestsCache синхронно).
+  var testsPromise;
+  var cachedTests = cache.tests;
+  if (cachedTests && Object.keys(cachedTests).length > 0) {
+    var cachedTotal = 0;
+    Object.keys(cachedTests).forEach(function(dk) {
+      var data = cachedTests[dk];
+      fields.forEach(function(f) { if (data[f]) cachedTotal += data[f]; });
+    });
+    testsPromise = Promise.resolve(cachedTotal);
+  } else {
+    testsPromise = loadTestsHistoryForSection(skill.section).then(function(docs) {
+      var total = 0;
+      docs.forEach(function(d) {
+        fields.forEach(function(f) { if (d.data[f]) total += d.data[f]; });
       });
-      sources.push(Promise.resolve(cachedTotal));
-    } else {
-      // Кеш пуст — собираем из sections/{skill.section}/tests/*/history
-      sources.push(loadTestsHistoryForSection(skill.section).then(function(docs) {
-        var total = 0;
-        docs.forEach(function(d) {
-          extFields.forEach(function(f) { if (d.data[f]) total += d.data[f]; });
-        });
-        return total;
-      }));
-    }
+      return total;
+    });
   }
-  return Promise.all(sources).then(function(totals) {
+
+  return Promise.all([planPromise, testsPromise]).then(function(totals) {
     var total = totals.reduce(function(a, b) { return a + b; }, 0);
     skillTotals[skill.id] = total;
     var doc = {};
@@ -472,23 +470,13 @@ function recalcSkill(skill) {
   }).catch(function(e) { console.error('recalcSkill(' + skill.id + '):', e); });
 }
 
-// Find skill by exercise name (used in plan.js)
-function findSkillByExercise(exName, collection) {
+// Поиск навыка по имени упражнения или теста.
+// Имя — единственный ключ связи: совпало в source.field/fields — навык найден,
+// независимо от того, откуда пришло изменение (план или тесты).
+function findSkillByName(name) {
   return SKILLS.find(function(s) {
     var src = s.source;
-    if (src.collection !== collection) return false;
     var fields = src.fields || (src.field ? [src.field] : []);
-    return fields.indexOf(exName) !== -1;
-  }) || null;
-}
-
-// Find skill whose sourceExtra ловит это имя теста.
-// Отдельная функция — потому что sourceExtra маркирует «вторичный источник» навыка
-// (ввод из экрана Тестов), и собирается он иначе, чем основной source.
-function findSkillByTestField(name) {
-  return SKILLS.find(function(s) {
-    if (!s.sourceExtra || s.sourceExtra.collection !== 'tests') return false;
-    var fields = s.sourceExtra.fields || (s.sourceExtra.field ? [s.sourceExtra.field] : []);
     return fields.indexOf(name) !== -1;
   }) || null;
 }
@@ -529,7 +517,7 @@ function updateExerciseCheck(section, dk, exName, checked, value) {
   invalidateStreakCache(section);
   var savePromise = saveDayData(section, new Date(dk + 'T12:00:00'));
 
-  var skill = findSkillByExercise(exName, section);
+  var skill = findSkillByName(exName);
   var delta = newVal - oldVal;
   var skillPromise = (skill && delta !== 0) ? adjustSkillTotal(skill, delta) : Promise.resolve();
 
@@ -540,7 +528,7 @@ function updateExerciseCheck(section, dk, exName, checked, value) {
 //   dk    — ключ даты YYYY-MM-DD
 //   name  — название показателя
 //   value — новое значение. null (или undefined) — удаление.
-// Для числовых значений инкрементально обновляет навык через sourceExtra.
+// Для числовых значений инкрементально обновляет навык через findSkillByName.
 // Текстовые значения (например, темп бега "6:30") не триггерят обновление
 // навыка — только кеш и БД.
 // Возвращает Promise.
@@ -561,7 +549,7 @@ function updateTestValue(dk, name, value) {
   if (typeof newVal !== 'number' || typeof oldVal !== 'number') {
     return savePromise;
   }
-  var skill = findSkillByTestField(name);
+  var skill = findSkillByName(name);
   var delta = newVal - oldVal;
   var skillPromise = (skill && delta !== 0) ? adjustSkillTotal(skill, delta) : Promise.resolve();
 
@@ -689,8 +677,7 @@ if (typeof module !== 'undefined' && module.exports) {
     loadSkill: loadSkill,
     recalcSkill: recalcSkill,
     adjustSkillTotal: adjustSkillTotal,
-    findSkillByExercise: findSkillByExercise,
-    findSkillByTestField: findSkillByTestField,
+    findSkillByName: findSkillByName,
     updateExerciseCheck: updateExerciseCheck,
     updateTestValue: updateTestValue,
     streakCache: streakCache,
