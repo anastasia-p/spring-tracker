@@ -219,31 +219,25 @@ function runTests() {
     });
   }); })
 
-  // ─── findSkillByExercise ─────────────────────────────────────────────────
+  // ─── findSkillByName ─────────────────────────────────────────────────────
 
-  .then(function() { group('findSkillByExercise'); })
+  .then(function() { group('findSkillByName'); })
 
-  .then(function() { return test('finds pushups by "Отжимания" in strength', function() {
+  .then(function() { return test('finds pushups by "Отжимания" (single field)', function() {
     var ctx = ts.setup();
-    var s = ctx.api.findSkillByExercise('Отжимания', 'strength');
+    var s = ctx.api.findSkillByName('Отжимания');
     assert.strictEqual(s.id, 'pushups');
   }); })
 
-  .then(function() { return test('finds mountain by "Всадник у стены" in wingchun', function() {
+  .then(function() { return test('finds mountain by "Мабу" (fields array)', function() {
     var ctx = ts.setup();
-    var s = ctx.api.findSkillByExercise('Всадник у стены', 'wingchun');
+    var s = ctx.api.findSkillByName('Мабу');
     assert.strictEqual(s.id, 'mountain');
   }); })
 
-  .then(function() { return test('returns null for unknown exercise', function() {
+  .then(function() { return test('returns null for unknown name', function() {
     var ctx = ts.setup();
-    assert.strictEqual(ctx.api.findSkillByExercise('Nope', 'strength'), null);
-  }); })
-
-  .then(function() { return test('returns null when collection does not match', function() {
-    var ctx = ts.setup();
-    // "Отжимания" — skill.source.collection='strength', ищем в wingchun
-    assert.strictEqual(ctx.api.findSkillByExercise('Отжимания', 'wingchun'), null);
+    assert.strictEqual(ctx.api.findSkillByName('Не существует'), null);
   }); })
 
   // ─── calcDailyStreak ─────────────────────────────────────────────────────
@@ -817,29 +811,6 @@ function runTests() {
 
 
 
-  // ─── findSkillByTestField ────────────────────────────────────────────────
-
-  .then(function() { group('findSkillByTestField'); })
-
-  .then(function() { return test('finds skill whose sourceExtra.field matches', function() {
-    var ctx = ts.setup();
-    var skill = ctx.api.findSkillByTestField('Отжимания');
-    assert.ok(skill);
-    assert.strictEqual(skill.id, 'pushups');
-  }); })
-
-  .then(function() { return test('finds skill whose sourceExtra.fields[] matches', function() {
-    var ctx = ts.setup();
-    var skill = ctx.api.findSkillByTestField('Мабу');
-    assert.ok(skill);
-    assert.strictEqual(skill.id, 'mountain');
-  }); })
-
-  .then(function() { return test('returns null for unknown test field', function() {
-    var ctx = ts.setup();
-    assert.strictEqual(ctx.api.findSkillByTestField('Не существует'), null);
-  }); })
-
   // ─── updateExerciseCheck ─────────────────────────────────────────────────
 
   .then(function() { group('updateExerciseCheck'); })
@@ -957,7 +928,7 @@ function runTests() {
 
   .then(function() { group('updateTestValue'); })
 
-  .then(function() { return test('numeric set: updates cache, DB, skill via sourceExtra', function() {
+  .then(function() { return test('numeric set: updates cache, DB, skill via findSkillByName', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
     ctx.api.skillTotals.pushups = 0;
@@ -991,7 +962,7 @@ function runTests() {
     });
   }); })
 
-  .then(function() { return test('no skill with sourceExtra: cache updated, nothing else', function() {
+  .then(function() { return test('no skill matching name: cache updated, nothing else', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Пульс покоя', section: 'cardio', unit: 'уд/мин' }];
     return ctx.api.updateTestValue('2026-04-15', 'Пульс покоя', 62).then(function() {
