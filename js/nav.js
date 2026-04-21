@@ -106,6 +106,7 @@ function buildSkillCardCompact(skill) {
   var div = document.createElement('div');
   div.className = 'sk-card';
   div.innerHTML = '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>'
+    + '<button class="sk-q" style="right:34px" onclick="showSkillInfo(\'' + skill.id + '\');event.stopPropagation()">i</button>'
     + '<div class="sk3-name-row"><div class="sk-name">' + skill.name + '</div></div>'
     + '<div class="sk3-mid">'
     + '<div class="sk-icon" style="background:' + skill.bgColor + '">' + getSkillIcon(skill) + '</div>'
@@ -184,6 +185,42 @@ function showSkillLevels(skillId) {
       + '</div>';
   }).join('');
   listEl.innerHTML = html;
+}
+
+// Info popup — источники навыка
+function showSkillInfo(skillId) {
+  var skill = getSkillById(skillId);
+  if (!skill) return;
+  var existing = document.getElementById('dynamic-info-popup');
+  if (existing) existing.remove();
+
+  var src = skill.source;
+  var fields = src.fields || (src.field ? [src.field] : []);
+  var sourceText = fields.length === 1
+    ? 'Навык складывается из упражнения «' + fields[0] + '»'
+    : 'Навык складывается из упражнений: ' + fields.map(function(f) { return '«' + f + '»'; }).join(', ');
+
+  var iconHtml = '<div style="width:64px;height:64px;border-radius:16px;background:' + skill.bgColor
+    + ';display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px">'
+    + getSkillIcon(skill) + '</div>';
+
+  var popup = document.createElement('div');
+  popup.id = 'dynamic-info-popup';
+  popup.className = 'popup-overlay';
+  popup.style.display = 'flex';
+  popup.onclick = function() { popup.remove(); };
+  popup.innerHTML = '<div class="popup-box" style="text-align:center">'
+    + '<div style="position:relative;padding:16px 16px 0">'
+    + '<button class="popup-close" style="position:absolute;top:8px;right:8px" onclick="document.getElementById(\'dynamic-info-popup\').remove()">×</button>'
+    + iconHtml
+    + '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:12px">' + skill.name + '</div>'
+    + '</div>'
+    + '<div class="popup-body" style="padding-top:0">'
+    + '<p style="margin:0;font-size:14px;line-height:1.5;color:var(--text-muted)">' + sourceText + '</p>'
+    + '</div>'
+    + '</div>';
+  popup.querySelector('.popup-box').onclick = function(e) { e.stopPropagation(); };
+  document.body.appendChild(popup);
 }
 
 // --- Plan screens (dynamic) ---
