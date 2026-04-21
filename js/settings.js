@@ -80,11 +80,7 @@ function uploadPlan(section, input) {
 function applyUploadedPlan(section, data) {
   var writePromise;
   if (section === 'tests') {
-    // TODO: загрузка Excel с тестами в v2 требует разноса по секциям.
-    // Пока передаём 'tests' как псевдо-секцию — в legacy работает напрямую,
-    // в v2 пишет в sections/tests/tests/current, что НЕПРАВИЛЬНО. Исправить
-    // после того как Excel-формат станет включать колонку "секция" для каждого теста.
-    writePromise = saveTests(section, data);
+    writePromise = saveAllTests(data);
   } else {
     writePromise = savePlan(section, data);
   }
