@@ -50,8 +50,7 @@ var getProgressForSkill  = getSkillProgress;
 // --- Universal render ---
 
 function getElemPrefix(skillId) {
-  var map = { pushups: 'pushup', pullups: 'pullup' };
-  return map[skillId] || skillId;
+  return skillId;
 }
 
 function getSkillTotal(skill) {

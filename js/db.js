@@ -592,7 +592,15 @@ function calcDailyStreak(section) {
     var docsByDate = {};
     docs.forEach(function(d) { docsByDate[d.id] = d.data; });
 
-    var createdKey = userCreatedAt ? userCreatedAt.slice(0, 10) : null;
+    var createdKey = null;
+    if (userCreatedAt) {
+      var createdDate = new Date(userCreatedAt);
+      var endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+      if (!isNaN(createdDate.getTime()) && createdDate <= endOfToday) {
+        createdKey = userCreatedAt.slice(0, 10);
+      }
+    }
     var weekPlan = plans[section];
 
     var d = new Date();
