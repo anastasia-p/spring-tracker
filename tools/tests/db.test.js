@@ -817,6 +817,203 @@ function runTests() {
 
 
 
+  // ─── findSkillByTestField ────────────────────────────────────────────────
+
+  .then(function() { group('findSkillByTestField'); })
+
+  .then(function() { return test('finds skill whose sourceExtra.field matches', function() {
+    var ctx = ts.setup();
+    var skill = ctx.api.findSkillByTestField('Отжимания');
+    assert.ok(skill);
+    assert.strictEqual(skill.id, 'pushups');
+  }); })
+
+  .then(function() { return test('finds skill whose sourceExtra.fields[] matches', function() {
+    var ctx = ts.setup();
+    var skill = ctx.api.findSkillByTestField('Мабу');
+    assert.ok(skill);
+    assert.strictEqual(skill.id, 'mountain');
+  }); })
+
+  .then(function() { return test('returns null for unknown test field', function() {
+    var ctx = ts.setup();
+    assert.strictEqual(ctx.api.findSkillByTestField('Не существует'), null);
+  }); })
+
+  // ─── updateExerciseCheck ─────────────────────────────────────────────────
+
+  .then(function() { group('updateExerciseCheck'); })
+
+  .then(function() { return test('set checked with value: writes cache, DB, skill', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.strength['2026-04-15'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: {}, values: {}
+    };
+    ctx.api.skillTotals.pushups = 0;
+    return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 20).then(function() {
+      var day = ctx.api.cache.strength['2026-04-15'];
+      assert.strictEqual(day.checks['Отжимания'], true);
+      assert.strictEqual(day.values['Отжимания'], 20);
+      assert.strictEqual(ctx.api.skillTotals.pushups, 20);
+      var stored = ctx.mock.store['users/u1/sections/strength/plan/2026/history/2026-04-15'];
+      assert.ok(stored);
+      assert.strictEqual(stored.checks['Отжимания'], true);
+      assert.strictEqual(stored.values['Отжимания'], 20);
+      assert.strictEqual(
+        ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 20);
+    });
+  }); })
+
+  .then(function() { return test('unset with value=0: rolls skill back by oldVal', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.strength['2026-04-15'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: { 'Отжимания': true }, values: { 'Отжимания': 30 }
+    };
+    ctx.api.skillTotals.pushups = 100;
+    return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', false, 0).then(function() {
+      var day = ctx.api.cache.strength['2026-04-15'];
+      assert.strictEqual(day.checks['Отжимания'], false);
+      assert.strictEqual(day.values['Отжимания'], 0);
+      assert.strictEqual(ctx.api.skillTotals.pushups, 70);
+    });
+  }); })
+
+  .then(function() { return test('without value arg: checks updated, values untouched, skill no-op', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.qigong['2026-04-15'] = {
+      plan: [{ name: 'Разминка' }], type: 'qi', label: 'Цигун',
+      checks: {}, values: { 'Разминка': 5 }
+    };
+    ctx.api.skillTotals.tree = 42;
+    return ctx.api.updateExerciseCheck('qigong', '2026-04-15', 'Разминка', true).then(function() {
+      var day = ctx.api.cache.qigong['2026-04-15'];
+      assert.strictEqual(day.checks['Разминка'], true);
+      assert.strictEqual(day.values['Разминка'], 5);
+      assert.strictEqual(ctx.api.skillTotals.tree, 42);
+    });
+  }); })
+
+  .then(function() { return test('cache miss: returns resolved promise, no writes', function() {
+    var ctx = ts.setup();
+    var logBefore = ctx.mock.log.length;
+    return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 10).then(function() {
+      assert.strictEqual(ctx.mock.log.length, logBefore);
+    });
+  }); })
+
+  .then(function() { return test('exercise without skill: updates day, skill not touched', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.strength['2026-04-15'] = {
+      plan: [{ name: 'Разведение гантелей' }], type: 'upper', label: 'Верх',
+      checks: {}, values: {}
+    };
+    return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Разведение гантелей', true, 12).then(function() {
+      var day = ctx.api.cache.strength['2026-04-15'];
+      assert.strictEqual(day.checks['Разведение гантелей'], true);
+      assert.strictEqual(day.values['Разведение гантелей'], 12);
+      var skillWrites = ctx.mock.log.filter(function(op) {
+        return op[0] === 'SET' && op[1].indexOf('/skills/') !== -1;
+      });
+      assert.strictEqual(skillWrites.length, 0);
+    });
+  }); })
+
+  .then(function() { return test('invalidates streak cache for section', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.strength['2026-04-15'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: {}, values: {}
+    };
+    ctx.api.streakCache.strength = 5;
+    return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 10).then(function() {
+      assert.strictEqual(ctx.api.streakCache.strength, undefined);
+    });
+  }); })
+
+  .then(function() { return test('sequential toggles: skill total stays consistent', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.strength['2026-04-15'] = {
+      plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
+      checks: {}, values: { 'Отжимания': 0 }
+    };
+    ctx.api.skillTotals.pushups = 0;
+    return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 10)
+      .then(function() {
+        assert.strictEqual(ctx.api.skillTotals.pushups, 10);
+        return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 25);
+      })
+      .then(function() {
+        assert.strictEqual(ctx.api.skillTotals.pushups, 25);
+        return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', false, 0);
+      })
+      .then(function() {
+        assert.strictEqual(ctx.api.skillTotals.pushups, 0);
+      });
+  }); })
+
+  // ─── updateTestValue ─────────────────────────────────────────────────────
+
+  .then(function() { group('updateTestValue'); })
+
+  .then(function() { return test('numeric set: updates cache, DB, skill via sourceExtra', function() {
+    var ctx = ts.setup();
+    ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
+    ctx.api.skillTotals.pushups = 0;
+    return ctx.api.updateTestValue('2026-04-15', 'Отжимания', 35).then(function() {
+      assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Отжимания'], 35);
+      assert.strictEqual(ctx.api.skillTotals.pushups, 35);
+      var stored = ctx.mock.store['users/u1/sections/strength/tests/2026/history/2026-04-15'];
+      assert.ok(stored);
+      assert.strictEqual(stored['Отжимания'], 35);
+    });
+  }); })
+
+  .then(function() { return test('null value: deletes field, rolls skill back', function() {
+    var ctx = ts.setup();
+    ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
+    ctx.api.cache.tests['2026-04-15'] = { 'Отжимания': 40 };
+    ctx.api.skillTotals.pushups = 100;
+    return ctx.api.updateTestValue('2026-04-15', 'Отжимания', null).then(function() {
+      assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Отжимания'], undefined);
+      assert.strictEqual(ctx.api.skillTotals.pushups, 60);
+    });
+  }); })
+
+  .then(function() { return test('text value: cache updated, skill not touched', function() {
+    var ctx = ts.setup();
+    ctx.api.plans.tests = [{ name: 'Темп бега', section: 'cardio', unit: 'мин/км', type: 'text' }];
+    ctx.api.skillTotals.pushups = 50;
+    return ctx.api.updateTestValue('2026-04-15', 'Темп бега', '6:30').then(function() {
+      assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Темп бега'], '6:30');
+      assert.strictEqual(ctx.api.skillTotals.pushups, 50);
+    });
+  }); })
+
+  .then(function() { return test('no skill with sourceExtra: cache updated, nothing else', function() {
+    var ctx = ts.setup();
+    ctx.api.plans.tests = [{ name: 'Пульс покоя', section: 'cardio', unit: 'уд/мин' }];
+    return ctx.api.updateTestValue('2026-04-15', 'Пульс покоя', 62).then(function() {
+      assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Пульс покоя'], 62);
+      var skillWrites = ctx.mock.log.filter(function(op) {
+        return op[0] === 'SET' && op[1].indexOf('/skills/') !== -1;
+      });
+      assert.strictEqual(skillWrites.length, 0);
+    });
+  }); })
+
+  .then(function() { return test('replacing value: skill delta computed from old to new', function() {
+    var ctx = ts.setup();
+    ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
+    ctx.api.cache.tests['2026-04-15'] = { 'Отжимания': 20 };
+    ctx.api.skillTotals.pushups = 20;
+    return ctx.api.updateTestValue('2026-04-15', 'Отжимания', 35).then(function() {
+      assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Отжимания'], 35);
+      assert.strictEqual(ctx.api.skillTotals.pushups, 35);
+    });
+  }); })
+
   .then(function() {
     console.log('\n' + passed + ' passed, ' + failed + ' failed');
     if (failed > 0) process.exit(1);

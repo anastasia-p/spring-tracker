@@ -130,25 +130,17 @@ function handleExCheck(section, dk, exName, unit, el) {
   if (el.checked) {
     showValuePopup(section, dk, exName, unit, el);
   } else {
-    if (!cache[section][dk]) return;
-    var oldVal = cache[section][dk].values[exName] || 0;
-    cache[section][dk].checks[exName] = false;
-    cache[section][dk].values[exName] = 0;
-    saveDayData(section, new Date(dk + 'T12:00:00'));
-    invalidateStreakCache(section);
-    // Инкрементальное обновление навыка: было oldVal, стало 0 → delta = -oldVal
-    var skill = findSkillByExercise(exName, section);
-    if (skill) adjustSkillTotal(skill, -oldVal);
+    // Снятие галочки с trackValue-упражнения: сбрасываем значение в 0,
+    // навык откатывается на -oldVal внутри updateExerciseCheck.
+    updateExerciseCheck(section, dk, exName, false, 0);
     var open = getOpenCards(section);
     renderSection(section, open);
   }
 }
 
 function toggleCheck(section, dk, exName, el) {
-  if (!cache[section][dk]) return;
-  cache[section][dk].checks[exName] = el.checked;
-  saveDayData(section, new Date(dk + 'T12:00:00'));
-  invalidateStreakCache(section);
+  // Упражнение без trackValue — только галочка, значение не трогаем.
+  updateExerciseCheck(section, dk, exName, el.checked);
   var open = getOpenCards(section);
   renderSection(section, open);
 }

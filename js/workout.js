@@ -102,24 +102,9 @@ function confirmTextTestPopup(name, dk) {
 }
 
 function saveTestField(dk, name, value) {
-  var oldVal = (cache.tests[dk] && cache.tests[dk][name]) || 0;
-  if (!cache.tests[dk]) cache.tests[dk] = {};
-  if (value === null) {
-    delete cache.tests[dk][name];
-  } else {
-    cache.tests[dk][name] = value;
-  }
-  saveTestData(dk, cache.tests[dk]);
-  // Инкрементально: новое значение (0 при снятии) — старое
-  var newVal = (value === null) ? 0 : value;
-  // Берем только числовые изменения (текстовые тесты вроде темпа бега игнорируем)
-  if (typeof newVal !== 'number' || typeof oldVal !== 'number') return;
-  var skill = SKILLS.find(function(s) {
-    if (!s.sourceExtra || s.sourceExtra.collection !== 'tests') return false;
-    var fields = s.sourceExtra.fields || (s.sourceExtra.field ? [s.sourceExtra.field] : []);
-    return fields.indexOf(name) !== -1;
-  });
-  if (skill) adjustSkillTotal(skill, newVal - oldVal);
+  // Тонкий врап поверх централизованной updateTestValue в db.js.
+  // Оставлен для двух точек вызова в этом файле (handleTestCheck, confirmTextTestPopup).
+  return updateTestValue(dk, name, value);
 }
 
 function loadAndRenderHistory() {

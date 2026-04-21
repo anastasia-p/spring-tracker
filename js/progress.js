@@ -19,20 +19,13 @@ function savePopupValue() {
   var val = parseFloat((document.getElementById('popup-value').value || '').replace(',', '.')) || 0;
   var p = pendingCheck;
   if (p.section === 'tests') {
-    saveTestField(p.dk, p.exName, val);
+    updateTestValue(p.dk, p.exName, val);
     closePopup();
     renderTestForm();
     return;
   }
-  if (!cache[p.section][p.dk]) return;
-  var oldVal = cache[p.section][p.dk].values[p.exName] || 0;
-  cache[p.section][p.dk].checks[p.exName] = true;
-  cache[p.section][p.dk].values[p.exName] = val;
-  saveDayData(p.section, new Date(p.dk + 'T12:00:00'));
-  invalidateStreakCache(p.section);
-  // Инкрементально: delta = val - oldVal (для первой постановки oldVal=0)
-  var skill = findSkillByExercise(p.exName, p.section);
-  if (skill) adjustSkillTotal(skill, val - oldVal);
+  // Упражнение плана с trackValue — установка галочки и значения одним махом.
+  updateExerciseCheck(p.section, p.dk, p.exName, true, val);
   closePopup();
   var open = getOpenCards(p.section);
   renderSection(p.section, open);

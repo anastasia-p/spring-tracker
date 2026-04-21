@@ -482,6 +482,92 @@ function findSkillByExercise(exName, collection) {
   }) || null;
 }
 
+// Find skill whose sourceExtra ловит это имя теста.
+// Отдельная функция — потому что sourceExtra маркирует «вторичный источник» навыка
+// (ввод из экрана Тестов), и собирается он иначе, чем основной source.
+function findSkillByTestField(name) {
+  return SKILLS.find(function(s) {
+    if (!s.sourceExtra || s.sourceExtra.collection !== 'tests') return false;
+    var fields = s.sourceExtra.fields || (s.sourceExtra.field ? [s.sourceExtra.field] : []);
+    return fields.indexOf(name) !== -1;
+  }) || null;
+}
+
+// =============================================================================
+// Централизованные изменения галочек/значений.
+// Единая точка обновления упражнения в плане (updateExerciseCheck) и теста
+// (updateTestValue): обе функции атомарно обновляют кеш, пишут в Firestore,
+// инвалидируют зависимый кеш (streak) и инкрементально апдейтят навык через
+// adjustSkillTotal. Вызывающий код отвечает только за UI (рендер).
+// =============================================================================
+
+// Обновление галочки/значения упражнения в плане дня.
+//   section  — дисциплина (strength/wingchun/qigong/cardio)
+//   dk       — ключ даты YYYY-MM-DD
+//   exName   — название упражнения
+//   checked  — новое состояние галочки (true/false)
+//   value    — новое числовое значение. Опционально: если не передан,
+//              cache.values[exName] не трогается (для упражнений без
+//              trackValue — только галочка, без значения).
+// При checked=false с переданным value=0 значение сбрасывается в 0.
+// Возвращает Promise, который резолвится, когда запись в БД и обновление
+// навыка завершены.
+function updateExerciseCheck(section, dk, exName, checked, value) {
+  if (!cache[section] || !cache[section][dk]) return Promise.resolve();
+  var day = cache[section][dk];
+  var oldVal = day.values[exName] || 0;
+  day.checks[exName] = checked;
+
+  var newVal;
+  if (value !== undefined) {
+    day.values[exName] = checked ? value : 0;
+    newVal = day.values[exName];
+  } else {
+    newVal = oldVal; // не меняем значение — галочка без trackValue
+  }
+
+  invalidateStreakCache(section);
+  var savePromise = saveDayData(section, new Date(dk + 'T12:00:00'));
+
+  var skill = findSkillByExercise(exName, section);
+  var delta = newVal - oldVal;
+  var skillPromise = (skill && delta !== 0) ? adjustSkillTotal(skill, delta) : Promise.resolve();
+
+  return Promise.all([savePromise, skillPromise]);
+}
+
+// Обновление значения теста.
+//   dk    — ключ даты YYYY-MM-DD
+//   name  — название показателя
+//   value — новое значение. null (или undefined) — удаление.
+// Для числовых значений инкрементально обновляет навык через sourceExtra.
+// Текстовые значения (например, темп бега "6:30") не триггерят обновление
+// навыка — только кеш и БД.
+// Возвращает Promise.
+function updateTestValue(dk, name, value) {
+  if (!cache.tests[dk]) cache.tests[dk] = {};
+  var oldVal = cache.tests[dk][name] || 0;
+  var isDelete = (value === null || value === undefined);
+
+  if (isDelete) {
+    delete cache.tests[dk][name];
+  } else {
+    cache.tests[dk][name] = value;
+  }
+  var savePromise = saveTestData(dk, cache.tests[dk]);
+
+  // Навык обновляем только для числовых изменений.
+  var newVal = isDelete ? 0 : value;
+  if (typeof newVal !== 'number' || typeof oldVal !== 'number') {
+    return savePromise;
+  }
+  var skill = findSkillByTestField(name);
+  var delta = newVal - oldVal;
+  var skillPromise = (skill && delta !== 0) ? adjustSkillTotal(skill, delta) : Promise.resolve();
+
+  return Promise.all([savePromise, skillPromise]);
+}
+
 // Подсчёт непрерывного streak для секции.
 // Идём от вчерашнего дня назад, до даты регистрации.
 // День засчитывается в streak если:
@@ -596,6 +682,9 @@ if (typeof module !== 'undefined' && module.exports) {
     recalcSkill: recalcSkill,
     adjustSkillTotal: adjustSkillTotal,
     findSkillByExercise: findSkillByExercise,
+    findSkillByTestField: findSkillByTestField,
+    updateExerciseCheck: updateExerciseCheck,
+    updateTestValue: updateTestValue,
     streakCache: streakCache,
     invalidateStreakCache: invalidateStreakCache,
     calcDailyStreak: calcDailyStreak,
