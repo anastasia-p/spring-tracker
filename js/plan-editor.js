@@ -15,33 +15,50 @@ function openPlanEditor(opts) {
   var dayIndex     = opts.dayIndex;
   var sectionLabel = opts.sectionLabel || section;
   var onSave       = opts.onSave || function() {};
+  var editMode     = opts.mode || 'plan'; // 'plan' | 'today'
+  var dk           = opts.dk   || null;
+  var date         = opts.date || null;
 
   var planPromise   = loadSectionPlan(section);
   var configPromise = new Promise(function(resolve) { _peLoadConfig(resolve); });
+  // Для режима "только сегодня" грузим кешированные данные дня (шаблон + дельта уже применена)
+  var dayPromise    = (editMode === 'today' && date)
+    ? loadDayData(section, date)
+    : Promise.resolve(null);
 
-  Promise.all([planPromise, configPromise])
+  Promise.all([planPromise, configPromise, dayPromise])
     .then(function(results) {
-      var allDays = results[0];
-      var config  = results[1];
+      var allDays  = results[0];
+      var config   = results[1];
+      var dayData  = results[2];
       if (allDays === null) { alert('План не найден'); return; }
       var day     = allDays[dayIndex] || {};
       var dayName = day.day || ('День ' + (dayIndex + 1));
-      var exs     = JSON.parse(JSON.stringify(day.exercises || []));
+      // templateExs — упражнения шаблона; нужны для вычисления дельты при сохранении "сегодня"
+      var templateExs = JSON.parse(JSON.stringify(day.exercises || []));
+      // exs — стартовый список для редактора
+      var exs = editMode === 'today'
+        ? JSON.parse(JSON.stringify(dayData ? dayData.plan : templateExs))
+        : JSON.parse(JSON.stringify(templateExs));
 
       _peOpen({
-        section:      section,
-        sectionLabel: sectionLabel,
-        dayIndex:     dayIndex,
-        dayName:      dayName,
-        allDays:      allDays,
-        exercises:    exs,
-        dayType:      day.type || 'rest',
-        config:       config,
-        onSave:       onSave,
-        mode:         'list',
-        editIdx:      null,
-        formData:     {},
-        formEls:      null
+        section:           section,
+        sectionLabel:      sectionLabel,
+        dayIndex:          dayIndex,
+        dayName:           dayName,
+        allDays:           allDays,
+        templateExercises: templateExs,
+        exercises:         exs,
+        dayType:           day.type || 'rest',
+        config:            config,
+        onSave:            onSave,
+        editMode:          editMode,
+        dk:                dk,
+        date:              date,
+        mode:              'list',
+        editIdx:           null,
+        formData:          {},
+        formEls:           null
       });
     })
     .catch(function(e) { console.error('openPlanEditor:', e); });
@@ -58,7 +75,7 @@ function _peRender(state) {
   var isForm = state.mode === 'form';
   var title  = isForm
     ? (state.editIdx === null ? 'Новое упражнение' : 'Редактировать')
-    : 'Редактор плана';
+    : (state.editMode === 'today' ? 'Редактор дня' : 'Редактор плана');
 
   meRender(state.sheet, {
     closeBtnId: 'pe-close-btn',
@@ -317,9 +334,15 @@ function _peApplyForm(state) {
   _peRender(state);
 }
 
-// ─── Сохранение в Firestore ───────────────────────────────────────────────────
+// ─── Сохранение ───────────────────────────────────────────────────────────────
 
 function _peSave(state) {
+  if (state.editMode === 'today') _peSaveToday(state);
+  else                            _peSavePlan(state);
+}
+
+// Сохраняет изменения в шаблон недели (plan/current) — текущее поведение.
+function _peSavePlan(state) {
   var dayTypes   = (state.config && state.config.dayTypes) || [];
   var typeConfig = dayTypes.filter(function(dt) { return dt.type === state.dayType; })[0];
   state.allDays[state.dayIndex].type      = state.dayType;
@@ -340,7 +363,43 @@ function _peSave(state) {
       if (typeof plans !== 'undefined') plans[state.section] = state.allDays;
       state.onSave();
     },
-    function(e) { console.error('_peSave:', e); }
+    function(e) { console.error('_peSavePlan:', e); }
+  );
+}
+
+// Сохраняет изменения только в историю текущего дня через dayOverride (дельта).
+// Шаблон не трогает. Дельта = разница между шаблоном и отредактированным списком.
+// plan в истории = merged результат (корректный снапшот когда день уйдет в прошлое).
+function _peSaveToday(state) {
+  var dayTypes   = (state.config && state.config.dayTypes) || [];
+  var typeConfig = dayTypes.filter(function(dt) { return dt.type === state.dayType; })[0];
+  var editedExs  = state.exercises.map(function(ex) {
+    var copy = {};
+    for (var k in ex) if (k.charAt(0) !== '_') copy[k] = ex[k];
+    return copy;
+  });
+
+  var override = computeDayOverride(state.templateExercises, editedExs);
+  var dk       = state.dk;
+  var date     = state.date;
+
+  // Обновляем кеш: план (merged), дельта, тип дня
+  if (!cache[state.section][dk]) cache[state.section][dk] = { checks: {}, values: {} };
+  var day        = cache[state.section][dk];
+  day.plan       = editedExs;
+  day.dayOverride = override;
+  day.type        = state.dayType;
+  day.label       = typeConfig ? typeConfig.label : state.dayType;
+
+  meSaveFeedback(
+    'pe-save-btn',
+    saveDayData(state.section, date),
+    function() {
+      if (typeof invalidateStreakCache === 'function') invalidateStreakCache(state.section);
+      state.dirty = false;
+      state.onSave();
+    },
+    function(e) { console.error('_peSaveToday:', e); }
   );
 }
 

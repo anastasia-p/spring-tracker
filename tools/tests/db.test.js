@@ -985,6 +985,117 @@ function runTests() {
     });
   }); })
 
+  // ─── applyDayOverride ────────────────────────────────────────────────────
+
+  .then(function() { group('applyDayOverride'); })
+
+  .then(function() { return test('null override: возвращает исходный массив без изменений', function() {
+    var ctx = ts.setup();
+    var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
+    var result = ctx.api.applyDayOverride(base, null);
+    assert.strictEqual(result, base);
+  }); })
+
+  .then(function() { return test('removed: убирает упражнение из списка', function() {
+    var ctx = ts.setup();
+    var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
+    var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [] });
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].name, 'Отжимания');
+  }); })
+
+  .then(function() { return test('added: добавляет упражнение в конец списка', function() {
+    var ctx = ts.setup();
+    var base = [{ name: 'Отжимания' }];
+    var extra = { name: 'Берпи', trackValue: false };
+    var result = ctx.api.applyDayOverride(base, { removed: [], added: [extra] });
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[1].name, 'Берпи');
+  }); })
+
+  .then(function() { return test('removed + added применяются вместе', function() {
+    var ctx = ts.setup();
+    var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
+    var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [{ name: 'Берпи' }] });
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].name, 'Отжимания');
+    assert.strictEqual(result[1].name, 'Берпи');
+    assert.ok(!result.find(function(e) { return e.name === 'Планка'; }));
+  }); })
+
+  // ─── computeDayOverride ──────────────────────────────────────────────────
+
+  .then(function() { group('computeDayOverride'); })
+
+  .then(function() { return test('нет изменений → null', function() {
+    var ctx = ts.setup();
+    var exs = [{ name: 'Отжимания' }, { name: 'Планка' }];
+    var result = ctx.api.computeDayOverride(exs, exs);
+    assert.strictEqual(result, null);
+  }); })
+
+  .then(function() { return test('удалённое упражнение попадает в removed', function() {
+    var ctx = ts.setup();
+    var template = [{ name: 'Отжимания' }, { name: 'Планка' }];
+    var edited   = [{ name: 'Отжимания' }];
+    var result = ctx.api.computeDayOverride(template, edited);
+    assert.ok(result !== null);
+    assert.deepStrictEqual(result.removed, ['Планка']);
+    assert.strictEqual(result.added.length, 0);
+  }); })
+
+  .then(function() { return test('новое упражнение попадает в added', function() {
+    var ctx = ts.setup();
+    var template = [{ name: 'Отжимания' }];
+    var edited   = [{ name: 'Отжимания' }, { name: 'Берпи', trackValue: false }];
+    var result = ctx.api.computeDayOverride(template, edited);
+    assert.ok(result !== null);
+    assert.strictEqual(result.added.length, 1);
+    assert.strictEqual(result.added[0].name, 'Берпи');
+    assert.strictEqual(result.removed.length, 0);
+  }); })
+
+  .then(function() { return test('removed и added вычисляются вместе', function() {
+    var ctx = ts.setup();
+    var template = [{ name: 'Отжимания' }, { name: 'Планка' }];
+    var edited   = [{ name: 'Отжимания' }, { name: 'Берпи' }];
+    var result = ctx.api.computeDayOverride(template, edited);
+    assert.deepStrictEqual(result.removed, ['Планка']);
+    assert.strictEqual(result.added[0].name, 'Берпи');
+  }); })
+
+  // ─── saveDayData: dayOverride ─────────────────────────────────────────────
+
+  .then(function() { group('saveDayData: dayOverride'); })
+
+  .then(function() { return test('пишет dayOverride в документ когда задан в кеше', function() {
+    var ctx = ts.setup();
+    var override = { added: [{ name: 'Берпи' }], removed: ['Планка'] };
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'Берпи' }], dayOverride: override,
+      type: 'rest', label: 'Отдых', checks: {}, values: {}
+    };
+    return ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00')).then(function() {
+      var p = 'users/u1/sections/strength/plan/2026/history/2026-04-18';
+      assert.ok(ctx.mock.store[p]);
+      assert.deepStrictEqual(ctx.mock.store[p].dayOverride, override);
+    });
+  }); })
+
+  .then(function() { return test('не добавляет поле dayOverride если его нет в кеше', function() {
+    var ctx = ts.setup();
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'Отжимания' }],
+      type: 'rest', label: 'Отдых', checks: {}, values: {}
+      // dayOverride намеренно отсутствует
+    };
+    return ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00')).then(function() {
+      var p = 'users/u1/sections/strength/plan/2026/history/2026-04-18';
+      assert.ok(ctx.mock.store[p]);
+      assert.ok(!('dayOverride' in ctx.mock.store[p]), 'dayOverride не должен попасть в документ');
+    });
+  }); })
+
   .then(function() {
     console.log('\n' + passed + ' passed, ' + failed + ' failed');
     if (failed > 0) process.exit(1);

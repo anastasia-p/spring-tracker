@@ -74,8 +74,15 @@ function renderSection(section, keepOpen) {
           }).join('') +
           '</div>' +
           '<div style="border-top:0.5px solid #f0f0f0;text-align:center;padding:6px 0">' +
+            (dk >= todayKey
+              ? '<button onclick="editDayOnly(\'' + section + '\',' + i + ')" ' +
+                  'style="background:none;border:none;color:#1D9E75;font-size:12px;cursor:pointer;padding:4px 8px">' +
+                  '✏ редактировать день' +
+                '</button>' +
+                '<span style="color:#e0e0e0;font-size:12px">|</span>'
+              : '') +
             '<button onclick="editDay(\'' + section + '\',' + i + ')" ' +
-              'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 0">' +
+              'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 8px">' +
               '✏ редактировать план' +
             '</button>' +
           '</div>' +
@@ -181,6 +188,23 @@ function editDay(section, dayIndex) {
     section:      section,
     dayIndex:     dayIndex,
     sectionLabel: getSectionMeta(section).label,
+    mode:         'plan',
+    onSave:       function() { renderSection(section, open); }
+  });
+}
+
+function editDayOnly(section, dayIndex) {
+  var open  = getOpenCards(section);
+  var dates = getWeekDates(weekOffset);
+  var date  = dates[dayIndex];
+  var dk    = dateKey(date);
+  openPlanEditor({
+    section:      section,
+    dayIndex:     dayIndex,
+    sectionLabel: getSectionMeta(section).label,
+    mode:         'today',
+    dk:           dk,
+    date:         date,
     onSave:       function() { renderSection(section, open); }
   });
 }

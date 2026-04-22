@@ -247,6 +247,30 @@ function dayDocRef(section, dk) {
   return sectionRef(section).collection('plan').doc(year).collection('history').doc(dk);
 }
 
+// Применяет дельту оверрайда дня поверх базового списка упражнений из шаблона.
+// Используется в loadDayData для сегодняшнего и будущих дней.
+// Ограничение: если упражнение переименовали в шаблоне после создания оверрайда,
+// элемент из removed не найдется — появится снова. Редкий кейс, осознанно принято.
+function applyDayOverride(baseExs, override) {
+  if (!override) return baseExs;
+  var removed = override.removed || [];
+  var added   = override.added   || [];
+  var result  = baseExs.filter(function(ex) { return removed.indexOf(ex.name) === -1; });
+  added.forEach(function(ex) { result.push(ex); });
+  return result;
+}
+
+// Вычисляет дельту между шаблоном и отредактированным списком упражнений.
+// Возвращает { added: [...], removed: [...] } или null если изменений нет.
+// Используется в plan-editor.js при сохранении режима "только сегодня".
+function computeDayOverride(templateExs, editedExs) {
+  var templateNames = templateExs.map(function(e) { return e.name; });
+  var editedNames   = editedExs.map(function(e) { return e.name; });
+  var removed = templateNames.filter(function(n) { return editedNames.indexOf(n) === -1; });
+  var added   = editedExs.filter(function(e) { return templateNames.indexOf(e.name) === -1; });
+  return (removed.length === 0 && added.length === 0) ? null : { added: added, removed: removed };
+}
+
 function loadDayData(section, date) {
   var dk = dateKey(date);
   if (cache[section][dk]) return Promise.resolve(cache[section][dk]);
@@ -256,12 +280,16 @@ function loadDayData(section, date) {
     var dayPlan = getDayPlan(section, date);
     if (s.exists) {
       var data = s.data();
+      var baseExs = dayPlan ? dayPlan.exercises : [];
       cache[section][dk] = {
-        plan:   isToday ? (dayPlan ? dayPlan.exercises : (data.plan || [])) : (data.plan || (dayPlan ? dayPlan.exercises : [])),
-        type:   data.type   || (dayPlan ? dayPlan.type  : 'rest'),
-        label:  data.label  || (dayPlan ? dayPlan.label : ''),
-        checks: data.checks || {},
-        values: data.values || {}
+        // Сегодня/будущее: шаблон — основа, поверх применяем дельту оверрайда.
+        // Прошлое: снапшот из истории выигрывает, шаблон — только fallback.
+        plan:        isToday ? applyDayOverride(baseExs, data.dayOverride) : (data.plan || baseExs),
+        dayOverride: isToday ? (data.dayOverride || null) : undefined,
+        type:        data.type   || (dayPlan ? dayPlan.type  : 'rest'),
+        label:       data.label  || (dayPlan ? dayPlan.label : ''),
+        checks:      data.checks || {},
+        values:      data.values || {}
       };
     } else {
       cache[section][dk] = {
@@ -289,10 +317,12 @@ function loadDayData(section, date) {
 function saveDayData(section, date) {
   var dk = dateKey(date), data = cache[section][dk];
   if (!data) return Promise.resolve();
-  return dayDocRef(section, dk).set({
-    plan: data.plan, type: data.type, label: data.label,
-    checks: data.checks, values: data.values
-  }).catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); });
+  // plan всегда пишем — для сегодняшних дней это merged список (шаблон + дельта),
+  // что станет корректным снапшотом когда день уйдет в прошлое.
+  var doc = { plan: data.plan, type: data.type, label: data.label, checks: data.checks, values: data.values };
+  if (data.dayOverride !== undefined) doc.dayOverride = data.dayOverride; // null тоже пишем (сброс)
+  return dayDocRef(section, dk).set(doc)
+    .catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); });
 }
 
 // Склеиваем историю тестов всех активных секций по датам.
@@ -672,6 +702,8 @@ if (typeof module !== 'undefined' && module.exports) {
     dayDocRef: dayDocRef,
     loadDayData: loadDayData,
     saveDayData: saveDayData,
+    applyDayOverride: applyDayOverride,
+    computeDayOverride: computeDayOverride,
     loadTestsCache: loadTestsCache,
     saveTestData: saveTestData,
     loadSkill: loadSkill,
