@@ -27,6 +27,8 @@ function renderSection(section, keepOpen) {
       var override      = dayData.dayOverride || null;
       var addedNames    = override ? (override.added    || []).map(function(e) { return e.name; }) : [];
       var modifiedNames = override ? (override.modified || []).map(function(e) { return e.name; }) : [];
+      var lastEx = exs[exs.length - 1];
+      var lastExHighlighted = lastEx && (addedNames.indexOf(lastEx.name) !== -1 || modifiedNames.indexOf(lastEx.name) !== -1);
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
       if (done === total && total > 0) doneDays++;
@@ -53,7 +55,7 @@ function renderSection(section, keepOpen) {
         '</div>' +
         '<div class="day-body">' +
           '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
-          '<div class="ex-list">' +
+          '<div class="ex-list"' + (lastExHighlighted ? ' style="padding-bottom:0"' : '') + '>' +
           exs.map(function(ex) {
             var hasValue = ex.trackValue && checks[ex.name] && values[ex.name] > 0;
             var valueLine = hasValue ? '<div class="ex-value">' + escapeHtml(values[ex.name]) + ' ' + escapeHtml(ex.unit || '') + '</div>' : '';
