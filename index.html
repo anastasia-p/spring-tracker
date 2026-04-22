@@ -744,19 +744,19 @@
     .founder-inner {
       max-width: 900px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 64px;
-      align-items: center;
+      overflow: hidden;
     }
 
     .founder-photo {
+      float: left;
       width: 280px;
       height: 320px;
       object-fit: cover;
       object-position: center top;
       border-radius: 20px;
       display: block;
+      margin-right: 64px;
+      margin-bottom: 8px;
     }
 
     .founder-text-name {
@@ -780,17 +780,26 @@
       font-weight: 500;
     }
 
+    .founder-text a {
+      color: var(--green);
+      text-decoration: underline;
+      text-decoration-color: var(--green-mid);
+      text-underline-offset: 3px;
+    }
+    .founder-text a:hover {
+      color: var(--green-dark);
+    }
+
     @media (max-width: 768px) {
       .founder-section { padding: 56px 24px; }
       .founder-inner {
-        grid-template-columns: 1fr;
-        gap: 32px;
         text-align: center;
       }
       .founder-photo {
+        float: none;
         width: 180px;
         height: 200px;
-        margin: 0 auto;
+        margin: 0 auto 28px;
       }
     }
 
@@ -1545,12 +1554,14 @@
     >
     <div class="founder-text">
       <p class="founder-text-name">Привет, я Настя <svg width="20" height="24" viewBox="24 18 48 62" fill="none" style="display:inline-block;vertical-align:middle;margin-left:4px;margin-bottom:2px"><path d="M48 76 Q48 58 48 48" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M48 58 Q44 42 28 38 Q32 56 48 58Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/><path d="M48 48 Q52 28 68 22 Q66 42 48 48Z" fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg></p>
-      <p>С недавнего времени занимаюсь Вин Чун. Вин Чун по-китайски — 咏春, «Вечная Весна». Отсюда Spring Tracker.</p>
-      <p>Еще я люблю дорамы и дунхуа, особенно моменты прокачки. Герой 200 лет культивирует в пещере? Дайте два! Давно думала, как бы перенести это в реальную жизнь. И вот недавно пазл сложился — сделала приложение, которое мотивирует заниматься спортом.</p>
+      <p>С недавнего времени занимаюсь Вин Чун — это направление кунг-фу. Вин Чун по-китайски — 咏春, «Вечная Весна». Отсюда Spring Tracker. Идея трекера родилась из необходимости: хотелось отслеживать все свои физкультурные активности — силовые, Вин Чун, цигун.</p>
+      <p>Еще я люблю дорамы и дунхуа, особенно моменты прокачки. Герой 200 лет культивирует в пещере? Дайте два! Давно думала, как бы перенести это в реальную жизнь. И вот недавно пазл сложился — сделала приложение, которое мотивирует заниматься спортом и закрывает все хотелки.</p>
       <p>За 3 недели использования научилась подтягиваться. Так что можете поздравить 🎉</p>
+      <p>Spring Tracker — это то, что я сделала для себя. Теперь он доступен всем. <a href="app.html#register">Зарегистрироваться</a> можно за минуту — без подтверждения почты и лишних шагов.</p>
     </div>
   </div>
 </div>
+
 
 <!-- RPG -->
 <div class="rpg-section">
