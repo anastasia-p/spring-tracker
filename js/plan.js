@@ -28,7 +28,7 @@ function renderSection(section, keepOpen) {
       var addedNames    = override ? (override.added    || []).map(function(e) { return e.name; }) : [];
       var modifiedNames = override ? (override.modified || []).map(function(e) { return e.name; }) : [];
       var lastEx = exs[exs.length - 1];
-      var lastExHighlighted = lastEx && (addedNames.indexOf(lastEx.name) !== -1 || modifiedNames.indexOf(lastEx.name) !== -1);
+      var lastExHighlighted = lastEx && (addedNames.indexOf(lastEx.name) !== -1 || modifiedNames.indexOf(lastEx.name) !== -1); // зелёный (added) или оранжевый (modified)
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
       if (done === total && total > 0) doneDays++;
@@ -61,11 +61,11 @@ function renderSection(section, keepOpen) {
             var valueLine = hasValue ? '<div class="ex-value">' + escapeHtml(values[ex.name]) + ' ' + escapeHtml(ex.unit || '') + '</div>' : '';
             var isAdded    = addedNames.indexOf(ex.name)    !== -1;
             var isModified = modifiedNames.indexOf(ex.name) !== -1;
-            var itemStyle  = (isAdded || isModified) ? ' style="background:#EDF8F2"' : '';
+            var itemStyle  = isAdded ? ' style="background:#EDF8F2"' : isModified ? ' style="background:#FEF7EE"' : '';
             var badge      = isAdded
               ? '<span style="flex-shrink:0;font-size:10px;color:#1D9E75;background:#D6F2E6;padding:2px 6px;border-radius:4px;white-space:nowrap">экстра</span>'
               : isModified
-                ? '<span style="flex-shrink:0;font-size:10px;color:#1D9E75;background:#D6F2E6;padding:2px 6px;border-radius:4px;white-space:nowrap">изменено</span>'
+                ? '<span style="flex-shrink:0;font-size:10px;color:#B87333;background:#FDEBD0;padding:2px 6px;border-radius:4px;white-space:nowrap">изменено</span>'
                 : '';
             var dataAttrs =
               ' data-section="' + escapeHtml(section) + '"' +
