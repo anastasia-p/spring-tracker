@@ -275,10 +275,11 @@ function computeDayOverride(templateExs, editedExs) {
   var editedNames   = editedExs.map(function(e) { return e.name; });
   var removed  = templateNames.filter(function(n) { return editedNames.indexOf(n) === -1; });
   var added    = editedExs.filter(function(e) { return templateNames.indexOf(e.name) === -1; });
+  var EDITABLE_FIELDS = ['desc', 'note', 'trackValue', 'unit'];
   var modified = editedExs.filter(function(e) {
     if (templateNames.indexOf(e.name) === -1) return false; // это added
     var tmpl = templateExs.find(function(t) { return t.name === e.name; });
-    return JSON.stringify(tmpl) !== JSON.stringify(e);
+    return EDITABLE_FIELDS.some(function(f) { return tmpl[f] !== e[f]; });
   });
   return (removed.length === 0 && added.length === 0 && modified.length === 0)
     ? null
