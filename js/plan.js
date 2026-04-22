@@ -27,8 +27,6 @@ function renderSection(section, keepOpen) {
       var override      = dayData.dayOverride || null;
       var addedNames    = override ? (override.added    || []).map(function(e) { return e.name; }) : [];
       var modifiedNames = override ? (override.modified || []).map(function(e) { return e.name; }) : [];
-      var lastEx = exs[exs.length - 1];
-      var lastExHighlighted = lastEx && (addedNames.indexOf(lastEx.name) !== -1 || modifiedNames.indexOf(lastEx.name) !== -1); // зелёный (added) или оранжевый (modified)
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
       if (done === total && total > 0) doneDays++;
@@ -55,13 +53,13 @@ function renderSection(section, keepOpen) {
         '</div>' +
         '<div class="day-body">' +
           '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
-          '<div class="ex-list"' + (lastExHighlighted ? ' style="padding-bottom:0"' : '') + '>' +
+          '<div class="ex-list">' +
           exs.map(function(ex) {
             var hasValue = ex.trackValue && checks[ex.name] && values[ex.name] > 0;
             var valueLine = hasValue ? '<div class="ex-value">' + escapeHtml(values[ex.name]) + ' ' + escapeHtml(ex.unit || '') + '</div>' : '';
             var isAdded    = addedNames.indexOf(ex.name)    !== -1;
             var isModified = modifiedNames.indexOf(ex.name) !== -1;
-            var itemStyle  = isAdded ? ' style="background:#EDF8F2"' : isModified ? ' style="background:#FEF7EE"' : '';
+            var itemStyle  = '';
             var badge      = isAdded
               ? '<span style="flex-shrink:0;font-size:10px;color:#1D9E75;background:#D6F2E6;padding:2px 6px;border-radius:4px;white-space:nowrap">экстра</span>'
               : isModified
