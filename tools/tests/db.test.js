@@ -999,7 +999,7 @@ function runTests() {
   .then(function() { return test('removed: убирает упражнение из списка', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
-    var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [] });
+    var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [], modified: [] });
     assert.strictEqual(result.length, 1);
     assert.strictEqual(result[0].name, 'Отжимания');
   }); })
@@ -1008,15 +1008,25 @@ function runTests() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }];
     var extra = { name: 'Берпи', trackValue: false };
-    var result = ctx.api.applyDayOverride(base, { removed: [], added: [extra] });
+    var result = ctx.api.applyDayOverride(base, { removed: [], added: [extra], modified: [] });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[1].name, 'Берпи');
+  }); })
+
+  .then(function() { return test('modified: заменяет упражнение с тем же именем', function() {
+    var ctx = ts.setup();
+    var base = [{ name: 'Отжимания', note: '3x12' }, { name: 'Планка' }];
+    var mod  = { name: 'Отжимания', note: '4x10' };
+    var result = ctx.api.applyDayOverride(base, { removed: [], added: [], modified: [mod] });
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].note, '4x10');
+    assert.strictEqual(result[1].name, 'Планка');
   }); })
 
   .then(function() { return test('removed + added применяются вместе', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
-    var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [{ name: 'Берпи' }] });
+    var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [{ name: 'Берпи' }], modified: [] });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].name, 'Отжимания');
     assert.strictEqual(result[1].name, 'Берпи');
@@ -1042,6 +1052,7 @@ function runTests() {
     assert.ok(result !== null);
     assert.deepStrictEqual(result.removed, ['Планка']);
     assert.strictEqual(result.added.length, 0);
+    assert.strictEqual(result.modified.length, 0);
   }); })
 
   .then(function() { return test('новое упражнение попадает в added', function() {
@@ -1052,6 +1063,19 @@ function runTests() {
     assert.ok(result !== null);
     assert.strictEqual(result.added.length, 1);
     assert.strictEqual(result.added[0].name, 'Берпи');
+    assert.strictEqual(result.removed.length, 0);
+    assert.strictEqual(result.modified.length, 0);
+  }); })
+
+  .then(function() { return test('изменённое упражнение попадает в modified', function() {
+    var ctx = ts.setup();
+    var template = [{ name: 'Отжимания', note: '3x12' }];
+    var edited   = [{ name: 'Отжимания', note: '4x10' }];
+    var result = ctx.api.computeDayOverride(template, edited);
+    assert.ok(result !== null);
+    assert.strictEqual(result.modified.length, 1);
+    assert.strictEqual(result.modified[0].note, '4x10');
+    assert.strictEqual(result.added.length, 0);
     assert.strictEqual(result.removed.length, 0);
   }); })
 

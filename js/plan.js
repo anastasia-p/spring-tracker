@@ -24,6 +24,9 @@ function renderSection(section, keepOpen) {
       var date = dates[i], dk = dateKey(date);
       var isToday = dk === todayKey;
       var checks = dayData.checks || {}, values = dayData.values || {}, exs = dayData.plan || [];
+      var override      = dayData.dayOverride || null;
+      var addedNames    = override ? (override.added    || []).map(function(e) { return e.name; }) : [];
+      var modifiedNames = override ? (override.modified || []).map(function(e) { return e.name; }) : [];
       var done = exs.filter(function(ex) { return checks[ex.name]; }).length;
       var total = exs.length;
       if (done === total && total > 0) doneDays++;
@@ -54,15 +57,21 @@ function renderSection(section, keepOpen) {
           exs.map(function(ex) {
             var hasValue = ex.trackValue && checks[ex.name] && values[ex.name] > 0;
             var valueLine = hasValue ? '<div class="ex-value">' + escapeHtml(values[ex.name]) + ' ' + escapeHtml(ex.unit || '') + '</div>' : '';
-            // Все пользовательские поля передаются через data-*, диспетчер читает их в handleExCheckbox(this).
-            // Это исключает JS-injection через кавычки в имени упражнения.
+            var isAdded    = addedNames.indexOf(ex.name)    !== -1;
+            var isModified = modifiedNames.indexOf(ex.name) !== -1;
+            var itemStyle  = (isAdded || isModified) ? ' style="background:#EDF8F2"' : '';
+            var badge      = isAdded
+              ? '<span style="flex-shrink:0;font-size:10px;color:#1D9E75;background:#D6F2E6;padding:2px 6px;border-radius:4px;white-space:nowrap">экстра</span>'
+              : isModified
+                ? '<span style="flex-shrink:0;font-size:10px;color:#1D9E75;background:#D6F2E6;padding:2px 6px;border-radius:4px;white-space:nowrap">изменено</span>'
+                : '';
             var dataAttrs =
               ' data-section="' + escapeHtml(section) + '"' +
               ' data-dk="' + escapeHtml(dk) + '"' +
               ' data-ex-name="' + escapeHtml(ex.name) + '"' +
               ' data-ex-unit="' + escapeHtml(ex.unit || '') + '"' +
               ' data-ex-track="' + (ex.trackValue ? '1' : '0') + '"';
-            return '<div class="ex-item">' +
+            return '<div class="ex-item"' + itemStyle + '>' +
               '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + dataAttrs + ' onchange="handleExCheckbox(this)">' +
               '<div class="ex-info">' +
                 '<div class="ex-name">' + escapeHtml(ex.name) + '</div>' +
@@ -70,13 +79,14 @@ function renderSection(section, keepOpen) {
                 (ex.note ? '<div class="ex-note">' + escapeHtml(ex.note) + '</div>' : '') +
                 valueLine +
               '</div>' +
+              badge +
             '</div>';
           }).join('') +
           '</div>' +
           '<div style="border-top:0.5px solid #f0f0f0;text-align:center;padding:6px 0">' +
             (dk >= todayKey
               ? '<button onclick="editDayOnly(\'' + section + '\',' + i + ')" ' +
-                  'style="background:none;border:none;color:#1D9E75;font-size:12px;cursor:pointer;padding:4px 8px">' +
+                  'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 8px">' +
                   '✏ редактировать день' +
                 '</button>' +
                 '<span style="color:#e0e0e0;font-size:12px">|</span>'
