@@ -247,7 +247,7 @@ var SKILLS = [
     section: 'strength',
     color: '#378ADD',
     bgColor: '#E6F1FB',
-    icon: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20V8" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    icon: '<img src="images/pullups.png" alt="">',
     valueType: 'reps',
     source: { collection: 'strength', field: 'Подтягивания' },
     tracker: 'pullups',
