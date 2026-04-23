@@ -111,7 +111,7 @@ function _peRenderList(state, body) {
     typeWrap.style.cssText = 'margin-bottom:14px';
     var typeLbl = document.createElement('label');
     typeLbl.textContent   = 'Тип дня';
-    typeLbl.style.cssText = 'display:block;font-size:12px;color:#999;margin-bottom:5px';
+    typeLbl.style.cssText = 'display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px';
     var typeSelect = meSelect(state.dayType, dayTypes.map(function(dt) {
       return { value: dt.type, label: dt.label };
     }));
@@ -121,7 +121,7 @@ function _peRenderList(state, body) {
     body.appendChild(typeWrap);
 
     var divider = document.createElement('div');
-    divider.style.cssText = 'border-top:0.5px solid #f0f0f0;margin-bottom:12px';
+    divider.style.cssText = 'border-top:0.5px solid var(--border-light);margin-bottom:12px';
     body.appendChild(divider);
   }
 
@@ -134,8 +134,8 @@ function _peRenderList(state, body) {
     pasteBtn.textContent   = 'Вставить: ' + shortName;
     pasteBtn.style.cssText = [
       'width:100%;padding:9px 12px;margin-bottom:10px',
-      'border:1px dashed #1D9E75;border-radius:10px',
-      'background:none;color:#1D9E75;font-size:13px',
+      'border:1px dashed var(--green);border-radius:10px',
+      'background:none;color:var(--green);font-size:13px',
       'cursor:pointer;text-align:left'
     ].join(';');
     pasteBtn.onclick = function() {
@@ -153,20 +153,20 @@ function _peRenderList(state, body) {
   if (exs.length === 0) {
     var empty = document.createElement('div');
     empty.textContent   = 'Упражнений пока нет';
-    empty.style.cssText = 'text-align:center;color:#bbb;font-size:14px;padding:28px 0';
+    empty.style.cssText = 'text-align:center;color:var(--text-hint);font-size:14px;padding:28px 0';
     body.appendChild(empty);
   }
 
   // Карточки упражнений
   exs.forEach(function(ex, i) {
     var item = document.createElement('div');
-    item.style.cssText = 'background:#f8f8f6;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px';
+    item.style.cssText = 'background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px';
 
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0;overflow:hidden';
     info.innerHTML =
-      '<div style="font-size:14px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(ex.name) + '</div>' +
-      (ex.note ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(ex.note) + '</div>' : '');
+      '<div style="font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(ex.name) + '</div>' +
+      (ex.note ? '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(ex.note) + '</div>' : '');
 
     var btnCopy = meIconBtn('\u2398', 'Копировать');
     btnCopy.onclick = (function(idx, btn) {
@@ -176,8 +176,8 @@ function _peRenderList(state, body) {
         btn.style.width  = btn.offsetWidth  + 'px';
         btn.style.height = btn.offsetHeight + 'px';
         btn.textContent  = '\u2713';
-        btn.style.color       = '#1D9E75';
-        btn.style.borderColor = '#1D9E75';
+        btn.style.color       = 'var(--green)';
+        btn.style.borderColor = 'var(--green)';
         setTimeout(function() { _peRender(state); }, 1000);
       };
     })(i, btnCopy);
@@ -219,7 +219,7 @@ function _peRenderList(state, body) {
     })(i);
 
     var btnDel = meIconBtn('\u2715', 'Удалить');
-    btnDel.style.color = '#c0392b';
+    btnDel.style.color = 'var(--red-dark)';
     btnDel.onclick = (function(idx) {
       return function() {
         if (confirm('Удалить "' + state.exercises[idx].name + '"?')) {
@@ -245,7 +245,7 @@ function _peRenderList(state, body) {
   addBtn.style.cssText = [
     'width:100%;padding:10px;margin-top:4px',
     'border:1px dashed #ccc;border-radius:10px',
-    'background:none;color:#999;font-size:13px;cursor:pointer'
+    'background:none;color:var(--text-muted);font-size:13px;cursor:pointer'
   ].join(';');
   addBtn.onclick = function() {
     state.editIdx  = null;
@@ -284,11 +284,11 @@ function _peRenderForm(state, body) {
   trackChk.type         = 'checkbox';
   trackChk.checked      = !!fd.trackValue;
   trackChk.id           = 'pe-track-chk';
-  trackChk.style.cssText = 'width:16px;height:16px;cursor:pointer;accent-color:#1D9E75';
+  trackChk.style.cssText = 'width:16px;height:16px;cursor:pointer;accent-color:var(--green)';
   var trackLbl = document.createElement('label');
   trackLbl.htmlFor       = 'pe-track-chk';
   trackLbl.textContent   = 'Считать результат (вводить число)';
-  trackLbl.style.cssText = 'font-size:14px;color:#444;cursor:pointer';
+  trackLbl.style.cssText = 'font-size:14px;color:var(--text-subtle);cursor:pointer';
   trackWrap.appendChild(trackChk);
   trackWrap.appendChild(trackLbl);
   body.appendChild(trackWrap);
@@ -297,7 +297,7 @@ function _peRenderForm(state, body) {
   unitWrap.style.cssText = 'margin-bottom:14px;' + (fd.trackValue ? '' : 'display:none');
   var unitLbl = document.createElement('label');
   unitLbl.textContent   = 'Единица измерения';
-  unitLbl.style.cssText = 'display:block;font-size:12px;color:#999;margin-bottom:5px';
+  unitLbl.style.cssText = 'display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px';
   var unitEl = meSelect(fd.unit, units);
   unitWrap.appendChild(unitLbl);
   unitWrap.appendChild(unitEl);
@@ -316,7 +316,7 @@ function _peRenderForm(state, body) {
 function _peApplyForm(state) {
   var els  = state.formEls;
   var name = els.name.value.trim();
-  if (!name) { els.name.style.borderColor = '#e24b4a'; els.name.focus(); return; }
+  if (!name) { els.name.style.borderColor = 'var(--red)'; els.name.focus(); return; }
 
   var ex   = { name: name };
   var desc = els.desc.value.trim();

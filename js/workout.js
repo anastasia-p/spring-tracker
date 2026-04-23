@@ -23,9 +23,9 @@ function renderTestForm() {
       '</label>' +
     '</div>';
   }).join('') +
-  '<div style="margin-top:8px;padding-top:10px;border-top:1px solid #f0f0f0;text-align:center">' +
+  '<div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--border-light);text-align:center">' +
     '<button onclick="openTestEditor({section:\'tests\',sectionLabel:\'Еженедельный тест\',onSave:function(){renderTestForm();}})" ' +
-      'style="background:none;border:none;color:#999;font-size:13px;cursor:pointer;padding:4px 8px">' +
+      'style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:4px 8px">' +
       '\u270f редактировать тесты</button>' +
   '</div>';
 }
@@ -61,15 +61,15 @@ function showTextTestPopup(name, unit, dk, checkboxEl) {
   var overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center';
   overlay.innerHTML =
-    '<div style="background:#fff;border-radius:16px;padding:24px 20px;width:280px;box-shadow:0 8px 32px rgba(0,0,0,.18)">' +
+    '<div style="background:var(--card);border-radius:16px;padding:24px 20px;width:280px;box-shadow:0 8px 32px rgba(0,0,0,.18)">' +
       '<div style="font-size:15px;font-weight:600;margin-bottom:4px">' + escapeHtml(name) + '</div>' +
-      '<div style="font-size:12px;color:#999;margin-bottom:16px">' + escapeHtml(unit) + '</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">' + escapeHtml(unit) + '</div>' +
       '<input id="text-test-input" type="text" placeholder="например 6:30" value="' + escapeHtml(existing) + '" ' +
-        'style="width:100%;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:8px;padding:10px 12px;font-size:16px;outline:none">' +
+        'style="width:100%;box-sizing:border-box;border:1.5px solid var(--border-light);border-radius:8px;padding:10px 12px;font-size:16px;outline:none">' +
       '<div style="display:flex;gap:8px;margin-top:16px">' +
-        '<button onclick="cancelTextTestPopup()" style="flex:1;padding:10px;border:1.5px solid #e0e0e0;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;color:#666">Отмена</button>' +
+        '<button onclick="cancelTextTestPopup()" style="flex:1;padding:10px;border:1.5px solid var(--border-light);border-radius:8px;background:var(--card);font-size:14px;cursor:pointer;color:var(--text-subtle)">Отмена</button>' +
         '<button data-test-name="' + escapeHtml(name) + '" data-test-dk="' + escapeHtml(dk) + '"' +
-          ' onclick="confirmTextTestPopupFromBtn(this)" style="flex:1;padding:10px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Сохранить</button>' +
+          ' onclick="confirmTextTestPopupFromBtn(this)" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--green);color:var(--card);font-size:14px;font-weight:600;cursor:pointer">Сохранить</button>' +
       '</div>' +
     '</div>';
   overlay.id = 'text-test-overlay';
@@ -169,13 +169,13 @@ function renderTestHistory(container, items, entries) {
       var pct = (!isTextType && v != null && maxVal > 0) ? Math.round(v / maxVal * 100) : 0;
       var isDown = ediff !== null && ediff < 0;
       var isUp   = ediff !== null && ediff > 0;
-      var barColor = isDown ? '#F0997B' : '#1D9E75';
-      var valColor = isDown ? '#D85A30' : (i === entries.length - 1 ? '#1D9E75' : 'var(--text)');
+      var barColor = isDown ? 'var(--diff-down-bar)' : 'var(--green)';
+      var valColor = isDown ? 'var(--diff-down)' : (i === entries.length - 1 ? 'var(--green)' : 'var(--text)');
       var valWeight = i === entries.length - 1 ? '600' : '500';
       var diffHtml = isTextType ? '' :
         (ediff === null ? '<span style="width:30px"></span>'
-        : (isUp   ? '<span style="font-size:11px;color:#1D9E75;width:30px">+' + ediff + '</span>'
-        : (isDown ? '<span style="font-size:11px;color:#D85A30;width:30px">' + ediff + '</span>'
+        : (isUp   ? '<span style="font-size:11px;color:var(--green);width:30px">+' + ediff + '</span>'
+        : (isDown ? '<span style="font-size:11px;color:var(--diff-down);width:30px">' + ediff + '</span>'
         :           '<span style="font-size:11px;color:var(--text-muted);width:30px">0</span>')));
       var unit = item.unit && item.unit !== 'раз' ? '<span style="font-size:11px;color:var(--text-muted)"> ' + escapeHtml(item.unit) + '</span>' : '';
       var barHtml = isTextType ? '' : '<div class="t3-bar-wrap"><div class="t3-bar-inner" style="width:' + pct + '%;background:' + barColor + '"></div></div>';

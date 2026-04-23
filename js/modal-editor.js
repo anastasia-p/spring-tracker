@@ -36,7 +36,7 @@ function meOpen(overlayId, sheetId, onBackdropClick) {
   var sheet = document.createElement('div');
   sheet.id = sheetId;
   sheet.style.cssText = [
-    'background:#fff',
+    'background:var(--card)',
     'border-radius:16px 16px 0 0',
     'width:100%;max-width:480px',
     'max-height:85vh',
@@ -65,13 +65,13 @@ function meRender(sheet, opts) {
 
   // Заголовок
   var header = document.createElement('div');
-  header.style.cssText = 'padding:16px 20px 12px;border-bottom:0.5px solid #e5e5e5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0';
+  header.style.cssText = 'padding:16px 20px 12px;border-bottom:0.5px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;flex-shrink:0';
   header.innerHTML =
     '<div>' +
-      '<div style="font-size:12px;color:#999;margin-bottom:2px">' + opts.subtitle + '</div>' +
-      '<div style="font-size:16px;font-weight:500;color:#222">' + opts.title + '</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:2px">' + opts.subtitle + '</div>' +
+      '<div style="font-size:16px;font-weight:500;color:var(--text)">' + opts.title + '</div>' +
     '</div>' +
-    '<button id="' + opts.closeBtnId + '" style="background:none;border:none;font-size:22px;color:#aaa;cursor:pointer;padding:2px 8px;line-height:1">×</button>';
+    '<button id="' + opts.closeBtnId + '" style="background:none;border:none;font-size:22px;color:var(--text-hint);cursor:pointer;padding:2px 8px;line-height:1">×</button>';
   sheet.appendChild(header);
   document.getElementById(opts.closeBtnId).onclick = opts.onClose;
 
@@ -84,7 +84,7 @@ function meRender(sheet, opts) {
   // Нижняя панель
   var footer = document.createElement('div');
   footer.id = opts.footerId;
-  footer.style.cssText = 'padding:12px 20px;border-top:0.5px solid #e5e5e5;display:flex;gap:8px;flex-shrink:0';
+  footer.style.cssText = 'padding:12px 20px;border-top:0.5px solid var(--border-light);display:flex;gap:8px;flex-shrink:0';
   sheet.appendChild(footer);
 
   if (opts.isForm) {
@@ -127,11 +127,11 @@ function meSaveFeedback(btnId, promise, onSuccess, onFailure) {
       if (btn) {
         btn.disabled         = false;
         btn.textContent      = 'Сохранено ✓';
-        btn.style.background = '#0F6E56';
+        btn.style.background = 'var(--green-dark)';
         setTimeout(function() {
           if (btn) {
             btn.textContent      = 'Сохранить';
-            btn.style.background = '#1D9E75';
+            btn.style.background = 'var(--green)';
             btn.style.width      = '';
             btn.style.height     = '';
           }
@@ -164,9 +164,9 @@ function meConfirmClose(state, closeFn) {
 function meBtn(text, type) {
   var btn = document.createElement('button');
   if (type === 'primary') {
-    btn.style.cssText = 'flex:1;padding:11px;min-height:42px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1';
+    btn.style.cssText = 'flex:1;padding:11px;min-height:42px;border:none;border-radius:10px;background:var(--green);color:var(--card);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1';
   } else {
-    btn.style.cssText = 'flex:1;padding:11px;border:0.5px solid #ccc;border-radius:10px;background:none;color:#555;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center';
+    btn.style.cssText = 'flex:1;padding:11px;border:0.5px solid #ccc;border-radius:10px;background:none;color:var(--text-subtle);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center';
   }
   btn.textContent = text;
   return btn;
@@ -178,10 +178,10 @@ function meIconBtn(icon, title) {
   btn.title         = title;
   btn.style.cssText = [
     'background:none',
-    'border:0.5px solid #e0e0e0',
+    'border:0.5px solid var(--border-light)',
     'border-radius:8px',
     'padding:5px 9px',
-    'font-size:13px;color:#888',
+    'font-size:13px;color:var(--text-muted)',
     'cursor:pointer;flex-shrink:0',
     'display:inline-flex;align-items:center;justify-content:center'
   ].join(';');
@@ -191,11 +191,11 @@ function meIconBtn(icon, title) {
 var _meSelectCSS = [
   'width:100%;box-sizing:border-box',
   'padding:10px 36px 10px 12px',
-  'border:0.5px solid #ddd;border-radius:10px',
-  'font-size:14px;color:#222',
+  'border:0.5px solid var(--border-light);border-radius:10px',
+  'font-size:14px;color:var(--text)',
   'outline:none;cursor:pointer',
   'appearance:none;-webkit-appearance:none',
-  'background:#fff url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center'
+  'background:var(--card) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%272%27%3E%3Cpolyline points=%276 9 12 15 18 9%27/%3E%3C/svg%3E") no-repeat right 12px center'
 ].join(';');
 
 function meInput(val, placeholder, maxLen) {
@@ -207,12 +207,12 @@ function meInput(val, placeholder, maxLen) {
   el.style.cssText = [
     'width:100%;box-sizing:border-box',
     'padding:10px 12px',
-    'border:0.5px solid #ddd;border-radius:10px',
-    'font-size:14px;color:#222;background:#fff',
+    'border:0.5px solid var(--border-light);border-radius:10px',
+    'font-size:14px;color:var(--text);background:var(--card)',
     'outline:none'
   ].join(';');
-  el.addEventListener('focus', function() { this.style.borderColor = '#1D9E75'; });
-  el.addEventListener('blur',  function() { this.style.borderColor = '#ddd'; });
+  el.addEventListener('focus', function() { this.style.borderColor = 'var(--green)'; });
+  el.addEventListener('blur',  function() { this.style.borderColor = 'var(--border-light)'; });
   return el;
 }
 
@@ -220,8 +220,8 @@ function meInput(val, placeholder, maxLen) {
 function meSelect(currentVal, options) {
   var el = document.createElement('select');
   el.style.cssText = _meSelectCSS;
-  el.addEventListener('focus', function() { this.style.borderColor = '#1D9E75'; });
-  el.addEventListener('blur',  function() { this.style.borderColor = '#ddd'; });
+  el.addEventListener('focus', function() { this.style.borderColor = 'var(--green)'; });
+  el.addEventListener('blur',  function() { this.style.borderColor = 'var(--border-light)'; });
   options.forEach(function(opt) {
     var o = document.createElement('option');
     if (typeof opt === 'string') {
@@ -247,7 +247,7 @@ function meFieldWrap(labelText, el, maxLen, bodyEl) {
 
   var lbl = document.createElement('label');
   lbl.textContent   = labelText;
-  lbl.style.cssText = 'font-size:12px;color:#999';
+  lbl.style.cssText = 'font-size:12px;color:var(--text-muted)';
   hdr.appendChild(lbl);
 
   if (maxLen) {
@@ -257,7 +257,7 @@ function meFieldWrap(labelText, el, maxLen, bodyEl) {
       var len       = el.value.length;
       var remaining = maxLen - len;
       counter.textContent = len >= threshold ? remaining + ' / ' + maxLen : '';
-      counter.style.color = remaining <= 10 ? '#e24b4a' : '#bbb';
+      counter.style.color = remaining <= 10 ? 'var(--red)' : 'var(--text-hint)';
     }
     updateCounter();
     el.addEventListener('input', updateCounter);

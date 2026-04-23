@@ -86,19 +86,19 @@ function showValidationPopup(filename, errors, warnings) {
   title.textContent = (hasErrors ? 'Ошибки в файле' : 'Предупреждения') + ' (' + count + ')';
   var html = '';
   if (errors.length > 0) {
-    html += '<div style="font-weight:500;color:var(--red,#E24B4A);margin-bottom:8px">Ошибки — файл не загружен:</div>';
+    html += '<div style="font-weight:500;color:var(--red);margin-bottom:8px">Ошибки — файл не загружен:</div>';
     errors.forEach(function(e) {
       var loc = e.sheet ? (e.sheet + (e.row ? ', строка ' + e.row : '')) : '';
-      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
+      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg);border-radius:6px">';
       if (loc) html += '<span style="font-weight:500">' + escapeHtml(loc) + '</span> — ';
       html += escapeHtml(e.message) + '</div>';
     });
   }
   if (warnings.length > 0) {
-    html += '<div style="font-weight:500;color:#BA7517;margin-bottom:8px' + (errors.length ? ';margin-top:12px' : '') + '">Предупреждения:</div>';
+    html += '<div style="font-weight:500;color:var(--warning);margin-bottom:8px' + (errors.length ? ';margin-top:12px' : '') + '">Предупреждения:</div>';
     warnings.forEach(function(w) {
       var loc = w.sheet ? (w.sheet + (w.row ? ', строка ' + w.row : '')) : '';
-      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg-secondary,#F7F6F2);border-radius:6px">';
+      html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg);border-radius:6px">';
       if (loc) html += '<span style="font-weight:500">' + escapeHtml(loc) + '</span> — ';
       html += escapeHtml(w.message) + '</div>';
     });
@@ -287,13 +287,13 @@ function renderAboutApp(container) {
   var v = window.APP_VERSION || { sha: 'unknown', date: 'unknown' };
   var block = document.createElement('div');
   block.className = 'about-app';
-  block.style.cssText = 'margin-top:28px;padding:14px 0 8px;border-top:1px solid #ebebeb;font-size:13px;color:#888';
-  block.innerHTML = '<div style="font-weight:500;margin-bottom:8px;color:#555">О приложении</div>'
+  block.style.cssText = 'margin-top:28px;padding:14px 0 8px;border-top:1px solid var(--border-light);font-size:13px;color:var(--text-muted)';
+  block.innerHTML = '<div style="font-weight:500;margin-bottom:8px;color:var(--text-subtle)">О приложении</div>'
     + '<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 12px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)">'
-    + '<span style="color:#aaa">Версия</span><span>' + escapeHtml(v.sha) + '</span>'
-    + '<span style="color:#aaa">Собрано</span><span>' + escapeHtml(v.date) + '</span>'
+    + '<span style="color:var(--text-hint)">Версия</span><span>' + escapeHtml(v.sha) + '</span>'
+    + '<span style="color:var(--text-hint)">Собрано</span><span>' + escapeHtml(v.date) + '</span>'
     + '</div>'
-    + '<div style="margin-top:10px">Обратная связь: <a href="https://t.me/Ponomareva_Anastasia" target="_blank" rel="noopener noreferrer" style="color:#378ADD;text-decoration:none">@Ponomareva_Anastasia</a></div>';
+    + '<div style="margin-top:10px">Обратная связь: <a href="https://t.me/Ponomareva_Anastasia" target="_blank" rel="noopener noreferrer" style="color:var(--link);text-decoration:none">@Ponomareva_Anastasia</a></div>';
   container.appendChild(block);
 }
 

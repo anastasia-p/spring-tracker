@@ -34,11 +34,11 @@ function renderSection(section, keepOpen) {
       var pct = total > 0 ? Math.round(done / total * 100) : 0;
       var isComplete = done === total && total > 0;
       var isPartial = done > 0 && done < total;
-      var markBg = isComplete ? '#1D9E75' : isPartial ? '#FAC775' : 'transparent';
+      var markBg = isComplete ? 'var(--green)' : isPartial ? 'var(--amber)' : 'transparent';
       var markInner = (isComplete || isPartial) ? '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
       var card = document.createElement('div');
       card.className = 'day-card';
-      if (isToday) { card.style.outline = '2px solid #1D9E75'; card.style.outlineOffset = '-1px'; }
+      if (isToday) { card.style.outline = '2px solid var(--green)'; card.style.outlineOffset = '-1px'; }
       card.innerHTML =
         '<div class="day-header" onclick="toggleDay(this)">' +
           '<div class="day-left">' +
@@ -61,9 +61,9 @@ function renderSection(section, keepOpen) {
             var isModified = modifiedNames.indexOf(ex.name) !== -1;
             var itemStyle  = '';
             var badge      = isAdded
-              ? '<span style="flex-shrink:0;font-size:10px;color:#1D9E75;background:#D6F2E6;padding:2px 6px;border-radius:4px;white-space:nowrap">экстра</span>'
+              ? '<span style="flex-shrink:0;font-size:10px;color:var(--green);background:var(--green-extra-bg);padding:2px 6px;border-radius:4px;white-space:nowrap">экстра</span>'
               : isModified
-                ? '<span style="flex-shrink:0;font-size:10px;color:#B87333;background:#FDEBD0;padding:2px 6px;border-radius:4px;white-space:nowrap">изменено</span>'
+                ? '<span style="flex-shrink:0;font-size:10px;color:var(--copper);background:var(--copper-bg);padding:2px 6px;border-radius:4px;white-space:nowrap">изменено</span>'
                 : '';
             var dataAttrs =
               ' data-section="' + escapeHtml(section) + '"' +
@@ -83,16 +83,16 @@ function renderSection(section, keepOpen) {
             '</div>';
           }).join('') +
           '</div>' +
-          '<div style="border-top:0.5px solid #f0f0f0;text-align:center;padding:6px 0">' +
+          '<div style="border-top:0.5px solid var(--border-light);text-align:center;padding:6px 0">' +
             (dk >= todayKey
               ? '<button onclick="editDayOnly(\'' + section + '\',' + i + ')" ' +
-                  'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 8px">' +
+                  'style="background:none;border:none;color:var(--text-hint);font-size:12px;cursor:pointer;padding:4px 8px">' +
                   '✏ редактировать день' +
                 '</button>' +
-                '<span style="color:#e0e0e0;font-size:12px">|</span>'
+                '<span style="color:var(--border-light);font-size:12px">|</span>'
               : '') +
             '<button onclick="editDay(\'' + section + '\',' + i + ')" ' +
-              'style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;padding:4px 8px">' +
+              'style="background:none;border:none;color:var(--text-hint);font-size:12px;cursor:pointer;padding:4px 8px">' +
               '✏ редактировать план' +
             '</button>' +
           '</div>' +
@@ -183,13 +183,13 @@ function computeWeekStars(results, dates) {
     else if (done > 0) hasOrange = true;
     else hasRed = true;
   });
-  if (!hasGreen && !hasOrange && !hasRed) return { count: 3, color: '#1D9E75' };
-  if (hasGreen && !hasOrange && !hasRed)  return { count: 3, color: '#1D9E75' };
-  if (hasGreen && hasOrange && !hasRed)   return { count: 2, color: '#FAC775' };
-  if (hasGreen && hasRed)                 return { count: 1, color: '#FAC775' };
-  if (!hasGreen && hasOrange && !hasRed)  return { count: 2, color: '#FAC775' };
-  if (!hasGreen && hasOrange && hasRed)   return { count: 1, color: '#FAC775' };
-  return { count: 1, color: '#E24B4A' };
+  if (!hasGreen && !hasOrange && !hasRed) return { count: 3, color: 'var(--green)' };
+  if (hasGreen && !hasOrange && !hasRed)  return { count: 3, color: 'var(--green)' };
+  if (hasGreen && hasOrange && !hasRed)   return { count: 2, color: 'var(--amber)' };
+  if (hasGreen && hasRed)                 return { count: 1, color: 'var(--amber)' };
+  if (!hasGreen && hasOrange && !hasRed)  return { count: 2, color: 'var(--amber)' };
+  if (!hasGreen && hasOrange && hasRed)   return { count: 1, color: 'var(--amber)' };
+  return { count: 1, color: 'var(--red)' };
 }
 
 function editDay(section, dayIndex) {

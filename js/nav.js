@@ -162,9 +162,12 @@ function showSkillLevels(skillId) {
     var isPast = lvl.level < current.level;
     var isNext = lvl.level === current.level + 1;
     var numStyle;
-    if (isCur) numStyle = 'background:' + skill.color + ';color:#fff;border-color:' + skill.color + ';font-weight:700';
+    // Тонкие градации серого для шкалы уровней (#c0c0c0 / #c8c8c8 / #d0d0d0 / #d8d8d8 / #e8e8e8 / #f0f0f0)
+    // намеренно оставлены hex: передают плавность перехода "прошедший → будущий → далекий" — свод к двум-трем
+    // переменным ломает визуальную градацию.
+    if (isCur) numStyle = 'background:' + skill.color + ';color:var(--card);border-color:' + skill.color + ';font-weight:700';
     else if (isPast) numStyle = 'background:#f0f0f0;color:#c0c0c0;border-color:#e8e8e8';
-    else numStyle = 'background:#fff;color:#d0d0d0;border-color:#e8e8e8';
+    else numStyle = 'background:var(--card);color:#d0d0d0;border-color:#e8e8e8';
     var nameStyle, descStyle, hoursStyle;
     if (isCur) {
       nameStyle = 'font-weight:700;color:var(--text)'; descStyle = 'color:var(--text-muted)'; hoursStyle = '';
@@ -238,7 +241,7 @@ function renderPlanScreens(sections) {
       + '<button onclick="changeWeek(1)">→</button>'
       + '</div>'
       + '<div class="summary-grid">'
-      + '<div class="summary-card" style="background:#E1F5EE"><div class="summary-num" id="' + s + '-s-days">—</div><div class="summary-lbl" id="' + s + '-s-days-lbl">дней подряд</div></div>'
+      + '<div class="summary-card" style="background:var(--green-light)"><div class="summary-num" id="' + s + '-s-days">—</div><div class="summary-lbl" id="' + s + '-s-days-lbl">дней подряд</div></div>'
       + '<div class="summary-card"><div class="summary-num" id="' + s + '-s-ex">—</div><div class="summary-lbl">упражнений</div></div>'
       + '<div class="summary-card"><div class="summary-num" id="' + s + '-s-pct">—</div><div class="summary-lbl">прогресс</div></div>'
       + '</div>'

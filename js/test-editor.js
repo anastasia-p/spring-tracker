@@ -90,24 +90,24 @@ function _teRenderList(state, body) {
   if (items.length === 0) {
     var empty = document.createElement('div');
     empty.textContent   = 'Тестов пока нет';
-    empty.style.cssText = 'text-align:center;color:#bbb;font-size:14px;padding:28px 0';
+    empty.style.cssText = 'text-align:center;color:var(--text-hint);font-size:14px;padding:28px 0';
     body.appendChild(empty);
   }
 
   // Карточки тестов
   items.forEach(function(item, i) {
     var card = document.createElement('div');
-    card.style.cssText = 'background:#f8f8f6;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px';
+    card.style.cssText = 'background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px';
 
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0;overflow:hidden';
     info.innerHTML =
-      '<div style="font-size:14px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(item.name) + '</div>' +
+      '<div style="font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(item.name) + '</div>' +
       (item.note
-        ? '<div style="font-size:12px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(item.note) + '</div>'
+        ? '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(item.note) + '</div>'
         : '') +
       (item.unit
-        ? '<div style="font-size:12px;color:#bbb;margin-top:1px">' + escapeHtml(item.unit) + '</div>'
+        ? '<div style="font-size:12px;color:var(--text-hint);margin-top:1px">' + escapeHtml(item.unit) + '</div>'
         : '');
 
     var btnEdit = meIconBtn('\u270F', 'Редактировать');
@@ -147,7 +147,7 @@ function _teRenderList(state, body) {
     })(i);
 
     var btnDel = meIconBtn('\u2715', 'Удалить');
-    btnDel.style.color = '#c0392b';
+    btnDel.style.color = 'var(--red-dark)';
     btnDel.onclick = (function(idx) {
       return function() {
         if (confirm('Удалить "' + state.items[idx].name + '"?')) {
@@ -177,7 +177,7 @@ function _teRenderList(state, body) {
   addBtn.style.cssText = [
     'width:100%;padding:10px;margin-top:4px',
     'border:1px dashed #ccc;border-radius:10px',
-    'background:none;color:#999;font-size:13px;cursor:pointer'
+    'background:none;color:var(--text-muted);font-size:13px;cursor:pointer'
   ].join(';');
   addBtn.onclick = function() {
     state.editIdx  = null;
@@ -210,7 +210,7 @@ function _teRenderForm(state, body) {
   unitWrap.style.marginBottom = '14px';
   var unitLbl = document.createElement('label');
   unitLbl.textContent   = 'Единица измерения';
-  unitLbl.style.cssText = 'display:block;font-size:12px;color:#999;margin-bottom:5px';
+  unitLbl.style.cssText = 'display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px';
   var unitEl = meSelect(fd.unit, units);
   unitWrap.appendChild(unitLbl);
   unitWrap.appendChild(unitEl);
@@ -229,7 +229,7 @@ function _teRenderForm(state, body) {
     secWrap.style.marginBottom = '14px';
     var secLbl = document.createElement('label');
     secLbl.textContent   = 'Дисциплина';
-    secLbl.style.cssText = 'display:block;font-size:12px;color:#999;margin-bottom:5px';
+    secLbl.style.cssText = 'display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px';
     sectionEl = meSelect(currentSec, secOptions);
     secWrap.appendChild(secLbl);
     secWrap.appendChild(sectionEl);
@@ -244,7 +244,7 @@ function _teRenderForm(state, body) {
 function _teApplyForm(state) {
   var els  = state.formEls;
   var name = els.name.value.trim();
-  if (!name) { els.name.style.borderColor = '#e24b4a'; els.name.focus(); return; }
+  if (!name) { els.name.style.borderColor = 'var(--red)'; els.name.focus(); return; }
 
   var item = { name: name, unit: els.unit.value };
   var note = els.note.value.trim();
