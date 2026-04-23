@@ -16,6 +16,7 @@ function hideSplash() {
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     currentUser = user;
+    Sentry.setUser({ id: user.uid, email: user.email });
     setAuthLoading(false);
     document.getElementById('auth-screen').style.display = 'none';
     loadUserConfig().then(function(config) {
@@ -31,6 +32,7 @@ firebase.auth().onAuthStateChanged(function(user) {
     });
   } else {
     currentUser = null;
+    Sentry.setUser(null);
     showAuthScreen();
   }
 });

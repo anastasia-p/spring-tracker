@@ -231,7 +231,7 @@ function loadPlanFromFirebase(section) {
   }
   return sectionRef(section).collection('plan').doc('current').get().then(function(s) {
     if (s.exists) plans[section] = s.data().days;
-  }).catch(function(e) { console.error('loadPlanFromFirebase(' + section + '):', e); });
+  }).catch(function(e) { console.error('loadPlanFromFirebase(' + section + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
 }
 
 function getDayPlan(section, date) {
@@ -337,7 +337,7 @@ function saveDayData(section, date) {
   var doc = { plan: data.plan, type: data.type, label: data.label, checks: data.checks, values: data.values };
   if (data.dayOverride !== undefined) doc.dayOverride = data.dayOverride; // null тоже пишем (сброс)
   return dayDocRef(section, dk).set(doc)
-    .catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); });
+    .catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
 }
 
 // Склеиваем историю тестов всех активных секций по датам.
@@ -356,7 +356,7 @@ function loadTestsCache() {
         Object.keys(d.data).forEach(function(k) { cache.tests[d.id][k] = d.data[k]; });
       });
     });
-  }).catch(function(e) { console.error('loadTestsCache:', e); });
+  }).catch(function(e) { console.error('loadTestsCache:', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
 }
 
 function saveTestData(dk, data) {
@@ -380,7 +380,7 @@ function saveTestData(dk, data) {
   var year = dk.slice(0, 4);
   var writes = Object.keys(bySection).map(function(sec) {
     return sectionRef(sec).collection('tests').doc(year).collection('history').doc(dk)
-      .set(bySection[sec]).catch(function(e) { console.error('saveTestData(' + sec + ',' + dk + '):', e); });
+      .set(bySection[sec]).catch(function(e) { console.error('saveTestData(' + sec + ',' + dk + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
   });
   return Promise.all(writes);
 }
@@ -456,7 +456,7 @@ function adjustSkillTotal(skill, delta) {
   var doc = {};
   doc[skill.trackerField] = next;
   return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
-    .catch(function(e) { console.error('adjustSkillTotal(' + skill.id + '):', e); });
+    .catch(function(e) { console.error('adjustSkillTotal(' + skill.id + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
 }
 
 // Полный пересчёт навыка из всей истории. Используется:
@@ -509,10 +509,10 @@ function recalcSkill(skill) {
     var doc = {};
     doc[skill.trackerField] = total;
     var writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
-      .catch(function(e) { console.error('recalcSkill write(' + skill.id + '):', e); });
+      .catch(function(e) { console.error('recalcSkill write(' + skill.id + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
     if (typeof renderSkillById === 'function') renderSkillById(skill.id);
     return writePromise;
-  }).catch(function(e) { console.error('recalcSkill(' + skill.id + '):', e); });
+  }).catch(function(e) { console.error('recalcSkill(' + skill.id + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
 }
 
 // Поиск навыка по имени упражнения или теста.
