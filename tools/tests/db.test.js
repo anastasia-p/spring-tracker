@@ -10,38 +10,40 @@ var ts = require('./db-test-setup');
 
 var passed = 0, failed = 0;
 
-function test(name, fn) {
-  return Promise.resolve()
-    .then(fn)
-    .then(
-      function() { console.log(' ✓', name); passed++; },
-      function(e) { console.error(' ✗', name); console.error('  ', e.stack || e.message); failed++; }
-    )
-    .then(function() { ts.teardown(); });
+async function test(name, fn) {
+  try {
+    await fn();
+    console.log(' ✓', name);
+    passed++;
+  } catch (e) {
+    console.error(' ✗', name);
+    console.error('  ', e.stack || e.message);
+    failed++;
+  } finally {
+    ts.teardown();
+  }
 }
 
 function group(name) { console.log('\n' + name); }
 
 // ─── userCol ─────────────────────────────────────────────────────────────────
 
-function runTests() {
-  return Promise.resolve()
-
+async function runTests() {
   // ─── userCol ─────────────────────────────────────────────────────────────
 
-  .then(function() { group('userCol'); })
+  group('userCol');
 
-  .then(function() { return test('userCol returns users/{uid}/{name} ref', function() {
+  await test('userCol returns users/{uid}/{name} ref', function() {
     var ctx = ts.setup();
     var ref = ctx.api.userCol('strength');
     assert.strictEqual(ref.path, 'users/u1/strength');
-  }); })
+  });
 
   // ─── loadDayData ─────────────────────────────────────────────────────────
 
-  .then(function() { group('loadDayData'); })
+  group('loadDayData');
 
-  .then(function() { return test('returns empty shape if doc missing and no plan', function() {
+  await test('returns empty shape if doc missing and no plan', function() {
     var ctx = ts.setup();
     return ctx.api.loadDayData('strength', new Date('2026-04-18T12:00:00')).then(function(d) {
       assert.deepStrictEqual(d.checks, {});
@@ -49,9 +51,9 @@ function runTests() {
       assert.deepStrictEqual(d.plan, []);
       assert.strictEqual(d.type, 'rest');
     });
-  }); })
+  });
 
-  .then(function() { return test('uses plan from plans[section] when doc missing', function() {
+  await test('uses plan from plans[section] when doc missing', function() {
     var ctx = ts.setup();
     // Подкладываем план недели — "Понедельник" = индекс 0
     ctx.api.plans.strength = [
@@ -64,25 +66,25 @@ function runTests() {
       assert.strictEqual(d.type, 'legs');
       assert.strictEqual(d.label, 'Ноги');
     });
-  }); })
+  });
 
   // ─── saveDayData ─────────────────────────────────────────────────────────
 
-  .then(function() { group('saveDayData'); })
+  group('saveDayData');
 
-  .then(function() { return test('does nothing if cache entry missing', function() {
+  await test('does nothing if cache entry missing', function() {
     var ctx = ts.setup();
     ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00'));
     return Promise.resolve().then(function() {
       assert.strictEqual(ctx.mock.log.length, 0);
     });
-  }); })
+  });
 
   // ─── saveTestData ────────────────────────────────────────────────────────
 
-  .then(function() { group('saveTestData'); })
+  group('saveTestData');
 
-  .then(function() { return test('writes values to sections/{section}/tests/{YYYY}/history/{date}', function() {
+  await test('writes values to sections/{section}/tests/{YYYY}/history/{date}', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [
       { name: 'Отжимания', unit: 'раз', section: 'strength' },
@@ -97,9 +99,9 @@ function runTests() {
         ctx.mock.store['users/u1/sections/wingchun/tests/2026/history/2026-04-18'],
         { 'Мабу': 60 });
     });
-  }); })
+  });
 
-  .then(function() { return test('items without section fall into strength', function() {
+  await test('items without section fall into strength', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Custom', unit: 'раз' }];
     ctx.api.saveTestData('2026-04-18', { 'Custom': 5 });
@@ -108,9 +110,9 @@ function runTests() {
         ctx.mock.store['users/u1/sections/strength/tests/2026/history/2026-04-18'],
         { 'Custom': 5 });
     });
-  }); })
+  });
 
-  .then(function() { return test('removing a value re-writes section doc without it', function() {
+  await test('removing a value re-writes section doc without it', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/strength/tests/2026/history/2026-04-18': {
@@ -131,9 +133,9 @@ function runTests() {
         assert.deepStrictEqual(stored, { 'Отжимания': 5 });
         assert.strictEqual(stored['Подтягивания'], undefined);
       });
-  }); })
+  });
 
-  .then(function() { return test('clearing all values in a section writes empty doc', function() {
+  await test('clearing all values in a section writes empty doc', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/wingchun/tests/2026/history/2026-04-18': { 'Мабу': 60 }
@@ -147,21 +149,21 @@ function runTests() {
         assert.deepStrictEqual(
           ctx.mock.store['users/u1/sections/wingchun/tests/2026/history/2026-04-18'], {});
       });
-  }); })
+  });
 
   // ─── loadSkill ───────────────────────────────────────────────────────────
 
-  .then(function() { group('loadSkill'); })
+  group('loadSkill');
 
-  .then(function() { return test('returns 0 if skill doc missing', function() {
+  await test('returns 0 if skill doc missing', function() {
     var ctx = ts.setup();
     var skill = pure_getSkill('pushups');
     return ctx.api.loadSkill(skill).then(function() {
       assert.strictEqual(ctx.api.skillTotals.pushups, 0);
     });
-  }); })
+  });
 
-  .then(function() { return test('reads sections/{section}/skills/{skill.id}', function() {
+  await test('reads sections/{section}/skills/{skill.id}', function() {
     var ctx = ts.setup({
       seed: { 'users/u1/sections/strength/skills/pushups': { totalReps: 500 } }
     });
@@ -169,9 +171,9 @@ function runTests() {
     return ctx.api.loadSkill(skill).then(function() {
       assert.strictEqual(ctx.api.skillTotals.pushups, 500);
     });
-  }); })
+  });
 
-  .then(function() { return test('mountain lives under wingchun section', function() {
+  await test('mountain lives under wingchun section', function() {
     var ctx = ts.setup({
       seed: { 'users/u1/sections/wingchun/skills/mountain': { totalSeconds: 9000 } }
     });
@@ -179,13 +181,13 @@ function runTests() {
     return ctx.api.loadSkill(skill).then(function() {
       assert.strictEqual(ctx.api.skillTotals.mountain, 9000);
     });
-  }); })
+  });
 
   // ─── recalcSkill ─────────────────────────────────────────────────────────
 
-  .then(function() { group('recalcSkill'); })
+  group('recalcSkill');
 
-  .then(function() { return test('sums from plan history and writes to sections/.../skills/', function() {
+  await test('sums from plan history and writes to sections/.../skills/', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/strength/plan/2026/history/2026-04-10': { values: { 'Отжимания': 20 } },
@@ -198,9 +200,9 @@ function runTests() {
       assert.strictEqual(
         ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 45);
     });
-  }); })
+  });
 
-  .then(function() { return test('mountain sums from wingchun history AND wingchun tests history', function() {
+  await test('mountain sums from wingchun history AND wingchun tests history', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/wingchun/plan/2026/history/2026-04-10': {
@@ -217,34 +219,34 @@ function runTests() {
       assert.strictEqual(
         ctx.mock.store['users/u1/sections/wingchun/skills/mountain'].totalSeconds, 180);
     });
-  }); })
+  });
 
   // ─── findSkillByName ─────────────────────────────────────────────────────
 
-  .then(function() { group('findSkillByName'); })
+  group('findSkillByName');
 
-  .then(function() { return test('finds pushups by "Отжимания" (single field)', function() {
+  await test('finds pushups by "Отжимания" (single field)', function() {
     var ctx = ts.setup();
     var s = ctx.api.findSkillByName('Отжимания');
     assert.strictEqual(s.id, 'pushups');
-  }); })
+  });
 
-  .then(function() { return test('finds mountain by "Мабу" (fields array)', function() {
+  await test('finds mountain by "Мабу" (fields array)', function() {
     var ctx = ts.setup();
     var s = ctx.api.findSkillByName('Мабу');
     assert.strictEqual(s.id, 'mountain');
-  }); })
+  });
 
-  .then(function() { return test('returns null for unknown name', function() {
+  await test('returns null for unknown name', function() {
     var ctx = ts.setup();
     assert.strictEqual(ctx.api.findSkillByName('Не существует'), null);
-  }); })
+  });
 
   // ─── calcDailyStreak ─────────────────────────────────────────────────────
 
-  .then(function() { group('calcDailyStreak'); })
+  group('calcDailyStreak');
 
-  .then(function() { return test('empty section → streak 0', function() {
+  await test('empty section → streak 0', function() {
     var ctx = ts.setup({ config: { createdAt: '2026-04-15T00:00:00.000Z' } });
     // Нет документов истории, нет плана — streak не начнётся (план ≠ пустой день отдыха)
     // Но в коде: если plan.length === 0 → streak++. Значит для всех дней вчера→createdAt
@@ -257,9 +259,9 @@ function runTests() {
       // createdAt=2026-04-15 → streak идёт от 2026-04-16 до 2026-04-15 включительно = 2
       assert.strictEqual(streak, 2);
     });
-  }); })
+  });
 
-  .then(function() { return test('streak counts partially done days', function() {
+  await test('streak counts partially done days', function() {
     var ctx = ts.setup({ config: { createdAt: '2026-04-15T00:00:00.000Z' } });
     ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-04-16', {
       plan: [{ name: 'A' }, { name: 'B' }],
@@ -272,9 +274,9 @@ function runTests() {
       // 2026-04-16 — частичное выполнение → streak+1, 2026-04-15 — нет данных, нет плана → plan.length === 0 → +1
       assert.strictEqual(streak, 2);
     });
-  }); })
+  });
 
-  .then(function() { return test('streak breaks on day with plan but no checks', function() {
+  await test('streak breaks on day with plan but no checks', function() {
     var ctx = ts.setup({ config: { createdAt: '2026-04-10T00:00:00.000Z' } });
     ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-04-16', {
       plan: [{ name: 'A' }],
@@ -294,9 +296,9 @@ function runTests() {
       global.Date = origDate;
       assert.strictEqual(streak, 1); // только 16-е, 15-е разрывает
     });
-  }); })
+  });
 
-  .then(function() { return test('cache hit returns without DB call', function() {
+  await test('cache hit returns without DB call', function() {
     var ctx = ts.setup();
     ctx.api.streakCache.strength = 42;
     return ctx.api.calcDailyStreak('strength').then(function(streak) {
@@ -305,31 +307,31 @@ function runTests() {
       var gets = ctx.mock.log.filter(function(op) { return op[0] === 'GET_COLL'; });
       assert.strictEqual(gets.length, 0);
     });
-  }); })
+  });
 
-  .then(function() { return test('invalidateStreakCache clears cache', function() {
+  await test('invalidateStreakCache clears cache', function() {
     var ctx = ts.setup();
     ctx.api.streakCache.strength = 42;
     ctx.api.invalidateStreakCache('strength');
     assert.strictEqual(ctx.api.streakCache.strength, undefined);
-  }); })
+  });
 
   // ─── resetCache ──────────────────────────────────────────────────────────
 
-  .then(function() { group('resetCache'); })
+  group('resetCache');
 
-  .then(function() { return test('clears cache[section]', function() {
+  await test('clears cache[section]', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-01'] = { foo: 1 };
     ctx.api.resetCache('strength');
     assert.deepStrictEqual(ctx.api.cache.strength, {});
-  }); })
+  });
 
   // ─── loadAllSkills ───────────────────────────────────────────────────────
 
-  .then(function() { group('loadAllSkills'); })
+  group('loadAllSkills');
 
-  .then(function() { return test('loads every skill in SKILLS', function() {
+  await test('loads every skill in SKILLS', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/strength/skills/pushups': { totalReps: 100 },
@@ -343,7 +345,7 @@ function runTests() {
       assert.strictEqual(ctx.api.skillTotals.pullups, 0);
       assert.strictEqual(ctx.api.skillTotals.mountain, 0);
     });
-  }); })
+  });
 
   // ============================================================
   // V2-специфичные тесты (пути, агрегация по секциям)
@@ -351,9 +353,9 @@ function runTests() {
 
   // ─── loadPlanFromFirebase ────────────────────────────────────────────────
 
-  .then(function() { group('loadPlanFromFirebase'); })
+  group('loadPlanFromFirebase');
 
-  .then(function() { return test('reads sections/{section}/plan/current.days', function() {
+  await test('reads sections/{section}/plan/current.days', function() {
     var days = [{ day: 'Пн' }];
     var ctx = ts.setup({
       seed: { 'users/u1/sections/strength/plan/current': { days: days } }
@@ -361,9 +363,9 @@ function runTests() {
     return ctx.api.loadPlanFromFirebase('strength').then(function() {
       assert.deepStrictEqual(ctx.api.plans.strength, days);
     });
-  }); })
+  });
 
-  .then(function() { return test('tests aggregates from all active sections', function() {
+  await test('tests aggregates from all active sections', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/strength/tests/current': {
@@ -384,13 +386,13 @@ function runTests() {
         if (it.name === 'Отжимания') assert.strictEqual(it.section, 'strength');
       });
     });
-  }); })
+  });
 
   // ─── loadDayData: v2-specific path ───────────────────────────────────────
 
-  .then(function() { group('loadDayData: v2 path'); })
+  group('loadDayData: v2 path');
 
-  .then(function() { return test('reads sections/{section}/plan/{YYYY}/history/{date}', function() {
+  await test('reads sections/{section}/plan/{YYYY}/history/{date}', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/strength/plan/2026/history/2026-04-18': {
@@ -408,13 +410,13 @@ function runTests() {
         return op[1] === 'users/u1/sections/strength/plan/2026/history/2026-04-18';
       }), 'expected GET on v2 path, got: ' + JSON.stringify(gets));
     });
-  }); })
+  });
 
   // ─── saveDayData: v2-specific path ───────────────────────────────────────
 
-  .then(function() { group('saveDayData: v2 path'); })
+  group('saveDayData: v2 path');
 
-  .then(function() { return test('writes sections/{section}/plan/{YYYY}/history/{date}', function() {
+  await test('writes sections/{section}/plan/{YYYY}/history/{date}', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-18'] = {
       plan: [{ name: 'X' }], type: 'legs', label: 'Ноги',
@@ -426,13 +428,13 @@ function runTests() {
       assert.ok(ctx.mock.store[p], 'expected write at ' + p);
       assert.strictEqual(ctx.mock.store[p].values.X, 5);
     });
-  }); })
+  });
 
   // ─── loadTestsCache ──────────────────────────────────────────────────────
 
-  .then(function() { group('loadTestsCache'); })
+  group('loadTestsCache');
 
-  .then(function() { return test('merges tests history from all active sections by date', function() {
+  await test('merges tests history from all active sections by date', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/strength/tests/2026/history/2026-04-18': { 'Отжимания': 25 },
@@ -445,13 +447,13 @@ function runTests() {
       assert.deepStrictEqual(ctx.api.cache.tests['2026-04-18'],
         { 'Отжимания': 25, 'Мабу': 60 });
     });
-  }); })
+  });
 
   // ─── listYearsToRead ─────────────────────────────────────────────────────
 
-  .then(function() { group('listYearsToRead'); })
+  group('listYearsToRead');
 
-  .then(function() { return test('returns [createdYear..currentYear]', function() {
+  await test('returns [createdYear..currentYear]', function() {
     var ctx = ts.setup({
       config: { createdAt: '2025-08-12T00:00:00.000Z' }
     });
@@ -460,9 +462,9 @@ function runTests() {
     var years = ctx.api.listYearsToRead();
     global.Date = origDate;
     assert.deepStrictEqual(years, ['2025', '2026']);
-  }); })
+  });
 
-  .then(function() { return test('returns single year when created this year', function() {
+  await test('returns single year when created this year', function() {
     var ctx = ts.setup({
       config: { createdAt: '2026-03-01T00:00:00.000Z' }
     });
@@ -471,20 +473,20 @@ function runTests() {
     var years = ctx.api.listYearsToRead();
     global.Date = origDate;
     assert.deepStrictEqual(years, ['2026']);
-  }); })
+  });
 
   // ─── API layer: loadConfig / saveConfig ──────────────────────────────────
 
-  .then(function() { group('API: loadConfig / saveConfig'); })
+  group('API: loadConfig / saveConfig');
 
-  .then(function() { return test('loadConfig returns config data', function() {
+  await test('loadConfig returns config data', function() {
     var ctx = ts.setup({ config: { sections: ['strength', 'wingchun'] } });
     return ctx.api.loadConfig().then(function(cfg) {
       assert.deepStrictEqual(cfg.sections, ['strength', 'wingchun']);
     });
-  }); })
+  });
 
-  .then(function() { return test('saveConfig merges with existing', function() {
+  await test('saveConfig merges with existing', function() {
     var ctx = ts.setup({ config: { sections: ['strength'], email: 'a@b.c' } });
     return ctx.api.saveConfig({ sections: ['strength', 'wingchun'] })
       .then(function() {
@@ -492,13 +494,13 @@ function runTests() {
         assert.deepStrictEqual(stored.sections, ['strength', 'wingchun']);
         assert.strictEqual(stored.email, 'a@b.c'); // сохранилось
       });
-  }); })
+  });
 
   // ─── API layer: loadSectionPlan / savePlan ───────────────────────────────
 
-  .then(function() { group('API: loadSectionPlan / savePlan'); })
+  group('API: loadSectionPlan / savePlan');
 
-  .then(function() { return test('v2 loadSectionPlan reads sections/{section}/plan/current.days', function() {
+  await test('v2 loadSectionPlan reads sections/{section}/plan/current.days', function() {
     var days = [{ day: 'Пн' }];
     var ctx = ts.setup({
       seed: { 'users/u1/sections/strength/plan/current': { days: days } }
@@ -506,9 +508,9 @@ function runTests() {
     return ctx.api.loadSectionPlan('strength').then(function(d) {
       assert.deepStrictEqual(d, days);
     });
-  }); })
+  });
 
-  .then(function() { return test('v2 savePlan writes sections/{section}/plan/current', function() {
+  await test('v2 savePlan writes sections/{section}/plan/current', function() {
     var ctx = ts.setup();
     var days = [{ day: 'Пн' }];
     return ctx.api.savePlan('strength', days).then(function() {
@@ -516,13 +518,13 @@ function runTests() {
       assert.deepStrictEqual(stored.days, days);
       assert.ok(stored.updatedAt);
     });
-  }); })
+  });
 
   // ─── API layer: loadSectionTests / saveTests ─────────────────────────────
 
-  .then(function() { group('API: loadSectionTests / saveTests'); })
+  group('API: loadSectionTests / saveTests');
 
-  .then(function() { return test('v2 loadSectionTests reads sections/{section}/tests/current', function() {
+  await test('v2 loadSectionTests reads sections/{section}/tests/current', function() {
     var items = [{ name: 'Отжимания', unit: 'раз' }];
     var ctx = ts.setup({
       seed: { 'users/u1/sections/strength/tests/current': { items: items } }
@@ -530,9 +532,9 @@ function runTests() {
     return ctx.api.loadSectionTests('strength').then(function(i) {
       assert.deepStrictEqual(i, items);
     });
-  }); })
+  });
 
-  .then(function() { return test('v2 saveTests writes sections/{section}/tests/current', function() {
+  await test('v2 saveTests writes sections/{section}/tests/current', function() {
     var ctx = ts.setup();
     var items = [{ name: 'Отжимания', unit: 'раз' }];
     return ctx.api.saveTests('strength', items).then(function() {
@@ -540,13 +542,13 @@ function runTests() {
       assert.deepStrictEqual(stored.items, items);
       assert.ok(stored.updatedAt);
     });
-  }); })
+  });
 
   // ─── API layer: createSectionDefaults ────────────────────────────────────
 
-  .then(function() { group('API: createSectionDefaults'); })
+  group('API: createSectionDefaults');
 
-  .then(function() { return test('v2 creates plan/default, plan/current, tests/default, tests/current', function() {
+  await test('v2 creates plan/default, plan/current, tests/default, tests/current', function() {
     var ctx = ts.setup();
     var days = [{ day: 'Пн' }];
     var items = [{ name: 'Мабу', unit: 'сек' }];
@@ -557,22 +559,22 @@ function runTests() {
       assert.deepStrictEqual(ctx.mock.store[base + 'tests/default'], { items: items });
       assert.deepStrictEqual(ctx.mock.store[base + 'tests/current'].items, items);
     });
-  }); })
+  });
 
-  .then(function() { return test('v2 creates empty tests when testsItems null', function() {
+  await test('v2 creates empty tests when testsItems null', function() {
     var ctx = ts.setup();
     return ctx.api.createSectionDefaults('brain', [], null).then(function() {
       var base = 'users/u1/sections/brain/';
       assert.deepStrictEqual(ctx.mock.store[base + 'tests/default'], { items: [] });
       assert.deepStrictEqual(ctx.mock.store[base + 'tests/current'].items, []);
     });
-  }); })
+  });
 
   // ─── API layer: enableSection / disableSection ───────────────────────────
 
-  .then(function() { group('API: enableSection / disableSection'); })
+  group('API: enableSection / disableSection');
 
-  .then(function() { return test('v2 enableSection sets enabled=true and syncs config', function() {
+  await test('v2 enableSection sets enabled=true and syncs config', function() {
     var ctx = ts.setup({
       config: { sections: ['strength'] },
       seed: {
@@ -587,9 +589,9 @@ function runTests() {
       var cfgSections = ctx.mock.store['users/u1'].sections.slice().sort();
       assert.deepStrictEqual(cfgSections, ['strength', 'wingchun']);
     });
-  }); })
+  });
 
-  .then(function() { return test('v2 disableSection sets enabled=false and removes from config', function() {
+  await test('v2 disableSection sets enabled=false and removes from config', function() {
     var ctx = ts.setup({
       config: { sections: ['strength', 'wingchun'] },
       seed: {
@@ -601,13 +603,13 @@ function runTests() {
       assert.strictEqual(ctx.mock.store['users/u1/sections/wingchun'].enabled, false);
       assert.deepStrictEqual(ctx.mock.store['users/u1'].sections, ['strength']);
     });
-  }); })
+  });
 
   // ─── API layer: saveAllTests ─────────────────────────────────────────────
 
-  .then(function() { group('API: saveAllTests'); })
+  group('API: saveAllTests');
 
-  .then(function() { return test('v2 saveAllTests spreads items across sections by item.section', function() {
+  await test('v2 saveAllTests spreads items across sections by item.section', function() {
     var ctx = ts.setup();
     global.userSections = ['strength', 'wingchun', 'qigong'];
     var items = [
@@ -624,9 +626,9 @@ function runTests() {
       // Поле section не должно попасть в хранилище — оно только в памяти
       strItems.forEach(function(it) { assert.strictEqual(it.section, undefined); });
     });
-  }); })
+  });
 
-  .then(function() { return test('v2 saveAllTests empties active sections without items', function() {
+  await test('v2 saveAllTests empties active sections without items', function() {
     var ctx = ts.setup();
     global.userSections = ['strength', 'qigong'];
     var items = [{ name: 'X', section: 'strength' }];
@@ -635,9 +637,9 @@ function runTests() {
       var qi = ctx.mock.store['users/u1/sections/qigong/tests/current'];
       assert.deepStrictEqual(qi.items, []);
     });
-  }); })
+  });
 
-  .then(function() { return test('v2 saveAllTests does not touch inactive sections', function() {
+  await test('v2 saveAllTests does not touch inactive sections', function() {
     var ctx = ts.setup({
       seed: {
         'users/u1/sections/cardio/tests/current': { items: [{ name: 'old-cardio-test' }] }
@@ -652,13 +654,13 @@ function runTests() {
         [{ name: 'old-cardio-test' }]
       );
     });
-  }); })
+  });
 
   // ─── Promise contracts (защита от race conditions) ──────────────────────
 
-  .then(function() { group('Promise contracts'); })
+  group('Promise contracts');
 
-  .then(function() { return test('saveDayData returns a Promise', function() {
+  await test('saveDayData returns a Promise', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-18'] = {
       plan: [], type: 'rest', label: '', checks: {}, values: {}
@@ -667,24 +669,24 @@ function runTests() {
     assert.ok(result, 'expected return value');
     assert.ok(typeof result.then === 'function', 'expected thenable');
     return result;
-  }); })
+  });
 
-  .then(function() { return test('saveDayData returns resolved Promise when cache missing', function() {
+  await test('saveDayData returns resolved Promise when cache missing', function() {
     var ctx = ts.setup();
     var result = ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00'));
     assert.ok(result && typeof result.then === 'function');
     return result;
-  }); })
+  });
 
-  .then(function() { return test('saveTestData returns a Promise', function() {
+  await test('saveTestData returns a Promise', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'X', section: 'strength' }];
     var result = ctx.api.saveTestData('2026-04-18', { X: 5 });
     assert.ok(result && typeof result.then === 'function');
     return result;
-  }); })
+  });
 
-  .then(function() { return test('v2: after saveDayData resolves, recalcSkill sees fresh data', function() {
+  await test('v2: after saveDayData resolves, recalcSkill sees fresh data', function() {
     var ctx = ts.setup();
     var pushups = pure_getSkill('pushups');
     ctx.api.cache.strength['2026-04-18'] = {
@@ -698,9 +700,9 @@ function runTests() {
         assert.strictEqual(
           ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 10);
       });
-  }); })
+  });
 
-  .then(function() { return test('v2: after saveTestData resolves, recalcSkill for mountain sees Мабу', function() {
+  await test('v2: after saveTestData resolves, recalcSkill for mountain sees Мабу', function() {
     var ctx = ts.setup();
     global.userSections = ['wingchun'];
     ctx.api.plans.tests = [{ name: 'Мабу', unit: 'сек', section: 'wingchun' }];
@@ -713,9 +715,9 @@ function runTests() {
         assert.strictEqual(
           ctx.mock.store['users/u1/sections/wingchun/skills/mountain'].totalSeconds, 60);
       });
-  }); })
+  });
 
-  .then(function() { return test('v2: parallel recalcSkill calls serialize — last wins', function() {
+  await test('v2: parallel recalcSkill calls serialize — last wins', function() {
     // Баг: поставил значение и сразу снял. Два recalcSkill параллельно.
     // Должно быть сериализовано — последний вызов победит.
     var ctx = ts.setup();
@@ -741,13 +743,13 @@ function runTests() {
         ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 0);
       assert.strictEqual(ctx.api.skillTotals.pushups, 0);
     });
-  }); })
+  });
 
   // ─── adjustSkillTotal (инкрементальное обновление) ──────────────────────
 
-  .then(function() { group('adjustSkillTotal'); })
+  group('adjustSkillTotal');
 
-  .then(function() { return test('adjustSkillTotal adds delta and persists', function() {
+  await test('adjustSkillTotal adds delta and persists', function() {
     var ctx = ts.setup();
     var pushups = pure_getSkill('pushups');
     ctx.api.skillTotals.pushups = 100;
@@ -756,27 +758,27 @@ function runTests() {
       assert.strictEqual(
         ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 125);
     });
-  }); })
+  });
 
-  .then(function() { return test('adjustSkillTotal subtracts correctly', function() {
+  await test('adjustSkillTotal subtracts correctly', function() {
     var ctx = ts.setup();
     var pushups = pure_getSkill('pushups');
     ctx.api.skillTotals.pushups = 100;
     return ctx.api.adjustSkillTotal(pushups, -30).then(function() {
       assert.strictEqual(ctx.api.skillTotals.pushups, 70);
     });
-  }); })
+  });
 
-  .then(function() { return test('adjustSkillTotal never goes below zero', function() {
+  await test('adjustSkillTotal never goes below zero', function() {
     var ctx = ts.setup();
     var pushups = pure_getSkill('pushups');
     ctx.api.skillTotals.pushups = 10;
     return ctx.api.adjustSkillTotal(pushups, -50).then(function() {
       assert.strictEqual(ctx.api.skillTotals.pushups, 0);
     });
-  }); })
+  });
 
-  .then(function() { return test('adjustSkillTotal with 0 delta is no-op', function() {
+  await test('adjustSkillTotal with 0 delta is no-op', function() {
     var ctx = ts.setup();
     var pushups = pure_getSkill('pushups');
     ctx.api.skillTotals.pushups = 42;
@@ -786,9 +788,9 @@ function runTests() {
       var sets = ctx.mock.log.filter(function(op) { return op[0] === 'SET' && op[1].indexOf('skills/pushups') !== -1; });
       assert.strictEqual(sets.length, 0);
     });
-  }); })
+  });
 
-  .then(function() { return test('adjustSkillTotal parallel calls do not race', function() {
+  await test('adjustSkillTotal parallel calls do not race', function() {
     // Ключевой тест: много быстрых вызовов подряд — результат детерминирован
     // потому что функция не читает из базы
     var ctx = ts.setup();
@@ -804,7 +806,7 @@ function runTests() {
       assert.strictEqual(
         ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 0);
     });
-  }); })
+  });
 
 
 
@@ -813,9 +815,9 @@ function runTests() {
 
   // ─── updateExerciseCheck ─────────────────────────────────────────────────
 
-  .then(function() { group('updateExerciseCheck'); })
+  group('updateExerciseCheck');
 
-  .then(function() { return test('set checked with value: writes cache, DB, skill', function() {
+  await test('set checked with value: writes cache, DB, skill', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-15'] = {
       plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
@@ -834,9 +836,9 @@ function runTests() {
       assert.strictEqual(
         ctx.mock.store['users/u1/sections/strength/skills/pushups'].totalReps, 20);
     });
-  }); })
+  });
 
-  .then(function() { return test('unset with value=0: rolls skill back by oldVal', function() {
+  await test('unset with value=0: rolls skill back by oldVal', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-15'] = {
       plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
@@ -849,9 +851,9 @@ function runTests() {
       assert.strictEqual(day.values['Отжимания'], 0);
       assert.strictEqual(ctx.api.skillTotals.pushups, 70);
     });
-  }); })
+  });
 
-  .then(function() { return test('without value arg: checks updated, values untouched, skill no-op', function() {
+  await test('without value arg: checks updated, values untouched, skill no-op', function() {
     var ctx = ts.setup();
     ctx.api.cache.qigong['2026-04-15'] = {
       plan: [{ name: 'Разминка' }], type: 'qi', label: 'Цигун',
@@ -864,17 +866,17 @@ function runTests() {
       assert.strictEqual(day.values['Разминка'], 5);
       assert.strictEqual(ctx.api.skillTotals.tree, 42);
     });
-  }); })
+  });
 
-  .then(function() { return test('cache miss: returns resolved promise, no writes', function() {
+  await test('cache miss: returns resolved promise, no writes', function() {
     var ctx = ts.setup();
     var logBefore = ctx.mock.log.length;
     return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 10).then(function() {
       assert.strictEqual(ctx.mock.log.length, logBefore);
     });
-  }); })
+  });
 
-  .then(function() { return test('exercise without skill: updates day, skill not touched', function() {
+  await test('exercise without skill: updates day, skill not touched', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-15'] = {
       plan: [{ name: 'Разведение гантелей' }], type: 'upper', label: 'Верх',
@@ -889,9 +891,9 @@ function runTests() {
       });
       assert.strictEqual(skillWrites.length, 0);
     });
-  }); })
+  });
 
-  .then(function() { return test('invalidates streak cache for section', function() {
+  await test('invalidates streak cache for section', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-15'] = {
       plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
@@ -901,9 +903,9 @@ function runTests() {
     return ctx.api.updateExerciseCheck('strength', '2026-04-15', 'Отжимания', true, 10).then(function() {
       assert.strictEqual(ctx.api.streakCache.strength, undefined);
     });
-  }); })
+  });
 
-  .then(function() { return test('sequential toggles: skill total stays consistent', function() {
+  await test('sequential toggles: skill total stays consistent', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-15'] = {
       plan: [{ name: 'Отжимания' }], type: 'upper', label: 'Верх',
@@ -922,13 +924,13 @@ function runTests() {
       .then(function() {
         assert.strictEqual(ctx.api.skillTotals.pushups, 0);
       });
-  }); })
+  });
 
   // ─── updateTestValue ─────────────────────────────────────────────────────
 
-  .then(function() { group('updateTestValue'); })
+  group('updateTestValue');
 
-  .then(function() { return test('numeric set: updates cache, DB, skill via findSkillByName', function() {
+  await test('numeric set: updates cache, DB, skill via findSkillByName', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
     ctx.api.skillTotals.pushups = 0;
@@ -939,9 +941,9 @@ function runTests() {
       assert.ok(stored);
       assert.strictEqual(stored['Отжимания'], 35);
     });
-  }); })
+  });
 
-  .then(function() { return test('null value: deletes field, rolls skill back', function() {
+  await test('null value: deletes field, rolls skill back', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
     ctx.api.cache.tests['2026-04-15'] = { 'Отжимания': 40 };
@@ -950,9 +952,9 @@ function runTests() {
       assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Отжимания'], undefined);
       assert.strictEqual(ctx.api.skillTotals.pushups, 60);
     });
-  }); })
+  });
 
-  .then(function() { return test('text value: cache updated, skill not touched', function() {
+  await test('text value: cache updated, skill not touched', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Темп бега', section: 'cardio', unit: 'мин/км', type: 'text' }];
     ctx.api.skillTotals.pushups = 50;
@@ -960,9 +962,9 @@ function runTests() {
       assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Темп бега'], '6:30');
       assert.strictEqual(ctx.api.skillTotals.pushups, 50);
     });
-  }); })
+  });
 
-  .then(function() { return test('no skill matching name: cache updated, nothing else', function() {
+  await test('no skill matching name: cache updated, nothing else', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Пульс покоя', section: 'cardio', unit: 'уд/мин' }];
     return ctx.api.updateTestValue('2026-04-15', 'Пульс покоя', 62).then(function() {
@@ -972,9 +974,9 @@ function runTests() {
       });
       assert.strictEqual(skillWrites.length, 0);
     });
-  }); })
+  });
 
-  .then(function() { return test('replacing value: skill delta computed from old to new', function() {
+  await test('replacing value: skill delta computed from old to new', function() {
     var ctx = ts.setup();
     ctx.api.plans.tests = [{ name: 'Отжимания', section: 'strength', unit: 'раз' }];
     ctx.api.cache.tests['2026-04-15'] = { 'Отжимания': 20 };
@@ -983,37 +985,37 @@ function runTests() {
       assert.strictEqual(ctx.api.cache.tests['2026-04-15']['Отжимания'], 35);
       assert.strictEqual(ctx.api.skillTotals.pushups, 35);
     });
-  }); })
+  });
 
   // ─── applyDayOverride ────────────────────────────────────────────────────
 
-  .then(function() { group('applyDayOverride'); })
+  group('applyDayOverride');
 
-  .then(function() { return test('null override: возвращает исходный массив без изменений', function() {
+  await test('null override: возвращает исходный массив без изменений', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
     var result = ctx.api.applyDayOverride(base, null);
     assert.strictEqual(result, base);
-  }); })
+  });
 
-  .then(function() { return test('removed: убирает упражнение из списка', function() {
+  await test('removed: убирает упражнение из списка', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
     var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [], modified: [] });
     assert.strictEqual(result.length, 1);
     assert.strictEqual(result[0].name, 'Отжимания');
-  }); })
+  });
 
-  .then(function() { return test('added: добавляет упражнение в конец списка', function() {
+  await test('added: добавляет упражнение в конец списка', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }];
     var extra = { name: 'Берпи', trackValue: false };
     var result = ctx.api.applyDayOverride(base, { removed: [], added: [extra], modified: [] });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[1].name, 'Берпи');
-  }); })
+  });
 
-  .then(function() { return test('modified: заменяет упражнение с тем же именем', function() {
+  await test('modified: заменяет упражнение с тем же именем', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания', note: '3x12' }, { name: 'Планка' }];
     var mod  = { name: 'Отжимания', note: '4x10' };
@@ -1021,9 +1023,9 @@ function runTests() {
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].note, '4x10');
     assert.strictEqual(result[1].name, 'Планка');
-  }); })
+  });
 
-  .then(function() { return test('removed + added применяются вместе', function() {
+  await test('removed + added применяются вместе', function() {
     var ctx = ts.setup();
     var base = [{ name: 'Отжимания' }, { name: 'Планка' }];
     var result = ctx.api.applyDayOverride(base, { removed: ['Планка'], added: [{ name: 'Берпи' }], modified: [] });
@@ -1031,20 +1033,20 @@ function runTests() {
     assert.strictEqual(result[0].name, 'Отжимания');
     assert.strictEqual(result[1].name, 'Берпи');
     assert.ok(!result.find(function(e) { return e.name === 'Планка'; }));
-  }); })
+  });
 
   // ─── computeDayOverride ──────────────────────────────────────────────────
 
-  .then(function() { group('computeDayOverride'); })
+  group('computeDayOverride');
 
-  .then(function() { return test('нет изменений → null', function() {
+  await test('нет изменений → null', function() {
     var ctx = ts.setup();
     var exs = [{ name: 'Отжимания' }, { name: 'Планка' }];
     var result = ctx.api.computeDayOverride(exs, exs);
     assert.strictEqual(result, null);
-  }); })
+  });
 
-  .then(function() { return test('удалённое упражнение попадает в removed', function() {
+  await test('удалённое упражнение попадает в removed', function() {
     var ctx = ts.setup();
     var template = [{ name: 'Отжимания' }, { name: 'Планка' }];
     var edited   = [{ name: 'Отжимания' }];
@@ -1053,9 +1055,9 @@ function runTests() {
     assert.deepStrictEqual(result.removed, ['Планка']);
     assert.strictEqual(result.added.length, 0);
     assert.strictEqual(result.modified.length, 0);
-  }); })
+  });
 
-  .then(function() { return test('новое упражнение попадает в added', function() {
+  await test('новое упражнение попадает в added', function() {
     var ctx = ts.setup();
     var template = [{ name: 'Отжимания' }];
     var edited   = [{ name: 'Отжимания' }, { name: 'Берпи', trackValue: false }];
@@ -1065,9 +1067,9 @@ function runTests() {
     assert.strictEqual(result.added[0].name, 'Берпи');
     assert.strictEqual(result.removed.length, 0);
     assert.strictEqual(result.modified.length, 0);
-  }); })
+  });
 
-  .then(function() { return test('изменённое упражнение попадает в modified', function() {
+  await test('изменённое упражнение попадает в modified', function() {
     var ctx = ts.setup();
     var template = [{ name: 'Отжимания', note: '3x12' }];
     var edited   = [{ name: 'Отжимания', note: '4x10' }];
@@ -1077,22 +1079,22 @@ function runTests() {
     assert.strictEqual(result.modified[0].note, '4x10');
     assert.strictEqual(result.added.length, 0);
     assert.strictEqual(result.removed.length, 0);
-  }); })
+  });
 
-  .then(function() { return test('removed и added вычисляются вместе', function() {
+  await test('removed и added вычисляются вместе', function() {
     var ctx = ts.setup();
     var template = [{ name: 'Отжимания' }, { name: 'Планка' }];
     var edited   = [{ name: 'Отжимания' }, { name: 'Берпи' }];
     var result = ctx.api.computeDayOverride(template, edited);
     assert.deepStrictEqual(result.removed, ['Планка']);
     assert.strictEqual(result.added[0].name, 'Берпи');
-  }); })
+  });
 
   // ─── saveDayData: dayOverride ─────────────────────────────────────────────
 
-  .then(function() { group('saveDayData: dayOverride'); })
+  group('saveDayData: dayOverride');
 
-  .then(function() { return test('пишет dayOverride в документ когда задан в кеше', function() {
+  await test('пишет dayOverride в документ когда задан в кеше', function() {
     var ctx = ts.setup();
     var override = { added: [{ name: 'Берпи' }], removed: ['Планка'] };
     ctx.api.cache.strength['2026-04-18'] = {
@@ -1104,9 +1106,9 @@ function runTests() {
       assert.ok(ctx.mock.store[p]);
       assert.deepStrictEqual(ctx.mock.store[p].dayOverride, override);
     });
-  }); })
+  });
 
-  .then(function() { return test('не добавляет поле dayOverride если его нет в кеше', function() {
+  await test('не добавляет поле dayOverride если его нет в кеше', function() {
     var ctx = ts.setup();
     ctx.api.cache.strength['2026-04-18'] = {
       plan: [{ name: 'Отжимания' }],
@@ -1118,12 +1120,11 @@ function runTests() {
       assert.ok(ctx.mock.store[p]);
       assert.ok(!('dayOverride' in ctx.mock.store[p]), 'dayOverride не должен попасть в документ');
     });
-  }); })
-
-  .then(function() {
-    console.log('\n' + passed + ' passed, ' + failed + ' failed');
-    if (failed > 0) process.exit(1);
   });
+
+
+  console.log('\n' + passed + ' passed, ' + failed + ' failed');
+  if (failed > 0) process.exit(1);
 }
 
 // ─── Хелперы ─────────────────────────────────────────────────────────────────
@@ -1156,4 +1157,4 @@ function fakeDate(fixedIso) {
   return F;
 }
 
-runTests();
+runTests().catch(function(e) { console.error(e); process.exit(1); });
