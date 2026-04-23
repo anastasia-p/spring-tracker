@@ -44,6 +44,19 @@ var PUSHUP_LEVELS = [
   { level: 9, name: 'Руки титана',      reps: 1000000, desc: 'Легенда' },
 ];
 
+var TITAN_LEGS_LEVELS = [
+  { level: 0, name: 'Ватные ноги',      reps: 0,       desc: 'Ноги еще не знают приседаний' },
+  { level: 1, name: 'Деревянные ноги',  reps: 100,     desc: 'Первые повторения' },
+  { level: 2, name: 'Каменные ноги',    reps: 500,     desc: 'Ноги начинают твердеть' },
+  { level: 3, name: 'Бронзовые ноги',   reps: 1000,    desc: 'Закалка идет полным ходом' },
+  { level: 4, name: 'Железные ноги',    reps: 5000,    desc: 'Ноги становятся опорой' },
+  { level: 5, name: 'Стальные ноги',    reps: 10000,   desc: 'Ничто не сдвинет' },
+  { level: 6, name: 'Мифриловые ноги',  reps: 50000,   desc: 'Легкость и мощь слились' },
+  { level: 7, name: 'Алмазные ноги',    reps: 100000,  desc: 'Тверже любого металла' },
+  { level: 8, name: 'Адамантовые ноги', reps: 500000,  desc: 'За пределами человеческого' },
+  { level: 9, name: 'Ноги титана',      reps: 1000000, desc: 'Легенда' },
+];
+
 var PULLUP_LEVELS = [
   { level: 0, name: 'Прикован к земле',      reps: 0,      desc: 'Земля не отпускает' },
   { level: 1, name: 'Первый шаг',            reps: 50,     desc: 'Начало пути вверх' },
@@ -214,6 +227,19 @@ var SKILLS = [
     tracker: 'pushups',
     trackerField: 'totalReps',
     levels: PUSHUP_LEVELS,
+  },
+  {
+    id: 'squats',
+    name: 'Ноги титана',
+    section: 'strength',
+    color: '#A87817',
+    bgColor: '#F8EFD5',
+    icon: '<img src="images/squats.png" alt="">',
+    valueType: 'reps',
+    source: { collection: 'strength', fields: ['Приседания', 'Приседания сумо'] },
+    tracker: 'squats',
+    trackerField: 'totalReps',
+    levels: TITAN_LEGS_LEVELS,
   },
   {
     id: 'pullups',
@@ -483,7 +509,7 @@ if (typeof module !== 'undefined') {
     getLotusLevel, getLotusNextLevel, getLotusProgress,
     getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SNAKE1_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SNAKE1_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,

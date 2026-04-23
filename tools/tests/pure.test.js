@@ -153,9 +153,10 @@ test('getSkillsBySection — wingchun содержит snake1', function() {
   assert.ok(ids.includes('snake1'), 'нет snake1');
 });
 
-test('getSkillsBySection — strength содержит pushups и pullups', function() {
+test('getSkillsBySection — strength содержит pushups, squats и pullups', function() {
   var ids = p.getSkillsBySection('strength').map(function(s) { return s.id; });
   assert.ok(ids.includes('pushups'), 'нет pushups');
+  assert.ok(ids.includes('squats'), 'нет squats');
   assert.ok(ids.includes('pullups'), 'нет pullups');
 });
 
@@ -228,6 +229,39 @@ test('snake1: 200 повт → уровень 2', function() { assert.strictEqua
 test('snake1: 10000 повт → уровень 9 (максимум)', function() { assert.strictEqual(p.getSkillLevel(sn, 10000).level, 9); });
 test('snake1: 99999 повт → уровень 9 (не выходим за максимум)', function() { assert.strictEqual(p.getSkillLevel(sn, 99999).level, 9); });
 test('snake1: getSkillProgress на максимуме → 100%', function() { assert.strictEqual(p.getSkillProgress(sn, 10000), 100); });
+
+// ─── getSkillLevel (reps) — squats (Ноги титана) ─────────────────────────────
+console.log('\ngetSkillLevel — reps (squats)');
+var sq = p.getSkillById('squats');
+
+test('squats: навык существует и называется "Ноги титана"', function() {
+  assert.ok(sq, 'squats не найден');
+  assert.strictEqual(sq.name, 'Ноги титана');
+  assert.strictEqual(sq.section, 'strength');
+  assert.strictEqual(sq.valueType, 'reps');
+});
+test('squats: source.fields содержит Приседания и Приседания сумо', function() {
+  assert.deepStrictEqual(sq.source.fields, ['Приседания', 'Приседания сумо']);
+});
+test('squats: 0 повт → уровень 0', function() { assert.strictEqual(p.getSkillLevel(sq, 0).level, 0); });
+test('squats: 99 повт → уровень 0', function() { assert.strictEqual(p.getSkillLevel(sq, 99).level, 0); });
+test('squats: 100 повт → уровень 1', function() { assert.strictEqual(p.getSkillLevel(sq, 100).level, 1); });
+test('squats: 999 повт → уровень 2', function() { assert.strictEqual(p.getSkillLevel(sq, 999).level, 2); });
+test('squats: 1000000 повт → уровень 9 (Ноги титана)', function() {
+  var lvl = p.getSkillLevel(sq, 1000000);
+  assert.strictEqual(lvl.level, 9);
+  assert.strictEqual(lvl.name, 'Ноги титана');
+});
+test('squats: getSkillProgress 750 между 500 и 1000 → 50%', function() {
+  assert.strictEqual(p.getSkillProgress(sq, 750), 50);
+});
+test('squats: TITAN_LEGS_LEVELS совпадает с PUSHUP_LEVELS по числовым порогам', function() {
+  for (var i = 0; i < p.PUSHUP_LEVELS.length; i++) {
+    assert.strictEqual(p.TITAN_LEGS_LEVELS[i].reps, p.PUSHUP_LEVELS[i].reps,
+      'уровень ' + i + ': пороги должны совпадать');
+    assert.strictEqual(p.TITAN_LEGS_LEVELS[i].level, p.PUSHUP_LEVELS[i].level);
+  }
+});
 
 // ─── getSkillLevel (km) — forest_gump ────────────────────────────────────────
 console.log('\ngetSkillLevel — km (forest_gump)');
