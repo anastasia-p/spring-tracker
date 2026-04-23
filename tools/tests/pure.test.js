@@ -115,6 +115,21 @@ test('все icon — либо <svg>, либо <span>, либо <img>', function
   });
 });
 
+test('в icon нет инлайн width/height (размер задает контейнер .sk-icon)', function() {
+  p.SKILLS.forEach(function(skill) {
+    assert.ok(!/\swidth\s*=\s*"/i.test(skill.icon), skill.id + ': icon содержит инлайн width=');
+    assert.ok(!/\sheight\s*=\s*"/i.test(skill.icon), skill.id + ': icon содержит инлайн height=');
+    assert.ok(!/(?<!-)width\s*:\s*\d/i.test(skill.icon), skill.id + ': icon содержит инлайн width:');
+    assert.ok(!/(?<!-)height\s*:\s*\d/i.test(skill.icon), skill.id + ': icon содержит инлайн height:');
+  });
+});
+
+test('в icon нет инлайн font-size (размер задает контейнер .sk-icon через em)', function() {
+  p.SKILLS.forEach(function(skill) {
+    assert.ok(!/font-size\s*:/i.test(skill.icon), skill.id + ': icon содержит инлайн font-size');
+  });
+});
+
 // ─── getSkillById / getSkillsBySection ───────────────────────────────────────
 console.log('\ngetSkillById / getSkillsBySection');
 

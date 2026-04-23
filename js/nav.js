@@ -200,18 +200,9 @@ function showSkillInfo(skillId) {
     ? 'Навык складывается из упражнения «' + fields[0] + '»'
     : 'Навык складывается из упражнений: ' + fields.map(function(f) { return '«' + f + '»'; }).join(', ');
 
-  // Масштабируем иконку для крупного отображения:
-  // — у SVG убираем inline width/height и ставим 100%
-  // — у span увеличиваем font-size пропорционально (18px→56px, 10px→31px)
-  var scaledIcon = getSkillIcon(skill)
-    .replace(/ width="\d+"| height="\d+"/g, '')
-    .replace(/<svg /g, '<svg width="100%" height="100%" ')
-    .replace(/font-size:18px/g, 'font-size:56px')
-    .replace(/font-size:10px/g, 'font-size:31px');
-
-  var iconHtml = '<div style="width:128px;height:128px;border-radius:24px;background:' + skill.bgColor
-    + ';display:flex;align-items:center;justify-content:center;margin:0 auto 16px;overflow:hidden">'
-    + scaledIcon + '</div>';
+  var iconHtml = '<div class="sk-icon" style="--icon-size:128px;background:' + skill.bgColor
+    + ';border-radius:24px;margin:0 auto 16px">'
+    + getSkillIcon(skill) + '</div>';
 
   var popup = document.createElement('div');
   popup.id = 'dynamic-info-popup';

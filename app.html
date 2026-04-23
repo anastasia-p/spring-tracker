@@ -106,7 +106,11 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .sk-name-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .sk-name{font-size:13px;font-weight:500;color:var(--text)}
 .sk-mid{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.sk-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sk-icon{--icon-size:28px;width:var(--icon-size);height:var(--icon-size);font-size:var(--icon-size);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.sk-icon>svg{width:71%;height:71%;display:block}
+.sk-icon>span{font-size:.64em;line-height:1}
+.sk-icon>span sup{font-size:.56em}
+.sk-icon>img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .sk-level{font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:5px}
 .sk-q{width:16px;height:16px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text-muted);font-size:10px;font-family:'Onest',sans-serif;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
 .sk-amount{font-size:15px;font-weight:500;color:var(--text)}
