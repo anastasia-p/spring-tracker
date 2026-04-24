@@ -94,6 +94,10 @@ function meRender(sheet, opts) {
     btnApply.onclick = opts.onApply;
     footer.appendChild(btnBack);
     footer.appendChild(btnApply);
+  } else if (opts.readonly) {
+    var btnCloseOnly = meBtn('Закрыть', 'secondary');
+    btnCloseOnly.onclick = opts.onClose;
+    footer.appendChild(btnCloseOnly);
   } else {
     var btnClose = meBtn('Закрыть', 'secondary');
     btnClose.onclick = opts.onClose;

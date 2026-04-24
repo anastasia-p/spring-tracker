@@ -16,6 +16,7 @@ function openPlanEditor(opts) {
   var sectionLabel = opts.sectionLabel || section;
   var onSave       = opts.onSave || function() {};
   var editMode     = opts.mode || 'plan'; // 'plan' | 'today'
+  var readonly     = !!opts.readonly;
   var dk           = opts.dk   || null;
   var date         = opts.date || null;
 
@@ -53,6 +54,7 @@ function openPlanEditor(opts) {
         config:            config,
         onSave:            onSave,
         editMode:          editMode,
+        readonly:          readonly,
         dk:                dk,
         date:              date,
         mode:              'list',
@@ -75,7 +77,9 @@ function _peRender(state) {
   var isForm = state.mode === 'form';
   var title  = isForm
     ? (state.editIdx === null ? 'Новое упражнение' : 'Редактировать')
-    : (state.editMode === 'today' ? 'Редактор дня' : 'Редактор плана');
+    : (state.readonly
+        ? 'Просмотр дня'
+        : (state.editMode === 'today' ? 'Редактор дня' : 'Редактор плана'));
 
   meRender(state.sheet, {
     closeBtnId: 'pe-close-btn',
@@ -84,6 +88,7 @@ function _peRender(state) {
     subtitle:   state.sectionLabel + ' — ' + state.dayName,
     title:      title,
     isForm:     isForm,
+    readonly:   state.readonly && !isForm,
     editIdx:    state.editIdx,
     onClose:    function() { _peConfirmClose(state); },
     onBack:     function() {
@@ -102,23 +107,33 @@ function _peRender(state) {
 // ─── Список упражнений ────────────────────────────────────────────────────────
 
 function _peRenderList(state, body) {
-  var exs = state.exercises;
+  var exs      = state.exercises;
+  var readonly = state.readonly;
 
   // Тип дня
   var dayTypes = (state.config && state.config.dayTypes) || [];
   if (dayTypes.length > 0) {
-    var typeWrap = document.createElement('div');
-    typeWrap.style.cssText = 'margin-bottom:14px';
-    var typeLbl = document.createElement('label');
-    typeLbl.textContent   = 'Тип дня';
-    typeLbl.style.cssText = 'display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px';
-    var typeSelect = meSelect(state.dayType, dayTypes.map(function(dt) {
-      return { value: dt.type, label: dt.label };
-    }));
-    typeSelect.onchange = function() { state.dayType = this.value; state.dirty = true; };
-    typeWrap.appendChild(typeLbl);
-    typeWrap.appendChild(typeSelect);
-    body.appendChild(typeWrap);
+    if (readonly) {
+      var typeConfig = dayTypes.filter(function(dt) { return dt.type === state.dayType; })[0];
+      var typeLabel  = typeConfig ? typeConfig.label : state.dayType;
+      var typeRow = document.createElement('div');
+      typeRow.style.cssText = 'margin-bottom:12px;font-size:13px;color:var(--text-subtle)';
+      typeRow.innerHTML = '<span style="color:var(--text-muted)">Тип дня:</span> ' + escapeHtml(typeLabel);
+      body.appendChild(typeRow);
+    } else {
+      var typeWrap = document.createElement('div');
+      typeWrap.style.cssText = 'margin-bottom:14px';
+      var typeLbl = document.createElement('label');
+      typeLbl.textContent   = 'Тип дня';
+      typeLbl.style.cssText = 'display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px';
+      var typeSelect = meSelect(state.dayType, dayTypes.map(function(dt) {
+        return { value: dt.type, label: dt.label };
+      }));
+      typeSelect.onchange = function() { state.dayType = this.value; state.dirty = true; };
+      typeWrap.appendChild(typeLbl);
+      typeWrap.appendChild(typeSelect);
+      body.appendChild(typeWrap);
+    }
 
     var divider = document.createElement('div');
     divider.style.cssText = 'border-top:0.5px solid var(--border-light);margin-bottom:12px';
@@ -126,27 +141,29 @@ function _peRenderList(state, body) {
   }
 
   // Кнопка вставить
-  var _pasteKey = state.section + ':' + state.dayIndex;
-  if (_planEditorClipboard && _planEditorClipboard._sourceKey !== _pasteKey && !state.pastedThisSession) {
-    var clipName  = _planEditorClipboard.name;
-    var shortName = clipName.length > 26 ? clipName.slice(0, 26) + '…' : clipName;
-    var pasteBtn  = document.createElement('button');
-    pasteBtn.textContent   = 'Вставить: ' + shortName;
-    pasteBtn.style.cssText = [
-      'width:100%;padding:9px 12px;margin-bottom:10px',
-      'border:1px dashed var(--green);border-radius:10px',
-      'background:none;color:var(--green);font-size:13px',
-      'cursor:pointer;text-align:left'
-    ].join(';');
-    pasteBtn.onclick = function() {
-      var copy = JSON.parse(JSON.stringify(_planEditorClipboard));
-      delete copy._sourceKey;
-      state.exercises.push(copy);
-      state.pastedThisSession = true;
-      state.dirty = true;
-      _peRender(state);
-    };
-    body.appendChild(pasteBtn);
+  if (!readonly) {
+    var _pasteKey = state.section + ':' + state.dayIndex;
+    if (_planEditorClipboard && _planEditorClipboard._sourceKey !== _pasteKey && !state.pastedThisSession) {
+      var clipName  = _planEditorClipboard.name;
+      var shortName = clipName.length > 26 ? clipName.slice(0, 26) + '…' : clipName;
+      var pasteBtn  = document.createElement('button');
+      pasteBtn.textContent   = 'Вставить: ' + shortName;
+      pasteBtn.style.cssText = [
+        'width:100%;padding:9px 12px;margin-bottom:10px',
+        'border:1px dashed var(--green);border-radius:10px',
+        'background:none;color:var(--green);font-size:13px',
+        'cursor:pointer;text-align:left'
+      ].join(';');
+      pasteBtn.onclick = function() {
+        var copy = JSON.parse(JSON.stringify(_planEditorClipboard));
+        delete copy._sourceKey;
+        state.exercises.push(copy);
+        state.pastedThisSession = true;
+        state.dirty = true;
+        _peRender(state);
+      };
+      body.appendChild(pasteBtn);
+    }
   }
 
   // Пустой список
@@ -182,78 +199,85 @@ function _peRenderList(state, body) {
       };
     })(i, btnCopy);
 
-    var btnEdit = meIconBtn('\u270F', 'Редактировать');
-    btnEdit.onclick = (function(idx) {
-      return function() {
-        state.editIdx  = idx;
-        state.formData = JSON.parse(JSON.stringify(state.exercises[idx]));
-        state.mode     = 'form';
-        _peRender(state);
-      };
-    })(i);
-
-    var btnUp = meIconBtn('\u2191', 'Выше');
-    if (i === 0) btnUp.style.visibility = 'hidden';
-    btnUp.onclick = (function(idx) {
-      return function() {
-        var tmp = state.exercises[idx - 1];
-        state.exercises[idx - 1] = state.exercises[idx];
-        state.exercises[idx] = tmp;
-        state.dirty = true;
-        state.savedScrollTop = body.scrollTop;
-        _peRender(state);
-      };
-    })(i);
-
-    var btnDown = meIconBtn('\u2193', 'Ниже');
-    if (i === exs.length - 1) btnDown.style.visibility = 'hidden';
-    btnDown.onclick = (function(idx) {
-      return function() {
-        var tmp = state.exercises[idx + 1];
-        state.exercises[idx + 1] = state.exercises[idx];
-        state.exercises[idx] = tmp;
-        state.dirty = true;
-        state.savedScrollTop = body.scrollTop;
-        _peRender(state);
-      };
-    })(i);
-
-    var btnDel = meIconBtn('\u2715', 'Удалить');
-    btnDel.style.color = 'var(--red-dark)';
-    btnDel.onclick = (function(idx) {
-      return function() {
-        if (confirm('Удалить "' + state.exercises[idx].name + '"?')) {
-          state.exercises.splice(idx, 1);
-          state.dirty = true;
-          _peRender(state);
-        }
-      };
-    })(i);
-
     item.appendChild(info);
-    item.appendChild(btnUp);
-    item.appendChild(btnDown);
-    item.appendChild(btnCopy);
-    item.appendChild(btnEdit);
-    item.appendChild(btnDel);
+
+    if (readonly) {
+      item.appendChild(btnCopy);
+    } else {
+      var btnEdit = meIconBtn('\u270F', 'Редактировать');
+      btnEdit.onclick = (function(idx) {
+        return function() {
+          state.editIdx  = idx;
+          state.formData = JSON.parse(JSON.stringify(state.exercises[idx]));
+          state.mode     = 'form';
+          _peRender(state);
+        };
+      })(i);
+
+      var btnUp = meIconBtn('\u2191', 'Выше');
+      if (i === 0) btnUp.style.visibility = 'hidden';
+      btnUp.onclick = (function(idx) {
+        return function() {
+          var tmp = state.exercises[idx - 1];
+          state.exercises[idx - 1] = state.exercises[idx];
+          state.exercises[idx] = tmp;
+          state.dirty = true;
+          state.savedScrollTop = body.scrollTop;
+          _peRender(state);
+        };
+      })(i);
+
+      var btnDown = meIconBtn('\u2193', 'Ниже');
+      if (i === exs.length - 1) btnDown.style.visibility = 'hidden';
+      btnDown.onclick = (function(idx) {
+        return function() {
+          var tmp = state.exercises[idx + 1];
+          state.exercises[idx + 1] = state.exercises[idx];
+          state.exercises[idx] = tmp;
+          state.dirty = true;
+          state.savedScrollTop = body.scrollTop;
+          _peRender(state);
+        };
+      })(i);
+
+      var btnDel = meIconBtn('\u2715', 'Удалить');
+      btnDel.style.color = 'var(--red-dark)';
+      btnDel.onclick = (function(idx) {
+        return function() {
+          if (confirm('Удалить "' + state.exercises[idx].name + '"?')) {
+            state.exercises.splice(idx, 1);
+            state.dirty = true;
+            _peRender(state);
+          }
+        };
+      })(i);
+
+      item.appendChild(btnUp);
+      item.appendChild(btnDown);
+      item.appendChild(btnCopy);
+      item.appendChild(btnEdit);
+      item.appendChild(btnDel);
+    }
     body.appendChild(item);
   });
 
   // Добавить
-  var addBtn = document.createElement('button');
-  addBtn.textContent   = '+ добавить упражнение';
-  addBtn.style.cssText = [
-    'width:100%;padding:10px;margin-top:4px',
-    'border:1px dashed #ccc;border-radius:10px',
-    'background:none;color:var(--text-muted);font-size:13px;cursor:pointer'
-  ].join(';');
-  addBtn.onclick = function() {
-    state.editIdx  = null;
-    state.formData = { name: '', desc: '', note: '', trackValue: false, unit: '' };
-    state.mode     = 'form';
-    _peRender(state);
-  };
-  body.appendChild(addBtn);
+  if (!readonly) {
+    var addBtn = document.createElement('button');
+    addBtn.textContent   = '+ добавить упражнение';
+    addBtn.style.cssText = [
+      'width:100%;padding:10px;margin-top:4px',
+      'border:1px dashed #ccc;border-radius:10px',
+      'background:none;color:var(--text-muted);font-size:13px;cursor:pointer'
+    ].join(';');
+    addBtn.onclick = function() {
+      state.editIdx  = null;
+      state.formData = { name: '', desc: '', note: '', trackValue: false, unit: '' };
+      state.mode     = 'form';
+      _peRender(state);
+    };
+    body.appendChild(addBtn);
+  }
 
   if (state.savedScrollTop != null) {
     body.scrollTop = state.savedScrollTop;
