@@ -306,7 +306,7 @@ var SKILLS = [
     section: 'wingchun',
     color: '#534AB7',
     bgColor: '#EEEDFE',
-    icon: '<span style="font-family:serif;color:#534AB7;line-height:1">十三</span>',
+    icon: '<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><text x="15" y="19" text-anchor="middle" font-family="serif" font-size="11" fill="#534AB7" textLength="26" lengthAdjust="spacingAndGlyphs">十三四</text></svg>',
     valueType: 'reps',
     source: { collection: 'wingchun', field: 'Ши Сан Сы' },
     tracker: 'shisansi',
