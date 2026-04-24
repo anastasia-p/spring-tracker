@@ -155,7 +155,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 120px 48px 72px;
+      padding: 120px 48px 48px;
       background: var(--pink);
       position: relative;
       overflow: hidden;
@@ -514,6 +514,23 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .skill-card-lp-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .skill-card-lp-icon--clickable {
+      cursor: zoom-in;
+      transition: transform 0.15s ease;
+    }
+
+    .skill-card-lp-icon--clickable:hover {
+      transform: scale(1.08);
     }
 
     .skill-card-lp-val {
@@ -733,6 +750,78 @@
 
     @media (max-width: 480px) {
       .roadmap-section { padding: 56px 16px; }
+    }
+
+    /* ── SKILLS MARQUEE (under hero) ──────────────── */
+    .skills-marquee {
+      overflow: hidden;
+      padding: 16px 0 32px;
+      background: #fff;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+              mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+    }
+
+    .mq-track {
+      display: flex;
+      gap: 24px;
+      width: max-content;
+      animation: mq-scroll 55s linear infinite;
+    }
+
+    .skills-marquee:hover .mq-track { animation-play-state: paused; }
+
+    .mq-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 20px 6px 6px;
+      border-radius: 999px;
+      flex-shrink: 0;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .mq-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    /* Для нетекстовых иконок (иероглифы, SVG) — белый кружок */
+    .mq-icon:not(:has(img)) {
+      background: #fff;
+    }
+
+    .mq-icon img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mq-char { font-family: serif; font-size: 22px; line-height: 1; }
+    .mq-char--small { font-size: 11px; white-space: nowrap; }
+
+    @keyframes mq-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 480px) {
+      .skills-marquee { padding: 12px 0 22px; }
+      .mq-track { gap: 16px; animation-duration: 45s; }
+      .mq-item { padding: 5px 16px 5px 5px; font-size: 14px; }
+      .mq-icon { width: 36px; height: 36px; }
+      .mq-char { font-size: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mq-track { animation: none; }
     }
 
     /* ── FOUNDER BLOCK ───────────────────────────── */
@@ -1223,7 +1312,7 @@
       padding-right: 80px;
     }
     @media (max-width: 768px) {
-      .hero { padding: 100px 24px 56px; }
+      .hero { padding: 100px 24px 32px; }
       .hero-inner { grid-template-columns: 1fr; gap: 28px; }
       .hero-right { display: flex; justify-content: center; }
       .hero-left { text-align: center; }
@@ -1248,7 +1337,7 @@
 
     @media (max-width: 480px) {
       nav { padding: 12px 16px; }
-      .hero { padding: 100px 20px 56px; }
+      .hero { padding: 100px 20px 28px; }
       .hero-inner { grid-template-columns: 1fr; gap: 24px; }
       .hero-right { display: flex; justify-content: center; }
       .hero-left { text-align: center; }
@@ -1544,6 +1633,108 @@
   </div>
 </div>
 
+<!-- SKILLS MARQUEE -->
+<div class="skills-marquee" aria-label="Навыки в приложении">
+  <div class="mq-track">
+    <div class="mq-item" style="background:#F5E5E9">
+      <span class="mq-icon"><img src="images/pushups.png" alt=""></span>
+      <span class="mq-name">Руки титана</span>
+    </div>
+    <div class="mq-item" style="background:#F3E8FA">
+      <span class="mq-icon"><img src="images/lotus.png" alt=""></span>
+      <span class="mq-name">Лотос</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE">
+      <span class="mq-icon"><span class="mq-char" style="color:#534AB7">小</span></span>
+      <span class="mq-name">Сиу Ним Тау</span>
+    </div>
+    <div class="mq-item" style="background:#E1F5EE">
+      <span class="mq-icon"><img src="images/forest_gump.png" alt=""></span>
+      <span class="mq-name">Форрест Гамп</span>
+    </div>
+    <div class="mq-item" style="background:#F8EFD5">
+      <span class="mq-icon"><img src="images/squats.png" alt=""></span>
+      <span class="mq-name">Ноги титана</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE">
+      <span class="mq-icon"><img src="images/tree.png" alt=""></span>
+      <span class="mq-name">Дерево</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE">
+      <span class="mq-icon"><svg viewBox="0 0 30 30" fill="none" width="22" height="22"><path d="M3 25 L15 5 L27 25 Z" fill="#7F77DD"/><path d="M8 25 L15 13 L22 25 Z" fill="#534AB7"/><path d="M12 9 L15 5 L18 9 L15 12 Z" fill="white"/></svg></span>
+      <span class="mq-name">Стойка горы</span>
+    </div>
+    <div class="mq-item" style="background:#E6F1FB">
+      <span class="mq-icon"><img src="images/pullups.png" alt=""></span>
+      <span class="mq-name">Восхождение к небесам</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE">
+      <span class="mq-icon"><span class="mq-char" style="color:#534AB7">桥</span></span>
+      <span class="mq-name">Чам Кью</span>
+    </div>
+    <div class="mq-item" style="background:#DDF0E2">
+      <span class="mq-icon"><img src="images/snake1.png" alt=""></span>
+      <span class="mq-name">Змея №1</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE">
+      <span class="mq-icon"><span class="mq-char mq-char--small" style="color:#534AB7">十三四</span></span>
+      <span class="mq-name">Ши Сан Сы</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE">
+      <span class="mq-icon"><span class="mq-char" style="color:#534AB7">樁<sup style="font-family:sans-serif;font-size:0.5em">1</sup></span></span>
+      <span class="mq-name">Манекен №1</span>
+    </div>
+    <div class="mq-item" style="background:#F5E5E9" aria-hidden="true">
+      <span class="mq-icon"><img src="images/pushups.png" alt=""></span>
+      <span class="mq-name">Руки титана</span>
+    </div>
+    <div class="mq-item" style="background:#F3E8FA" aria-hidden="true">
+      <span class="mq-icon"><img src="images/lotus.png" alt=""></span>
+      <span class="mq-name">Лотос</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE" aria-hidden="true">
+      <span class="mq-icon"><span class="mq-char" style="color:#534AB7">小</span></span>
+      <span class="mq-name">Сиу Ним Тау</span>
+    </div>
+    <div class="mq-item" style="background:#E1F5EE" aria-hidden="true">
+      <span class="mq-icon"><img src="images/forest_gump.png" alt=""></span>
+      <span class="mq-name">Форрест Гамп</span>
+    </div>
+    <div class="mq-item" style="background:#F8EFD5" aria-hidden="true">
+      <span class="mq-icon"><img src="images/squats.png" alt=""></span>
+      <span class="mq-name">Ноги титана</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE" aria-hidden="true">
+      <span class="mq-icon"><img src="images/tree.png" alt=""></span>
+      <span class="mq-name">Дерево</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE" aria-hidden="true">
+      <span class="mq-icon"><svg viewBox="0 0 30 30" fill="none" width="22" height="22"><path d="M3 25 L15 5 L27 25 Z" fill="#7F77DD"/><path d="M8 25 L15 13 L22 25 Z" fill="#534AB7"/><path d="M12 9 L15 5 L18 9 L15 12 Z" fill="white"/></svg></span>
+      <span class="mq-name">Стойка горы</span>
+    </div>
+    <div class="mq-item" style="background:#E6F1FB" aria-hidden="true">
+      <span class="mq-icon"><img src="images/pullups.png" alt=""></span>
+      <span class="mq-name">Восхождение к небесам</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE" aria-hidden="true">
+      <span class="mq-icon"><span class="mq-char" style="color:#534AB7">桥</span></span>
+      <span class="mq-name">Чам Кью</span>
+    </div>
+    <div class="mq-item" style="background:#DDF0E2" aria-hidden="true">
+      <span class="mq-icon"><img src="images/snake1.png" alt=""></span>
+      <span class="mq-name">Змея №1</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE" aria-hidden="true">
+      <span class="mq-icon"><span class="mq-char mq-char--small" style="color:#534AB7">十三四</span></span>
+      <span class="mq-name">Ши Сан Сы</span>
+    </div>
+    <div class="mq-item" style="background:#EEEDFE" aria-hidden="true">
+      <span class="mq-icon"><span class="mq-char" style="color:#534AB7">樁<sup style="font-family:sans-serif;font-size:0.5em">1</sup></span></span>
+      <span class="mq-name">Манекен №1</span>
+    </div>
+  </div>
+</div>
+
 <!-- FOUNDER -->
 <div class="founder-section">
   <div class="founder-inner">
@@ -1586,8 +1777,8 @@
             <div class="skill-card-lp" data-label="→ Отжимания">
               <div class="skill-card-lp-name">Руки Титана</div>
               <div class="skill-card-lp-mid">
-                <div class="skill-card-lp-icon" style="background:#FAECE7;">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 12h12M6 12c0-2 1.5-4 4-4M6 12c0 2 1.5 4 4 4M18 12c0-2-1.5-4-4-4M18 12c0 2-1.5 4-4 4" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="4" r="2" fill="#D85A30"/><circle cx="12" cy="20" r="2" fill="#D85A30"/></svg>
+                <div class="skill-card-lp-icon skill-card-lp-icon--clickable" style="background:#FAECE7;" data-lightbox-src="images/skill-pushups.webp" onclick="openLightbox('images/skill-pushups.webp', this)">
+                  <img src="images/pushups.png" alt="">
                 </div>
                 <span class="skill-card-lp-val">650<span class="skill-card-lp-unit"> повт.</span></span>
               </div>
@@ -1602,8 +1793,8 @@
             <div class="skill-card-lp" data-label="→ Медитация">
               <div class="skill-card-lp-name">Лотос</div>
               <div class="skill-card-lp-mid">
-                <div class="skill-card-lp-icon" style="background:#F3E8FA;">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="16" rx="10" ry="3" fill="#E8C8F0" opacity="0.4"/><path d="M12 16 Q6 10 9 1 Q13 8 12 16Z" fill="#D4A0E0"/><path d="M12 16 Q18 10 15 1 Q11 8 12 16Z" fill="#B06FC4"/><path d="M12 16 Q2 12 3 5 Q8 11 12 16Z" fill="#C880D8"/><path d="M12 16 Q22 12 21 5 Q16 11 12 16Z" fill="#9B4FB5"/><path d="M12 16 Q4 17 1 11 Q7 14 12 16Z" fill="#D4A0E0" opacity="0.7"/><path d="M12 16 Q20 17 23 11 Q17 14 12 16Z" fill="#B06FC4" opacity="0.7"/><circle cx="12" cy="15" r="2.5" fill="#F3E8FA"/><circle cx="12" cy="15" r="1.2" fill="#E8C8F0"/></svg>
+                <div class="skill-card-lp-icon skill-card-lp-icon--clickable" style="background:#F3E8FA;" data-lightbox-src="images/skill-lotus.webp" onclick="openLightbox('images/skill-lotus.webp', this)">
+                  <img src="images/lotus.png" alt="">
                 </div>
                 <span class="skill-card-lp-val">5.0<span class="skill-card-lp-unit"> ч</span></span>
               </div>
@@ -1618,7 +1809,7 @@
             <div class="skill-card-lp" data-label="→ Форма Вин Чун">
               <div class="skill-card-lp-name">Сиу Ним Тау</div>
               <div class="skill-card-lp-mid">
-                <div class="skill-card-lp-icon" style="background:#EEEDFE;">
+                <div class="skill-card-lp-icon skill-card-lp-icon--clickable" style="background:#EEEDFE;" data-lightbox-src="images/skill-slt.webp" onclick="openLightbox('images/skill-slt.webp', this)">
                   <span style="font-size:18px;font-family:serif;color:#534AB7;line-height:1">小</span>
                 </div>
                 <span class="skill-card-lp-val">119<span class="skill-card-lp-unit"> повт.</span></span>
@@ -1856,7 +2047,7 @@
 
       <p>Не хватает чего-то? Напиши — подумаем вместе.</p>
 
-      <p>Хочешь поучаствовать? Художник, который нарисует иконки навыков, был бы очень кстати. Пиши на <a href="mailto:qt.trek@gmail.com">qt.trek@gmail.com</a>.</p>
+      <p>Хочешь поучаствовать в разработке, тестировании или дизайне? Пиши на <a href="mailto:qt.trek@gmail.com">qt.trek@gmail.com</a>.</p>
     </div>
   </div>
 </div>
@@ -1971,9 +2162,16 @@ var lightboxImages = [];
 var lightboxIndex = 0;
 
 function openLightbox(src, el){
-  // Collect images only from the same block
-  var container = el ? (el.closest('.centered-inner') || el.closest('.skills-inner') || el.closest('.carousel-wrap') || document) : document;
-  lightboxImages = Array.from(container.querySelectorAll('.phone-frame img')).map(function(img){ return img.getAttribute('src'); });
+  // Skill cards grid — collect images by data-lightbox-src attribute
+  if (el && el.closest('.skill-cards-grid')) {
+    var gridContainer = el.closest('.skill-cards-grid');
+    lightboxImages = Array.from(gridContainer.querySelectorAll('[data-lightbox-src]'))
+      .map(function(n){ return n.getAttribute('data-lightbox-src'); });
+  } else {
+    // Phone-frame screenshots — collect by image src in the enclosing block
+    var container = el ? (el.closest('.centered-inner') || el.closest('.skills-inner') || el.closest('.carousel-wrap') || document) : document;
+    lightboxImages = Array.from(container.querySelectorAll('.phone-frame img')).map(function(img){ return img.getAttribute('src'); });
+  }
   lightboxIndex = lightboxImages.indexOf(src);
   if (lightboxIndex === -1) lightboxIndex = 0;
   document.getElementById('lightbox-img').src = src;
