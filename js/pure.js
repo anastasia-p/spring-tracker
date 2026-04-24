@@ -310,7 +310,7 @@ var SKILLS = [
     section: 'wingchun',
     color: '#534AB7',
     bgColor: '#EEEDFE',
-    icon: '<span style="font-family:serif;color:#534AB7;line-height:1;font-size:0.4em">十三四</span>',
+    icon: '<span style="font-family:serif;color:#534AB7;line-height:1;font-size:0.33em;white-space:nowrap">十三四</span>',
     valueType: 'reps',
     source: { collection: 'wingchun', field: 'Ши Сан Сы' },
     tracker: 'shisansi',
