@@ -195,7 +195,7 @@ var SKILLS = [
     section: 'qigong',
     color: '#1D9E75',
     bgColor: '#EEEDFE',
-    icon: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20v-8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/><path d="M12 12 Q13 6 19 4 Q18 11 12 12Z" fill="#1D9E75"/><path d="M12 15 Q11 9 5 8 Q6 14 12 15Z" fill="#5DCAA5"/></svg>',
+    icon: '<img src="images/tree.png" alt="">',
     valueType: 'minutes',
     source: { collection: 'qigong', field: 'Дерево' },
     tracker: 'tree',
