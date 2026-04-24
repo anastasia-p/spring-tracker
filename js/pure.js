@@ -203,10 +203,14 @@ var SECTIONS = Object.keys(SECTION_META);
 // tracker     — документ в users/{uid}/tracker/
 // trackerField — поле в документе tracker
 // icon        — HTML: <svg>, <span> или <img src="images/*.png">
-// bgColor     — подложка под иконку (.sk-icon style="background:…"). Для <svg> (71%
-//               контейнера) и <span> — виден по краям. Для <img> скрыт картинкой
-//               (width:100% object-fit:cover) и виден только как fallback при
-//               ошибке загрузки — не удалять, задаёт аварийный цвет.
+// bgColor     — подложка под иконку (.sk-icon style="background:…"). Для <svg>
+//               (жестко 71% контейнера через CSS) виден по всему периметру.
+//               Для <span> — видимость зависит от font-size: один глиф CJK-шрифта
+//               занимает ~1em, в .sk-icon один иероглиф заполняет иконку плотно.
+//               Для нескольких глифов в span можно уменьшать через font-size в em
+//               (0.4em и т.п.) — остается размер-независимым. Для <img> фон скрыт
+//               картинкой (width:100% object-fit:cover) и виден только как fallback
+//               при ошибке загрузки — не удалять, задаёт аварийный цвет.
 
 var SKILLS = [
   {
@@ -306,7 +310,7 @@ var SKILLS = [
     section: 'wingchun',
     color: '#534AB7',
     bgColor: '#EEEDFE',
-    icon: '<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><text x="15" y="20" text-anchor="middle" font-family="serif" font-size="14" fill="#534AB7" textLength="27" lengthAdjust="spacingAndGlyphs">十三四</text></svg>',
+    icon: '<span style="font-family:serif;color:#534AB7;line-height:1;font-size:0.4em">十三四</span>',
     valueType: 'reps',
     source: { collection: 'wingchun', field: 'Ши Сан Сы' },
     tracker: 'shisansi',

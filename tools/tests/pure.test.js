@@ -124,9 +124,12 @@ test('в icon нет инлайн width/height (размер задает кон
   });
 });
 
-test('в icon нет инлайн font-size (размер задает контейнер .sk-icon через em)', function() {
+test('в icon нет инлайн font-size в абсолютных единицах (разрешены em/rem/%)', function() {
   p.SKILLS.forEach(function(skill) {
-    assert.ok(!/font-size\s*:/i.test(skill.icon), skill.id + ': icon содержит инлайн font-size');
+    assert.ok(
+      !/font-size\s*:\s*[\d.]+\s*(px|pt|pc|cm|mm|in|Q)\b/i.test(skill.icon),
+      skill.id + ': icon содержит font-size в абсолютных единицах (используй em/rem/%)'
+    );
   });
 });
 
