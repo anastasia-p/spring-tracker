@@ -805,7 +805,7 @@
     }
 
     .mq-char { font-family: serif; font-size: 22px; line-height: 1; }
-    .mq-char--small { font-size: 11px; white-space: nowrap; }
+    .mq-char.mq-char--small { font-size: 11px; white-space: nowrap; }
 
     @keyframes mq-scroll {
       from { transform: translateX(0); }
@@ -818,6 +818,7 @@
       .mq-item { padding: 5px 16px 5px 5px; font-size: 14px; }
       .mq-icon { width: 36px; height: 36px; }
       .mq-char { font-size: 20px; }
+      .mq-char.mq-char--small { font-size: 9px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
