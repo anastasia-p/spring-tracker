@@ -109,6 +109,9 @@ function doRegister() {
   }
   setAuthLoading(true);
   firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(function() {
+      if (typeof ym === 'function') ym(108404687, 'reachGoal', 'registration_created');
+    })
     .catch(function(e) { setAuthLoading(false); showAuthError(getAuthErrorMessage(e.code), 'register'); });
 }
 
@@ -270,6 +273,7 @@ function finishOnboarding() {
       });
     }).catch(function(e) { console.warn('notify-new-user failed:', e); });
   }).then(function() {
+    if (typeof ym === 'function') ym(108404687, 'reachGoal', 'registration_complete');
     startApp(selected);
   }).catch(function(e) {
     btn.disabled    = false;
