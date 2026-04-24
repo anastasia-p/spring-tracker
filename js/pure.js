@@ -111,6 +111,21 @@ var DUMMY1_LEVELS = [
 ];
 
 
+// Ши Сан Сы: слова уровней — как у форм (slt/ck), пороги — как у манекена.
+var SHISANSI_LEVELS = [
+  { level: 0, name: 'Незнакомец',      reps: 0,     desc: 'Форма еще не знает тебя' },
+  { level: 1, name: 'Ученик',          reps: 50,    desc: 'Первые шаги по пути' },
+  { level: 2, name: 'Практикующий',    reps: 200,   desc: 'Тело начинает запоминать' },
+  { level: 3, name: 'Последователь',   reps: 500,   desc: 'Форма входит в привычку' },
+  { level: 4, name: 'Боец',            reps: 1000,  desc: 'Движения становятся точнее' },
+  { level: 5, name: 'Воин',            reps: 3000,  desc: 'Форма течет без усилий' },
+  { level: 6, name: 'Мастер форм',     reps: 6000,  desc: 'Тело и форма — одно' },
+  { level: 7, name: 'Страж традиции',  reps: 10000, desc: 'Передаешь через движение' },
+  { level: 8, name: 'Хранитель пути',  reps: 25000, desc: 'Форма живет в тебе' },
+  { level: 9, name: 'Живая форма',     reps: 50000, desc: 'Ты и есть форма' },
+];
+
+
 var SNAKE1_LEVELS = [
   { level: 0, name: 'Яйцо в траве',         reps: 0,     desc: 'Свернулась и ждет' },
   { level: 1, name: 'Первый изгиб',         reps: 50,    desc: 'Тело учится течь' },
@@ -284,6 +299,19 @@ var SKILLS = [
     tracker: 'ck',
     trackerField: 'totalReps',
     levels: FORMS_LEVELS,
+  },
+  {
+    id: 'shisansi',
+    name: 'Ши Сан Сы',
+    section: 'wingchun',
+    color: '#534AB7',
+    bgColor: '#EEEDFE',
+    icon: '<span style="font-family:serif;color:#534AB7;line-height:1">十三</span>',
+    valueType: 'reps',
+    source: { collection: 'wingchun', field: 'Ши Сан Сы' },
+    tracker: 'shisansi',
+    trackerField: 'totalReps',
+    levels: SHISANSI_LEVELS,
   },
   {
     id: 'dummy1',
@@ -514,7 +542,7 @@ if (typeof module !== 'undefined') {
     getLotusLevel, getLotusNextLevel, getLotusProgress,
     getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SNAKE1_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SHISANSI_LEVELS, SNAKE1_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,

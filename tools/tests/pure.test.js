@@ -230,6 +230,51 @@ test('snake1: 10000 повт → уровень 9 (максимум)', function(
 test('snake1: 99999 повт → уровень 9 (не выходим за максимум)', function() { assert.strictEqual(p.getSkillLevel(sn, 99999).level, 9); });
 test('snake1: getSkillProgress на максимуме → 100%', function() { assert.strictEqual(p.getSkillProgress(sn, 10000), 100); });
 
+// ─── getSkillLevel (reps) — shisansi ─────────────────────────────────────────
+console.log('\ngetSkillLevel — reps (shisansi)');
+var shi = p.getSkillById('shisansi');
+
+test('shisansi: навык существует и называется "Ши Сан Сы"', function() {
+  assert.ok(shi, 'shisansi не найден');
+  assert.strictEqual(shi.name, 'Ши Сан Сы');
+  assert.strictEqual(shi.section, 'wingchun');
+  assert.strictEqual(shi.valueType, 'reps');
+});
+test('shisansi: source.field = "Ши Сан Сы"', function() {
+  assert.strictEqual(shi.source.field, 'Ши Сан Сы');
+});
+test('shisansi: 0 повт → уровень 0', function() { assert.strictEqual(p.getSkillLevel(shi, 0).level, 0); });
+test('shisansi: 49 повт → уровень 0', function() { assert.strictEqual(p.getSkillLevel(shi, 49).level, 0); });
+test('shisansi: 50 повт → уровень 1 (Ученик)', function() {
+  var lvl = p.getSkillLevel(shi, 50);
+  assert.strictEqual(lvl.level, 1);
+  assert.strictEqual(lvl.name, 'Ученик');
+});
+test('shisansi: 200 повт → уровень 2', function() { assert.strictEqual(p.getSkillLevel(shi, 200).level, 2); });
+test('shisansi: 50000 повт → уровень 9 (Живая форма)', function() {
+  var lvl = p.getSkillLevel(shi, 50000);
+  assert.strictEqual(lvl.level, 9);
+  assert.strictEqual(lvl.name, 'Живая форма');
+});
+test('shisansi: 999999 повт → уровень 9 (не выходим за максимум)', function() { assert.strictEqual(p.getSkillLevel(shi, 999999).level, 9); });
+test('shisansi: getSkillProgress 125 между 50 и 200 → 50%', function() {
+  assert.strictEqual(p.getSkillProgress(shi, 125), 50);
+});
+test('shisansi: getSkillProgress на максимуме → 100%', function() { assert.strictEqual(p.getSkillProgress(shi, 50000), 100); });
+test('shisansi: SHISANSI_LEVELS совпадает с DUMMY1_LEVELS по числовым порогам', function() {
+  for (var i = 0; i < p.DUMMY1_LEVELS.length; i++) {
+    assert.strictEqual(p.SHISANSI_LEVELS[i].reps, p.DUMMY1_LEVELS[i].reps,
+      'уровень ' + i + ': пороги должны совпадать');
+    assert.strictEqual(p.SHISANSI_LEVELS[i].level, p.DUMMY1_LEVELS[i].level);
+  }
+});
+test('shisansi: SHISANSI_LEVELS совпадает с FORMS_LEVELS по названиям уровней', function() {
+  for (var i = 0; i < p.FORMS_LEVELS.length; i++) {
+    assert.strictEqual(p.SHISANSI_LEVELS[i].name, p.FORMS_LEVELS[i].name,
+      'уровень ' + i + ': названия должны совпадать');
+  }
+});
+
 // ─── getSkillLevel (reps) — squats (Ноги титана) ─────────────────────────────
 console.log('\ngetSkillLevel — reps (squats)');
 var sq = p.getSkillById('squats');
