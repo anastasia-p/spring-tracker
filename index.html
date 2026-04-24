@@ -765,10 +765,13 @@
       display: flex;
       gap: 24px;
       width: max-content;
-      animation: mq-scroll 55s linear infinite;
+      animation: mq-scroll 75s linear infinite;
+      animation-play-state: paused;
     }
 
-    .skills-marquee:hover .mq-track { animation-play-state: paused; }
+    .mq-track.started { animation-play-state: running; }
+
+    .skills-marquee:hover .mq-track.started { animation-play-state: paused; }
 
     .mq-item {
       display: flex;
@@ -814,7 +817,7 @@
 
     @media (max-width: 480px) {
       .skills-marquee { padding: 16px 0 22px; }
-      .mq-track { gap: 16px; animation-duration: 45s; }
+      .mq-track { gap: 16px; animation-duration: 60s; }
       .mq-item { padding: 5px 16px 5px 5px; font-size: 14px; }
       .mq-icon { width: 36px; height: 36px; }
       .mq-char { font-size: 20px; }
@@ -1380,10 +1383,10 @@
       70%  { opacity:1; transform:scaleY(1.06); }
       100% { opacity:1; transform:scaleY(1); }
     }
-    .spr-s  { stroke-dasharray:300; stroke-dashoffset:300; animation:gstem 2.2s cubic-bezier(0.4,0,0.2,1) forwards; }
-    .spr-l  { transform-box:fill-box; transform-origin:right center; opacity:0; animation:gll .9s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .spr-s  { stroke-dasharray:300; stroke-dashoffset:300; animation:gstem 2.8s linear forwards; }
+    .spr-l  { transform-box:fill-box; transform-origin:right center; opacity:0; animation:gll 1.2s cubic-bezier(0.34,1.56,0.64,1) forwards; }
     .spr-lr { transform-origin:left center; }
-    .spr-lt { transform-box:fill-box; transform-origin:center bottom; opacity:0; animation:glt .9s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .spr-lt { transform-box:fill-box; transform-origin:center bottom; opacity:0; animation:glt 1.2s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
     @media (max-width: 768px) { .hero-sprouts { display: none; } }
 
@@ -1429,104 +1432,104 @@
 
       <!-- Задний план — рисуется первым -->
       <g transform="translate(430,445) scale(1.6)" opacity=".2">
-        <path class="spr-s"  style="animation-delay:2.4s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:3.2s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:3.7s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:4.2s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:4.7s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:5.2s"  d="M0-190 Q-20-212-44-218 Q-38-194 0-190Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:5.7s" d="M0-218 Q20-240 44-246 Q38-220 0-218Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:6.2s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:5.2s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:6s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6.3s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:6.6s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6.9s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:7.2s"  d="M0-190 Q-20-212-44-218 Q-38-194 0-190Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:7.48s" d="M0-218 Q20-240 44-246 Q38-220 0-218Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:8.1s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <!-- Задний план — рисуется первым -->
       <g transform="translate(540,448) scale(1.5)" opacity=".82">
-        <path class="spr-s"  style="animation-delay:.6s"   d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:1.4s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:1.9s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:2.4s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:2.9s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:3.4s"  d="M0-190 Q-20-212-44-218 Q-38-194 0-190Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:3.9s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:4.3s"   d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:5.1s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:5.4s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:5.7s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:6.3s"  d="M0-190 Q-20-212-44-218 Q-38-194 0-190Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:7.2s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(290,455) scale(2.2)" opacity="1">
-        <path class="spr-s"  style="animation-delay:0s"    d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:.8s"   d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:1.3s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:1.8s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:2.3s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:2.8s"  d="M0-190 Q-20-212-44-218 Q-38-194 0-190Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:3.3s" d="M0-218 Q20-240 44-246 Q38-220 0-218Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:3.8s"  d="M0-246 Q-14-264-32-270 Q-26-248 0-246Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width=".9"  stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:4.3s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:4s"    d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:4.8s"   d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:5.1s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:5.4s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:5.7s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:6s"  d="M0-190 Q-20-212-44-218 Q-38-194 0-190Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6.28s" d="M0-218 Q20-240 44-246 Q38-220 0-218Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:6.56s"  d="M0-246 Q-14-264-32-270 Q-26-248 0-246Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width=".9"  stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:6.9s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(125,445) scale(1.22)" opacity=".7">
-        <path class="spr-s"  style="animation-delay:1.4s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:2.2s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:2.7s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:3.2s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:3.7s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:4.2s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:4.7s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:5.5s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:5.8s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:6.1s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6.4s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:7.6s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(210,443) scale(0.52)" opacity=".38">
-        <path class="spr-s"  style="animation-delay:2.9s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:3.7s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:4.2s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:4.7s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:5.45s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:6.25s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6.55s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:8.35s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(620,442) scale(1.05)" opacity=".62">
-        <path class="spr-s"  style="animation-delay:4.0s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:4.8s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:5.3s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:5.8s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:6.3s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:6.8s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:6s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:6.8s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:7.1s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:7.4s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:7.7s" d="M0-160 Q24-184 50-190 Q44-164 0-160Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:8.9s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(50,441) scale(0.65)" opacity=".46">
-        <path class="spr-s"  style="animation-delay:3.5s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:4.3s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:4.8s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:5.3s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:5.8s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:5.75s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:6.55s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:6.85s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:7.15s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:8.65s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(370,440) scale(0.4)" opacity=".28">
-        <path class="spr-s"  style="animation-delay:5.6s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:6.4s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:6.9s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:7.4s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:6.8s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:7.6s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:7.9s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:9.7s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(480,440) scale(0.24)" opacity=".16">
-        <path class="spr-s"  style="animation-delay:6.4s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:7.2s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:7.7s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:7.2s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:8s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:10.1s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(660,440) scale(0.18)" opacity=".11">
-        <path class="spr-s"  style="animation-delay:7.2s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:8.0s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:8.5s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:7.6s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:8.4s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:10.5s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <g transform="translate(150,439) scale(0.34)" opacity=".24">
-        <path class="spr-s"  style="animation-delay:8.0s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-s"  style="animation-delay:8s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
         <path class="spr-l"  style="animation-delay:8.8s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:9.3s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:10.9s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
       <!-- Новый фоновый росток до середины hero -->
       <g transform="translate(600,455) scale(0.72)" opacity=".1">
-        <path class="spr-s"  style="animation-delay:1.0s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <path class="spr-l"  style="animation-delay:1.8s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l spr-lr" style="animation-delay:2.3s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
-        <path class="spr-l"  style="animation-delay:2.8s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
-        <path class="spr-lt" style="animation-delay:3.3s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
+        <path class="spr-s"  style="animation-delay:4.5s"  d="M0 0 Q1-70 0-140 Q-1-210 0-280" stroke="#0F6E56" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="spr-l"  style="animation-delay:5.3s"  d="M0-70  Q-26-94 -54-100 Q-48-74  0-70Z"  fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l spr-lr" style="animation-delay:5.6s" d="M0-100 Q28-124 56-130 Q50-104 0-100Z"  fill="#1D9E75" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="spr-l"  style="animation-delay:5.9s"  d="M0-130 Q-24-154-50-160 Q-44-134 0-130Z" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="spr-lt" style="animation-delay:7.4s"  d="M0-280 Q-8-304 -4-322 Q6-304 0-280Z"    fill="#1D9E75" stroke="#0F6E56" stroke-width="1"   stroke-linejoin="round"/>
       </g>
 
     </svg>
@@ -2238,9 +2241,22 @@ document.addEventListener('keydown',function(e){
       tw.appendChild(cursor);
       i++;
       setTimeout(type,55+Math.random()*45);
+    } else {
+      cursor.classList.remove('visible');
     }
   }
   setTimeout(type,1800);
+})();
+
+/* Marquee: старт на первом скролле страницы */
+(function(){
+  var track = document.querySelector('.mq-track');
+  if (!track) return;
+  function start() {
+    track.classList.add('started');
+    window.removeEventListener('scroll', start);
+  }
+  window.addEventListener('scroll', start, { passive: true, once: true });
 })();
 </script>
 </body>
