@@ -299,7 +299,7 @@ var SKILLS = [
     section: 'wingchun',
     color: '#0F7C3A',
     bgColor: '#DDF0E2',
-    icon: '<span style="font-family:serif;color:#0F7C3A;line-height:1">蛇<sup style="font-family:sans-serif">1</sup></span>',
+    icon: '<img src="images/snake1.png" alt="">',
     valueType: 'reps',
     source: { collection: 'wingchun', field: 'Змея-1' },
     tracker: 'snake1',
