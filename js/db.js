@@ -300,7 +300,10 @@ function loadDayData(section, date) {
         // Сегодня/будущее: шаблон — основа, поверх применяем дельту оверрайда.
         // Прошлое: снапшот из истории выигрывает, шаблон — только fallback.
         plan:        isToday ? applyDayOverride(baseExs, data.dayOverride) : (data.plan || baseExs),
-        dayOverride: isToday ? (data.dayOverride || null) : undefined,
+        // dayOverride грузим всегда — для прошлого нужен для шилдиков «экстра»/«изменено».
+        // Для прошлых дней без оверрайда оставляем undefined, чтобы saveDayData не писал
+        // лишнее `dayOverride: null` в документы, у которых поля никогда не было.
+        dayOverride: isToday ? (data.dayOverride || null) : data.dayOverride,
         type:        data.type   || (dayPlan ? dayPlan.type  : 'rest'),
         label:       data.label  || (dayPlan ? dayPlan.label : ''),
         checks:      data.checks || {},
