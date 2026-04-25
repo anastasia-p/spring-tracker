@@ -91,9 +91,12 @@ function renderAllSkillsGrid(container) {
     return userSections.indexOf(skill.section) !== -1;
   });
   visibleSkills.sort(function(a, b) {
-    var pa = getSkillProgress(a, skillTotals[a.id] || 0);
-    var pb = getSkillProgress(b, skillTotals[b.id] || 0);
-    return pb - pa;
+    var ta = skillTotals[a.id] || 0;
+    var tb = skillTotals[b.id] || 0;
+    var la = getSkillLevel(a, ta).level;
+    var lb = getSkillLevel(b, tb).level;
+    if (la !== lb) return lb - la;
+    return getSkillProgress(b, tb) - getSkillProgress(a, ta);
   });
   visibleSkills.forEach(function(skill) {
     grid.appendChild(buildSkillCardCompact(skill));
