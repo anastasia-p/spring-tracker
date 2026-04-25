@@ -22,8 +22,8 @@ function trophyTier(level) {
   };
   if (level >= 4) return {
     id: 'silver', label: 'Серебро',
-    cardBg: '#C8D4DE', textPrimary: '#444441', textSecondary: '#5F5E5A',
-    accentBg: '#444441', accentText: '#F1EFE8',
+    cardBg: '#C8D4DE', textPrimary: '#2C2C2A', textSecondary: '#444441',
+    accentBg: '#2C2C2A', accentText: '#F1EFE8',
   };
   if (level >= 1) return {
     id: 'bronze', label: 'Бронза',
