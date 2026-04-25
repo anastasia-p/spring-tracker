@@ -339,7 +339,11 @@ function saveDayData(section, date) {
   // что станет корректным снапшотом когда день уйдет в прошлое.
   var doc = { plan: data.plan, type: data.type, label: data.label, checks: data.checks, values: data.values };
   if (data.dayOverride !== undefined) doc.dayOverride = data.dayOverride; // null тоже пишем (сброс)
-  return dayDocRef(section, dk).set(doc)
+  // merge:true критичен — иначе при отсутствии dayOverride в кеше (например, прошлый день,
+  // у которого поле не было загружено в старых версиях loadDayData) `set` без merge перезаписывает
+  // документ целиком и затирает существующее dayOverride в Firestore. Это уже стоило потери
+  // данных у пользователя 2026-04-25.
+  return dayDocRef(section, dk).set(doc, { merge: true })
     .catch(function(e) { console.error('saveDayData(' + section + ',' + dk + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
 }
 

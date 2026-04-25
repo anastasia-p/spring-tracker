@@ -412,6 +412,44 @@ async function runTests() {
     });
   });
 
+  // Регрессия: dayOverride грузится для прошлого — иначе пропадают шилдики
+  // «экстра» / «изменено» в карточке прошлого дня.
+  await test('загружает dayOverride для прошлого дня (для шилдиков)', function() {
+    var override = { added: [{ name: 'Берпи' }], removed: [], modified: [] };
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/plan/2026/history/2026-04-18': {
+          plan: [{ name: 'Отжимания' }, { name: 'Берпи' }],
+          type: 'upper', label: 'Верх',
+          dayOverride: override,
+          checks: {}, values: {}
+        }
+      }
+    });
+    return ctx.api.loadDayData('strength', new Date('2026-04-18T12:00:00')).then(function(d) {
+      assert.deepStrictEqual(d.dayOverride, override);
+    });
+  });
+
+  // Если в документе прошлого дня нет dayOverride — оставляем undefined.
+  // Иначе saveDayData (с merge) запишет лишнее `dayOverride: null` в исторические
+  // документы, у которых поля никогда не было.
+  await test('для прошлого без dayOverride в документе оставляет undefined', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/plan/2026/history/2026-04-18': {
+          plan: [{ name: 'Отжимания' }],
+          type: 'upper', label: 'Верх',
+          checks: {}, values: {}
+          // dayOverride намеренно отсутствует
+        }
+      }
+    });
+    return ctx.api.loadDayData('strength', new Date('2026-04-18T12:00:00')).then(function(d) {
+      assert.strictEqual(d.dayOverride, undefined);
+    });
+  });
+
   // ─── saveDayData: v2-specific path ───────────────────────────────────────
 
   group('saveDayData: v2 path');
@@ -1119,6 +1157,65 @@ async function runTests() {
       var p = 'users/u1/sections/strength/plan/2026/history/2026-04-18';
       assert.ok(ctx.mock.store[p]);
       assert.ok(!('dayOverride' in ctx.mock.store[p]), 'dayOverride не должен попасть в документ');
+    });
+  });
+
+  // Регрессия: 2026-04-25 у пользователя потерялся dayOverride за вчера. Сценарий:
+  // 1) вчера _peSaveToday положил { plan: merged, dayOverride: {...} } в Firestore;
+  // 2) сегодня день стал прошлым, старая loadDayData возвращала dayOverride:undefined в кеш;
+  // 3) updateExerciseCheck (галочка задним числом) → saveDayData → set без merge затирал
+  //    весь документ, dayOverride исчезал. Фикс: { merge: true } в saveDayData. Этот тест
+  //    проверяет, что при отсутствии dayOverride в кеше существующее поле в Firestore
+  //    остаётся нетронутым.
+  await test('не затирает существующее dayOverride когда его нет в кеше (merge)', function() {
+    var existing = { added: [{ name: 'Берпи' }], removed: [], modified: [] };
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/plan/2026/history/2026-04-18': {
+          plan: [{ name: 'Отжимания' }, { name: 'Берпи' }],
+          type: 'upper', label: 'Верх',
+          dayOverride: existing,
+          checks: {}, values: {}
+        }
+      }
+    });
+    // Кеш набивается без dayOverride — имитация старого loadDayData для прошлого
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [{ name: 'Отжимания' }, { name: 'Берпи' }],
+      type: 'upper', label: 'Верх',
+      checks: { 'Отжимания': true }, values: {}
+      // dayOverride намеренно отсутствует
+    };
+    return ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00')).then(function() {
+      var p = 'users/u1/sections/strength/plan/2026/history/2026-04-18';
+      assert.deepStrictEqual(ctx.mock.store[p].dayOverride, existing,
+        'dayOverride должен остаться в Firestore');
+      assert.strictEqual(ctx.mock.store[p].checks['Отжимания'], true,
+        'checks при этом обновились');
+    });
+  });
+
+  // Семантика: dayOverride:null в кеше (явный сброс через _peSaveToday, когда
+  // оверрайд = шаблон) должен перезаписать существующее значение, иначе
+  // отмена изменений на стороне UI не доедет до Firestore.
+  await test('dayOverride:null в кеше перезаписывает существующий объект', function() {
+    var existing = { added: [{ name: 'X' }] };
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/plan/2026/history/2026-04-18': {
+          plan: [], dayOverride: existing,
+          type: 'rest', label: 'Отдых', checks: {}, values: {}
+        }
+      }
+    });
+    ctx.api.cache.strength['2026-04-18'] = {
+      plan: [], dayOverride: null, // явный сброс
+      type: 'rest', label: 'Отдых', checks: {}, values: {}
+    };
+    return ctx.api.saveDayData('strength', new Date('2026-04-18T12:00:00')).then(function() {
+      var p = 'users/u1/sections/strength/plan/2026/history/2026-04-18';
+      assert.strictEqual(ctx.mock.store[p].dayOverride, null,
+        'явный null должен перезаписать существующий объект');
     });
   });
 
