@@ -68,7 +68,7 @@ var TROPHY_DISCIPLINE_ORDER = ['strength', 'cardio', 'wingchun', 'qigong'];
 function trophyTier(level) {
   if (level >= 7) return {
     id: 'gold',   label: 'Золото',
-    cardBg: '#FAC775', textPrimary: '#412402', textSecondary: '#854F0B',
+    cardBg: '#FBC95B', textPrimary: '#412402', textSecondary: '#854F0B',
     accentBg: '#633806', accentText: '#FAEEDA',
   };
   if (level >= 4) return {
@@ -78,8 +78,8 @@ function trophyTier(level) {
   };
   if (level >= 1) return {
     id: 'bronze', label: 'Бронза',
-    cardBg: '#FAEEDA', textPrimary: '#633806', textSecondary: '#854F0B',
-    accentBg: '#854F0B', accentText: '#FAEEDA',
+    cardBg: '#D4A574', textPrimary: '#4A1B0C', textSecondary: '#712B13',
+    accentBg: '#4A1B0C', accentText: '#FAEEDA',
   };
   return null;
 }
