@@ -64,6 +64,11 @@ function renderProgressTabs(sections) {
   testBtn.textContent = 'Тесты';
   testBtn.onclick = function() { showProgressTab('tests', testBtn); };
   tabsEl.appendChild(testBtn);
+  var trBtn = document.createElement('button');
+  trBtn.className = 'sub-tab';
+  trBtn.textContent = 'Трофеи';
+  trBtn.onclick = function() { showProgressTab('trophies', trBtn); };
+  tabsEl.appendChild(trBtn);
   showProgressTab('skills', skillsBtn);
 }
 
@@ -74,14 +79,17 @@ function showProgressTab(section, btn) {
   } else {
     var label = (getSectionMeta(section) || {}).label || section;
     document.querySelectorAll('#sub-tabs .sub-tab').forEach(function(b) {
-      if (b.textContent === label || (section === 'tests' && b.textContent === 'Тесты')) {
+      if (b.textContent === label
+          || (section === 'tests' && b.textContent === 'Тесты')
+          || (section === 'trophies' && b.textContent === 'Трофеи')) {
         b.classList.add('active');
       }
     });
   }
   var container = document.getElementById('progress-content');
-  if (section === 'tests') { renderTestsTab(container); return; }
-  if (section === 'skills') { renderAllSkillsGrid(container); return; }
+  if (section === 'tests')    { renderTestsTab(container); return; }
+  if (section === 'trophies') { renderTrophiesTab(container); return; }
+  if (section === 'skills')   { renderAllSkillsGrid(container); return; }
 }
 
 function renderAllSkillsGrid(container) {

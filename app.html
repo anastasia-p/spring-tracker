@@ -218,6 +218,46 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .level-hours{font-size:12px;color:var(--text-muted);white-space:nowrap}
 .levels-scroll{overflow-y:auto}
     .toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}.toggle-switch input{opacity:0;width:0;height:0}.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.2s}.toggle-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--card);border-radius:50%;transition:.2s}.toggle-switch input:checked+.toggle-slider{background:var(--green)}.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}.toggle-switch input:disabled+.toggle-slider{opacity:0.5;cursor:not-allowed}
+
+/* Trophies tab */
+.tr-counter{font-size:13px;color:var(--text-muted);margin-bottom:14px}
+.tr-block-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+.tr-empty{font-size:14px;color:var(--text-muted);text-align:center;padding:18px 8px;line-height:1.5}
+.tr-level-section{margin-bottom:18px}
+.tr-level-section-zero{margin-top:24px;padding-top:18px;border-top:1px solid var(--border)}
+.tr-level-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.tr-level-title{font-size:15px;font-weight:500;color:var(--text)}
+.tr-level-title-zero{color:var(--text-muted)}
+.tr-level-tier{font-size:11px;font-weight:500}
+.tr-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tr-card{background:var(--card);border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;transition:transform .12s}
+.tr-card:active{transform:scale(0.97)}
+.tr-card-icon{--icon-size:48px}
+.tr-card-icon-zero{--icon-size:36px}
+.tr-card-name{font-size:11px;font-weight:500;line-height:1.2;word-break:break-word}
+.tr-card-date{font-size:11px}
+.tr-card-zero{background:var(--bg);padding:8px 6px;color:var(--text-hint)}
+.tr-card-zero .tr-card-name{color:var(--text-hint);font-size:10px}
+.tr-card-zero .tr-card-icon{filter:grayscale(1) opacity(0.55)}
+.tr-card-muted{background:var(--bg);color:var(--text-hint)}
+.tr-card-muted .tr-card-icon{filter:grayscale(1) opacity(0.55)}
+.tr-card-muted .tr-card-name,.tr-card-muted .tr-card-date{color:var(--text-hint)}
+/* Trophy popup — bottom sheet */
+.trophy-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:flex;align-items:flex-end;justify-content:center;padding:0;padding-bottom:env(safe-area-inset-bottom)}
+.trophy-popup-sheet{width:100%;max-width:640px;border-radius:24px 24px 0 0;padding:12px 24px 32px;text-align:center;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
+.trophy-drag-handle{width:36px;height:4px;border-radius:999px;margin:0 auto 18px;opacity:0.35}
+.trophy-icon{margin:0 auto 16px}
+.trophy-name{font-size:22px;font-weight:500;margin-bottom:2px}
+.trophy-discipline{font-size:12px;margin-bottom:14px}
+.trophy-badge{display:inline-block;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:500;margin-bottom:18px}
+.trophy-level-name{font-size:18px;font-weight:500;margin-bottom:6px}
+.trophy-level-desc{font-size:14px;line-height:1.5;margin-bottom:22px}
+.trophy-current-date{margin-bottom:20px;padding-bottom:20px;border-bottom:0.5px solid}
+.trophy-date-label{font-size:11px;margin-bottom:4px}
+.trophy-date-value{font-size:16px;font-weight:500}
+.trophy-history{text-align:left}
+.trophy-history-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.trophy-history-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -381,6 +421,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 <script defer src="./js/modal-editor.js"></script>
 <script defer src="./js/plan-editor.js"></script>
 <script defer src="./js/test-editor.js"></script>
+<script defer src="./js/trophies.js"></script>
 <script defer src="./js/nav.js"></script>
 
   <!-- Validation popup -->

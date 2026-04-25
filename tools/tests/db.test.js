@@ -1220,6 +1220,191 @@ async function runTests() {
   });
 
 
+
+
+
+  // ─── adjustSkillTotal: levelDates ────────────────────────────────────────
+
+  group('adjustSkillTotal levelDates');
+
+  await test('пишет дату при пересечении первого порога', function() {
+    var ctx = ts.setup();
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 0;
+    ctx.api.skillLevelDates.pushups = {};
+    return ctx.api.adjustSkillTotal(pushups, 100).then(function() {
+      // Порог 1 уровня pushups = 100
+      var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+      assert.ok(stored.levelDates['1'], 'levelDates[1] должен быть проставлен');
+      assert.ok(!stored.levelDates['2'], 'levelDates[2] не должен быть проставлен');
+      // Кэш в памяти синхронизирован
+      assert.ok(ctx.api.skillLevelDates.pushups['1']);
+    });
+  });
+
+  await test('пишет даты для всех преодолённых уровней за один шаг', function() {
+    var ctx = ts.setup();
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 0;
+    ctx.api.skillLevelDates.pushups = {};
+    return ctx.api.adjustSkillTotal(pushups, 1500).then(function() {
+      // 1500 reps пересекает 1 (100), 2 (500), 3 (1000) — итого уровень 3
+      var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+      assert.ok(stored.levelDates['1']);
+      assert.ok(stored.levelDates['2']);
+      assert.ok(stored.levelDates['3']);
+      assert.ok(!stored.levelDates['4'], 'выше 3 уровня не выходим');
+    });
+  });
+
+  await test('удаляет даты при падении уровня', function() {
+    var ctx = ts.setup();
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 1500;
+    ctx.api.skillLevelDates.pushups = {
+      '1': '2026-01-01T00:00:00.000Z',
+      '2': '2026-01-15T00:00:00.000Z',
+      '3': '2026-02-01T00:00:00.000Z',
+    };
+    return ctx.api.adjustSkillTotal(pushups, -1100).then(function() {
+      // 400 reps → уровень 1
+      var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+      assert.ok(stored.levelDates['1'], 'дата 1 уровня осталась');
+      assert.ok(!stored.levelDates['2'], 'дата 2 уровня удалена');
+      assert.ok(!stored.levelDates['3'], 'дата 3 уровня удалена');
+    });
+  });
+
+  await test('сохраняет существующую дату при движении внутри уровня', function() {
+    var ctx = ts.setup();
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 100;
+    var origDate = '2026-01-01T00:00:00.000Z';
+    ctx.api.skillLevelDates.pushups = { '1': origDate };
+    return ctx.api.adjustSkillTotal(pushups, 50).then(function() {
+      // 150 reps — всё ещё уровень 1
+      var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+      assert.strictEqual(stored.levelDates['1'], origDate,
+        'дата при движении внутри уровня не должна перезаписываться');
+    });
+  });
+
+  await test('переписывает в БД и totalReps, и levelDates', function() {
+    var ctx = ts.setup();
+    var pushups = pure_getSkill('pushups');
+    ctx.api.skillTotals.pushups = 0;
+    ctx.api.skillLevelDates.pushups = {};
+    return ctx.api.adjustSkillTotal(pushups, 100).then(function() {
+      var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+      assert.strictEqual(stored.totalReps, 100, 'totalReps записан');
+      assert.ok(stored.levelDates && stored.levelDates['1'], 'levelDates записан в том же документе');
+    });
+  });
+
+  // ─── loadSkill: levelDates ───────────────────────────────────────────────
+
+  group('loadSkill levelDates');
+
+  await test('загружает levelDates из существующего документа', function() {
+    var dates = { '1': '2026-01-01T00:00:00.000Z', '2': '2026-02-01T00:00:00.000Z' };
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/skills/pushups': { totalReps: 600, levelDates: dates }
+      }
+    });
+    var pushups = pure_getSkill('pushups');
+    return ctx.api.loadSkill(pushups).then(function() {
+      assert.strictEqual(ctx.api.skillTotals.pushups, 600);
+      assert.deepStrictEqual(ctx.api.skillLevelDates.pushups, dates);
+    });
+  });
+
+  await test('пустой объект для документа без levelDates', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/skills/pushups': { totalReps: 50 }
+      }
+    });
+    var pushups = pure_getSkill('pushups');
+    return ctx.api.loadSkill(pushups).then(function() {
+      assert.deepStrictEqual(ctx.api.skillLevelDates.pushups, {});
+    });
+  });
+
+  // ─── migrateLevelDates ───────────────────────────────────────────────────
+
+  group('migrateLevelDates');
+
+  await test('проставляет TROPHIES_RELEASE_DATE для прокачанных навыков без дат', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/skills/pushups': { totalReps: 600 }
+      }
+    });
+    var pushups = pure_getSkill('pushups');
+    return ctx.api.loadSkill(pushups)
+      .then(function() { return ctx.api.migrateLevelDates(); })
+      .then(function() {
+        // 600 reps → уровень 2 (пороги 100, 500)
+        var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+        assert.strictEqual(stored.levelDates['1'], ctx.api.TROPHIES_RELEASE_DATE);
+        assert.strictEqual(stored.levelDates['2'], ctx.api.TROPHIES_RELEASE_DATE);
+        assert.ok(!stored.levelDates['3']);
+      });
+  });
+
+  await test('идемпотентна: при повторном запуске ничего не пишет', function() {
+    var existingDate = '2025-06-01T12:00:00.000Z';
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/skills/pushups': {
+          totalReps: 600,
+          levelDates: { '1': existingDate, '2': existingDate }
+        }
+      }
+    });
+    var pushups = pure_getSkill('pushups');
+    return ctx.api.loadSkill(pushups)
+      .then(function() {
+        // Очищаем лог после load
+        ctx.mock.log.length = 0;
+        return ctx.api.migrateLevelDates();
+      })
+      .then(function() {
+        // На второй прогон — никаких SET для pushups
+        var sets = ctx.mock.log.filter(function(op) {
+          return op[0] === 'SET' && op[1].indexOf('skills/pushups') !== -1;
+        });
+        assert.strictEqual(sets.length, 0,
+          'migrateLevelDates не должна писать, если уже есть все нужные даты');
+        // Существующие даты не затёрты
+        var stored = ctx.mock.store['users/u1/sections/strength/skills/pushups'];
+        assert.strictEqual(stored.levelDates['1'], existingDate);
+      });
+  });
+
+  await test('не трогает навыки с уровнем 0', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/skills/pushups': { totalReps: 50 }
+      }
+    });
+    var pushups = pure_getSkill('pushups');
+    return ctx.api.loadSkill(pushups)
+      .then(function() {
+        ctx.mock.log.length = 0;
+        return ctx.api.migrateLevelDates();
+      })
+      .then(function() {
+        var sets = ctx.mock.log.filter(function(op) {
+          return op[0] === 'SET' && op[1].indexOf('skills/pushups') !== -1;
+        });
+        assert.strictEqual(sets.length, 0,
+          'для навыков на 0 уровне миграция ничего не делает');
+      });
+  });
+
+
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 }

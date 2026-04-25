@@ -207,6 +207,17 @@ ALL_DATA_SECTIONS.forEach(function(s) { plans[s] = null; });
 // Skill totals — keyed by skill id
 var skillTotals = {};
 
+// Даты достижения уровней навыков — keyed by skill id, value: { '1': iso, '2': iso, ... }
+// Уровень 0 не пишется (стартовая ступень). Источник правды — Firestore поле levelDates
+// в документе users/{uid}/sections/{section}/skills/{skill_id}.
+var skillLevelDates = {};
+
+// Дата релиза вкладки трофеев. Используется в migrateLevelDates: для существующих
+// пользователей, у которых уже есть прокачанные навыки, но нет levelDates, проставим
+// эту дату всем уровням 1..currentLevel. Менять не нужно — один раз сработала миграция,
+// в Firestore лежат настоящие даты, повторно не запишется.
+var TROPHIES_RELEASE_DATE = '2026-04-25T00:00:00.000Z';
+
 function loadPlanFromFirebase(section) {
   if (section === 'tests') {
     // Тесты собираются из sections/*/tests/current.items
@@ -397,8 +408,18 @@ function saveTestData(dk, data) {
 function loadSkill(skill) {
   var ref = sectionRef(skill.section).collection('skills').doc(skill.id);
   return ref.get().then(function(s) {
-    skillTotals[skill.id] = s.exists ? (s.data()[skill.trackerField] || 0) : 0;
-  }).catch(function() { skillTotals[skill.id] = 0; });
+    if (s.exists) {
+      var data = s.data();
+      skillTotals[skill.id] = data[skill.trackerField] || 0;
+      skillLevelDates[skill.id] = data.levelDates || {};
+    } else {
+      skillTotals[skill.id] = 0;
+      skillLevelDates[skill.id] = {};
+    }
+  }).catch(function() {
+    skillTotals[skill.id] = 0;
+    skillLevelDates[skill.id] = {};
+  });
 }
 
 // Загружает всю историю дней секции (массив { id, data } где id = date).
@@ -454,13 +475,32 @@ function listYearsToRead() {
 // Не читает историю из базы → нет race conditions.
 // Предполагается что skillTotals[skill.id] — актуальный baseline
 // (был загружен при loadSkill/loadAllSkills в момент входа в приложение).
+//
+// Дополнительно поддерживает skillLevelDates: при пересечении порогов уровней
+// (вверх — записываем дату now, вниз — удаляем дату) кэш и БД синхронизируются
+// в одной операции set вместе с totalField. Дата уровня = момент первого пересечения.
 function adjustSkillTotal(skill, delta) {
   if (!delta) return Promise.resolve();
   var current = skillTotals[skill.id] || 0;
   var next = Math.max(0, current + delta);
+  var oldLevel = getSkillLevel(skill, current).level;
+  var newLevel = getSkillLevel(skill, next).level;
   skillTotals[skill.id] = next;
   if (typeof renderSkillById === 'function') renderSkillById(skill.id);
-  var doc = {};
+
+  // Синхронизация дат уровней — клон, чтобы не мутировать кэш до успешной записи
+  var dates = skillLevelDates[skill.id] || {};
+  var nextDates = {};
+  Object.keys(dates).forEach(function(k) { nextDates[k] = dates[k]; });
+  if (newLevel > oldLevel) {
+    var now = new Date().toISOString();
+    for (var L = oldLevel + 1; L <= newLevel; L++) nextDates[String(L)] = now;
+  } else if (newLevel < oldLevel) {
+    for (var Ld = newLevel + 1; Ld <= oldLevel; Ld++) delete nextDates[String(Ld)];
+  }
+  skillLevelDates[skill.id] = nextDates;
+
+  var doc = { levelDates: nextDates };
   doc[skill.trackerField] = next;
   return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
     .catch(function(e) { console.error('adjustSkillTotal(' + skill.id + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
@@ -512,8 +552,22 @@ function recalcSkill(skill) {
 
   return Promise.all([planPromise, testsPromise]).then(function(totals) {
     var total = totals.reduce(function(a, b) { return a + b; }, 0);
+    var oldLevel = getSkillLevel(skill, skillTotals[skill.id] || 0).level;
+    var newLevel = getSkillLevel(skill, total).level;
     skillTotals[skill.id] = total;
-    var doc = {};
+
+    var dates = skillLevelDates[skill.id] || {};
+    var nextDates = {};
+    Object.keys(dates).forEach(function(k) { nextDates[k] = dates[k]; });
+    if (newLevel > oldLevel) {
+      var now = new Date().toISOString();
+      for (var L = oldLevel + 1; L <= newLevel; L++) nextDates[String(L)] = now;
+    } else if (newLevel < oldLevel) {
+      for (var Ld = newLevel + 1; Ld <= oldLevel; Ld++) delete nextDates[String(Ld)];
+    }
+    skillLevelDates[skill.id] = nextDates;
+
+    var doc = { levelDates: nextDates };
     doc[skill.trackerField] = total;
     var writePromise = sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
       .catch(function(e) { console.error('recalcSkill write(' + skill.id + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
@@ -691,6 +745,34 @@ function loadAllSkills() {
   // initSkillLevels() удалён — уровни теперь инлайн в SKILLS (pure.js)
   return Promise.all(SKILLS.map(function(skill) {
     return loadSkill(skill);
+  })).then(migrateLevelDates);
+}
+
+// Миграция дат уровней для существующих пользователей.
+// Идея: если у пользователя есть totalReps/totalMinutes, соответствующее уровню > 0,
+// но в Firestore нет levelDates (фича ещё не поднялась) — проставляем всем уровням
+// 1..currentLevel дату релиза TROPHIES_RELEASE_DATE. После первого прогона (если что-то
+// записалось) функция идемпотентна: на втором проходе все existing[L] уже заполнены,
+// hasUpdates=false, в Firestore ничего не пишется.
+function migrateLevelDates() {
+  return Promise.all(SKILLS.map(function(skill) {
+    var total = skillTotals[skill.id] || 0;
+    var currentLevel = getSkillLevel(skill, total).level;
+    if (currentLevel === 0) return Promise.resolve();
+    var existing = skillLevelDates[skill.id] || {};
+    var changed = false;
+    for (var L = 1; L <= currentLevel; L++) {
+      if (!existing[String(L)]) {
+        existing[String(L)] = TROPHIES_RELEASE_DATE;
+        changed = true;
+      }
+    }
+    if (!changed) return Promise.resolve();
+    skillLevelDates[skill.id] = existing;
+    var doc = { levelDates: existing };
+    doc[skill.trackerField] = total;
+    return sectionRef(skill.section).collection('skills').doc(skill.id).set(doc)
+      .catch(function(e) { console.error('migrateLevelDates(' + skill.id + '):', e); if (typeof Sentry !== 'undefined') Sentry.captureException(e); });
   }));
 }
 
@@ -719,6 +801,8 @@ if (typeof module !== 'undefined' && module.exports) {
     resetCache: resetCache,
     plans: plans,
     skillTotals: skillTotals,
+    skillLevelDates: skillLevelDates,
+    TROPHIES_RELEASE_DATE: TROPHIES_RELEASE_DATE,
     loadPlanFromFirebase: loadPlanFromFirebase,
     getDayPlan: getDayPlan,
     dayDocRef: dayDocRef,
@@ -738,6 +822,7 @@ if (typeof module !== 'undefined' && module.exports) {
     invalidateStreakCache: invalidateStreakCache,
     calcDailyStreak: calcDailyStreak,
     loadAllSkills: loadAllSkills,
+    migrateLevelDates: migrateLevelDates,
     loadSectionHistoryAll: loadSectionHistoryAll,
     loadTestsHistoryForSection: loadTestsHistoryForSection,
     listYearsToRead: listYearsToRead,
