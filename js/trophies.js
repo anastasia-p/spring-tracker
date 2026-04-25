@@ -94,8 +94,8 @@ function renderTrophiesTab(container) {
   var hasAnyAchievement = totalX > 0;
 
   var html = '';
-  html += '<div class="tr-counter">Открыто ' + totalX + ' из ' + totalY + '</div>';
   html += '<div class="tr-block-title">Путь навыков</div>';
+  html += '<div class="tr-counter">Открыто ' + totalX + ' из ' + totalY + '</div>';
   if (!hasAnyAchievement) {
     html += '<div class="tr-empty">Начните тренировки, чтобы открыть трофеи</div>';
   }
