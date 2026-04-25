@@ -105,11 +105,10 @@ function buildSkillCardCompact(skill) {
   var prefix = getElemPrefix(skill.id);
   var div = document.createElement('div');
   div.className = 'sk-card';
-  div.innerHTML = '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">?</button>'
-    + '<button class="sk-q" style="right:34px" onclick="showSkillInfo(\'' + skill.id + '\');event.stopPropagation()">i</button>'
+  div.innerHTML = '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">i</button>'
     + '<div class="sk3-name-row"><div class="sk-name">' + skill.name + '</div></div>'
     + '<div class="sk3-mid">'
-    + '<div class="sk-icon" style="background:' + skill.bgColor + '">' + getSkillIcon(skill) + '</div>'
+    + '<div class="sk-icon" style="background:' + skill.bgColor + ';cursor:pointer" onclick="showSkillInfo(\'' + skill.id + '\');event.stopPropagation()">' + getSkillIcon(skill) + '</div>'
     + '<div class="sk-amount" id="' + prefix + '-hours"></div>'
     + '</div>'
     + '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>'
