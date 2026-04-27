@@ -115,6 +115,19 @@ function doRegister() {
     .catch(function(e) { setAuthLoading(false); showAuthError(getAuthErrorMessage(e.code), 'register'); });
 }
 
+function doAnonymousLogin() {
+  clearAuthError();
+  setAuthLoading(true);
+  firebase.auth().signInAnonymously()
+    .then(function() {
+      if (typeof ym === 'function') ym(108404687, 'reachGoal', 'guest_started');
+    })
+    .catch(function(e) {
+      setAuthLoading(false);
+      showAuthError(getAuthErrorMessage(e.code), 'login');
+    });
+}
+
 function doLogout()        { firebase.auth().signOut(); }
 
 function doResetPassword() {
@@ -150,6 +163,7 @@ function getAuthErrorMessage(code) {
     'auth/internal-error':        'Неверный email или пароль',
     'auth/invalid-email':         'Неверный формат email',
     'auth/email-already-in-use':  'Этот email уже зарегистрирован',
+    'auth/credential-already-in-use': 'Этот email уже зарегистрирован',
     'auth/weak-password':         'Пароль слишком короткий — минимум 6 символов',
     'auth/too-many-requests':     'Слишком много попыток. Попробуй позже',
     'auth/network-request-failed':'Ошибка сети. Проверь подключение к интернету',
@@ -158,6 +172,84 @@ function getAuthErrorMessage(code) {
     'auth/user-disabled':         'Аккаунт заблокирован',
   };
   return messages[code] || 'Что-то пошло не так. Попробуй ещё раз';
+}
+
+// --- Link anonymous account → registered (popup) ---
+
+function clearLinkError() {
+  var el = document.getElementById('link-error');
+  if (el) el.textContent = '\u200b';
+}
+
+function showLinkError(msg) {
+  var el = document.getElementById('link-error');
+  if (el) el.textContent = msg;
+}
+
+function openLinkPopup() {
+  document.getElementById('link-email').value     = '';
+  document.getElementById('link-password').value  = '';
+  document.getElementById('link-password2').value = '';
+  document.getElementById('link-privacy').checked = false;
+  clearLinkError();
+  var btn = document.getElementById('link-submit-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Зарегистрироваться'; }
+  document.getElementById('register-overlay').style.display = 'block';
+  document.getElementById('register-popup').style.display   = 'block';
+  setTimeout(function() {
+    var emailInput = document.getElementById('link-email');
+    if (emailInput) emailInput.focus();
+  }, 50);
+}
+
+function closeLinkPopup() {
+  document.getElementById('register-overlay').style.display = 'none';
+  document.getElementById('register-popup').style.display   = 'none';
+  document.getElementById('link-email').value     = '';
+  document.getElementById('link-password').value  = '';
+  document.getElementById('link-password2').value = '';
+  document.getElementById('link-privacy').checked = false;
+  clearLinkError();
+  var btn = document.getElementById('link-submit-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Зарегистрироваться'; }
+}
+
+function doLinkAccount() {
+  clearLinkError();
+  var email     = document.getElementById('link-email').value.trim();
+  var password  = document.getElementById('link-password').value;
+  var password2 = document.getElementById('link-password2').value;
+  if (!email)                  { showLinkError('Введите email');                              return; }
+  if (!password)               { showLinkError('Введите пароль');                             return; }
+  if (password !== password2)  { showLinkError('Пароли не совпадают');                        return; }
+  if (password.length < 6)     { showLinkError('Пароль минимум 6 символов');                  return; }
+  if (!document.getElementById('link-privacy').checked) {
+    showLinkError('Необходимо согласие с политикой конфиденциальности'); return;
+  }
+  if (!currentUser || !currentUser.isAnonymous) {
+    showLinkError('Что-то пошло не так. Попробуй ещё раз'); return;
+  }
+  var btn = document.getElementById('link-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Сохранение...'; }
+  var credential = firebase.auth.EmailAuthProvider.credential(email, password);
+  currentUser.linkWithCredential(credential)
+    .then(function(result) {
+      currentUser = result.user;
+      Sentry.setUser({ id: currentUser.uid, email: currentUser.email });
+      return saveConfig({ email: currentUser.email, isAnonymous: false });
+    })
+    .then(function() {
+      if (typeof ym === 'function') {
+        ym(108404687, 'reachGoal', 'registration_created');
+        ym(108404687, 'reachGoal', 'registration_complete');
+      }
+      closeLinkPopup();
+      if (typeof renderSettings === 'function') renderSettings();
+    })
+    .catch(function(e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Зарегистрироваться'; }
+      showLinkError(getAuthErrorMessage(e.code));
+    });
 }
 
 // --- User config ---
@@ -254,7 +346,8 @@ function finishOnboarding() {
       email:          currentUser.email,
       createdAt:      createdAt,
       platform:       platform,
-      schema_version: 2
+      schema_version: 2,
+      isAnonymous:    !!currentUser.isAnonymous
     });
   }).then(function() {
     // После записи config выставляем enabled=true для выбранных секций

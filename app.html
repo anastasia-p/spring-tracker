@@ -154,6 +154,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
 .auth-input{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:15px;font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);width:100%}.auth-pass-wrap{position:relative;display:flex;align-items:center}.auth-pass-wrap .auth-input{padding-right:42px}.eye-btn{position:absolute;right:12px;border:none;background:none;cursor:pointer;color:var(--text-muted);padding:0;display:flex;align-items:center}
 .auth-btn{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;font-family:'Onest',sans-serif;cursor:pointer;margin-top:4px}
 .auth-btn:disabled{opacity:0.6;cursor:not-allowed}
+.auth-btn-secondary{background:transparent;color:var(--green);border:1px solid var(--green);margin-top:8px}
 .auth-link{font-size:13px;color:var(--text-muted);text-align:center;margin-top:16px}
 .auth-link a{color:var(--green);cursor:pointer;text-decoration:none;font-weight:500}
 .auth-error{font-size:13px;color:var(--red);margin-bottom:8px;min-height:18px;display:block}.req{color:var(--red);margin-left:2px}
@@ -298,6 +299,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="auth-field"><label>Пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="login-password" placeholder="" oninput="clearAuthError()" onkeydown="if(event.key==='Enter')doLogin()"><button class="eye-btn" type="button" onclick="togglePassword('login-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div class="auth-error" id="auth-error-login">&#8203;</div>
       <button class="auth-btn" onclick="doLogin()">Войти</button>
+      <button class="auth-btn auth-btn-secondary" onclick="doAnonymousLogin()">Войти как гость</button>
       <div class="auth-link"><a onclick="doResetPassword()">Забыли пароль?</a></div>
       <div class="auth-link">Нет аккаунта? <a onclick="showRegisterForm()">Зарегистрироваться</a></div>
     </div>
@@ -395,6 +397,27 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <div style="display:flex;gap:8px">
       <button class="update-btn" onclick="copyValidationErrors()">Скопировать</button>
     </div>
+  </div>
+
+  <!-- Register (link anonymous account) popup -->
+  <div id="register-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000" onclick="closeLinkPopup()"></div>
+  <div id="register-popup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;max-height:90vh;overflow-y:auto;background:var(--card);border-radius:var(--radius);padding:24px 20px;z-index:1001;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="popup-title">Сохранить прогресс</div>
+      <button class="popup-close" onclick="closeLinkPopup()">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:18px;line-height:1.5">Введите email и пароль — данные сохранятся, и вы сможете заходить с любого устройства.</div>
+    <div class="auth-field"><label>Email<span class="req">*</span></label><input class="auth-input" type="email" id="link-email" placeholder="your@email.com" oninput="clearLinkError()"></div>
+    <div class="auth-field"><label>Пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="link-password" placeholder="" oninput="clearLinkError()"><button class="eye-btn" type="button" onclick="togglePassword('link-password',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+    <div class="auth-field"><label>Повтори пароль<span class="req">*</span></label><div class="auth-pass-wrap"><input class="auth-input" type="password" id="link-password2" placeholder="" oninput="clearLinkError()" onkeydown="if(event.key==='Enter')doLinkAccount()"><button class="eye-btn" type="button" onclick="togglePassword('link-password2',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+    <div class="auth-error" id="link-error">&#8203;</div>
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px">
+      <input type="checkbox" id="link-privacy" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:var(--green);cursor:pointer">
+      <label for="link-privacy" style="font-size:13px;color:var(--text-muted);cursor:pointer;line-height:1.5">
+        Я согласен(а) с <a href="privacy.html" target="_blank" style="color:var(--green)">политикой конфиденциальности</a>
+      </label>
+    </div>
+    <button class="auth-btn" id="link-submit-btn" onclick="doLinkAccount()">Зарегистрироваться</button>
   </div>
 
 <script>document.addEventListener('DOMContentLoaded',function(){if(location.hash==='#register'){showRegisterForm();}});</script>
