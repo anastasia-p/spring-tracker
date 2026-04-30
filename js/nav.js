@@ -115,8 +115,8 @@ function renderAllSkillsGrid(container) {
 
 // Делегированный обработчик кликов внутри #progress-content.
 // Контейнер статичный (живёт в app.html), поэтому навешиваем listener один раз.
-// Сейчас обрабатывает только клики по карточкам навыков (skill-levels / skill-info);
-// карточки трофеев и переключатели тестов могут добавить свои data-action позже.
+// Сейчас обрабатывает клики по карточкам навыков и трофеев. Карточки трофеев
+// рендерятся в trophies.js через тот же контейнер — поэтому они тут.
 function _bindProgressContentHandlers(container) {
   if (!container || container.__progressContentHandlersBound) return;
   container.__progressContentHandlersBound = true;
@@ -130,6 +130,8 @@ function _bindProgressContentHandlers(container) {
     } else if (action === 'skill-info') {
       e.stopPropagation();
       showSkillInfo(el.dataset.skillId);
+    } else if (action === 'trophy-card') {
+      showTrophyPopup(el.dataset.skillId);
     }
   });
 }

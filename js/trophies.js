@@ -121,6 +121,7 @@ function trophyDateLong(iso) {
 // ─── Рендер вкладки ─────────────────────────────────────────────────────────
 
 function renderTrophiesTab(container) {
+  if (typeof _bindProgressContentHandlers === 'function') _bindProgressContentHandlers(container);
   var sections = (typeof userSections !== 'undefined' && userSections) ? userSections : [];
 
   // Какие навыки показываем:
@@ -193,7 +194,7 @@ function buildTrophyCard(skill, level, tier, isMuted) {
 
   if (isMuted) {
     // Серая карточка — отключённая дисциплина с достижением.
-    return '<div class="tr-card tr-card-muted" onclick="showTrophyPopup(\'' + skill.id + '\')">'
+    return '<div class="tr-card tr-card-muted" data-action="trophy-card" data-skill-id="' + escapeHtml(skill.id) + '">'
       + iconHtml
       + '<div class="tr-card-name">' + escapeHtml(skill.name) + '</div>'
       + (dateStr ? '<div class="tr-card-date">' + dateStr + '</div>' : '')
@@ -202,7 +203,7 @@ function buildTrophyCard(skill, level, tier, isMuted) {
 
   var style = 'background:' + tier.cardBg + ';color:' + tier.textPrimary;
   var dateStyle = 'color:' + tier.textSecondary;
-  return '<div class="tr-card" style="' + style + '" onclick="showTrophyPopup(\'' + skill.id + '\')">'
+  return '<div class="tr-card" style="' + style + '" data-action="trophy-card" data-skill-id="' + escapeHtml(skill.id) + '">'
     + iconHtml
     + '<div class="tr-card-name">' + escapeHtml(skill.name) + '</div>'
     + (dateStr ? '<div class="tr-card-date" style="' + dateStyle + '">' + dateStr + '</div>' : '')
@@ -211,7 +212,7 @@ function buildTrophyCard(skill, level, tier, isMuted) {
 
 function buildTrophyCardZero(skill) {
   var iconHtml = '<div class="sk-icon tr-card-icon tr-card-icon-zero" style="background:' + skill.bgColor + '">' + (skill.icon || '') + '</div>';
-  return '<div class="tr-card tr-card-zero" onclick="showTrophyPopup(\'' + skill.id + '\')">'
+  return '<div class="tr-card tr-card-zero" data-action="trophy-card" data-skill-id="' + escapeHtml(skill.id) + '">'
     + iconHtml
     + '<div class="tr-card-name">' + escapeHtml(skill.name) + '</div>'
     + '</div>';
