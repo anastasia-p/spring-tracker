@@ -93,6 +93,7 @@ function showProgressTab(section, btn) {
 }
 
 function renderAllSkillsGrid(container) {
+  _bindProgressContentHandlers(container);
   container.innerHTML = '<div class="sk-grid" id="sk-grid"></div>';
   var grid = document.getElementById('sk-grid');
   var visibleSkills = SKILLS.filter(function(skill) {
@@ -112,14 +113,35 @@ function renderAllSkillsGrid(container) {
   });
 }
 
+// Делегированный обработчик кликов внутри #progress-content.
+// Контейнер статичный (живёт в app.html), поэтому навешиваем listener один раз.
+// Сейчас обрабатывает только клики по карточкам навыков (skill-levels / skill-info);
+// карточки трофеев и переключатели тестов могут добавить свои data-action позже.
+function _bindProgressContentHandlers(container) {
+  if (!container || container.__progressContentHandlersBound) return;
+  container.__progressContentHandlersBound = true;
+  container.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-action]');
+    if (!el || !container.contains(el)) return;
+    var action = el.dataset.action;
+    if (action === 'skill-levels') {
+      e.stopPropagation();
+      showSkillLevels(el.dataset.skillId);
+    } else if (action === 'skill-info') {
+      e.stopPropagation();
+      showSkillInfo(el.dataset.skillId);
+    }
+  });
+}
+
 function buildSkillCardCompact(skill) {
   var prefix = getElemPrefix(skill.id);
   var div = document.createElement('div');
   div.className = 'sk-card';
-  div.innerHTML = '<button class="sk-q" onclick="showSkillLevels(\'' + skill.id + '\');event.stopPropagation()">i</button>'
+  div.innerHTML = '<button class="sk-q" data-action="skill-levels" data-skill-id="' + escapeHtml(skill.id) + '">i</button>'
     + '<div class="sk3-name-row"><div class="sk-name">' + skill.name + '</div></div>'
     + '<div class="sk3-mid">'
-    + '<div class="sk-icon" style="background:' + skill.bgColor + ';cursor:pointer" onclick="showSkillInfo(\'' + skill.id + '\');event.stopPropagation()">' + getSkillIcon(skill) + '</div>'
+    + '<div class="sk-icon" style="background:' + skill.bgColor + ';cursor:pointer" data-action="skill-info" data-skill-id="' + escapeHtml(skill.id) + '">' + getSkillIcon(skill) + '</div>'
     + '<div class="sk-amount" id="' + prefix + '-hours"></div>'
     + '</div>'
     + '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>'
@@ -158,11 +180,12 @@ function showSkillLevels(skillId) {
   popup.innerHTML = '<div class="popup-box">'
     + '<div class="popup-header">'
     + '<span class="popup-title">' + titleName + '<br><span style="font-size:12px;font-weight:400;color:var(--text-muted)">Шкала опыта</span></span>'
-    + '<button class="popup-close" onclick="document.getElementById(\'dynamic-levels-popup\').remove()">×</button>'
+    + '<button class="popup-close" id="dynamic-levels-close">×</button>'
     + '</div>'
     + '<div class="levels-scroll"><div id="dynamic-levels-list"></div></div>'
     + '</div>';
   document.body.appendChild(popup);
+  document.getElementById('dynamic-levels-close').onclick = function() { popup.remove(); };
   var listEl = document.getElementById('dynamic-levels-list');
   var total = getSkillTotal(skill);
   var levels = skill.levels;
@@ -224,7 +247,7 @@ function showSkillInfo(skillId) {
   popup.onclick = function() { popup.remove(); };
   popup.innerHTML = '<div class="popup-box" style="text-align:center">'
     + '<div style="position:relative;padding:36px 16px 0">'
-    + '<button class="popup-close" style="position:absolute;top:8px;right:8px" onclick="document.getElementById(\'dynamic-info-popup\').remove()">×</button>'
+    + '<button class="popup-close" id="dynamic-info-close" style="position:absolute;top:8px;right:8px">×</button>'
     + iconHtml
     + '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:20px">' + skill.name + '</div>'
     + '</div>'
@@ -234,6 +257,7 @@ function showSkillInfo(skillId) {
     + '</div>';
   popup.querySelector('.popup-box').onclick = function(e) { e.stopPropagation(); };
   document.body.appendChild(popup);
+  document.getElementById('dynamic-info-close').onclick = function() { popup.remove(); };
 }
 
 // --- Plan screens (dynamic) ---
@@ -246,9 +270,9 @@ function renderPlanScreens(sections) {
     div.className = 'sub-screen' + (i === 0 ? ' active' : '');
     div.innerHTML = '<div id="' + s + '-week-stars" class="week-stars"></div>'
       + '<div class="week-nav">'
-      + '<button onclick="changeWeek(-1)">←</button>'
+      + '<button data-action="week-prev">←</button>'
       + '<span id="' + s + '-week-label"></span>'
-      + '<button onclick="changeWeek(1)">→</button>'
+      + '<button data-action="week-next">→</button>'
       + '</div>'
       + '<div class="summary-grid">'
       + '<div class="summary-card" style="background:var(--green-light)"><div class="summary-num" id="' + s + '-s-days">—</div><div class="summary-lbl" id="' + s + '-s-days-lbl">дней подряд</div></div>'
@@ -257,6 +281,8 @@ function renderPlanScreens(sections) {
       + '</div>'
       + '<div id="' + s + '-days"><div class="loading">Загрузка...</div></div>';
     planEl.appendChild(div);
+    div.querySelector('[data-action="week-prev"]').onclick = function() { changeWeek(-1); };
+    div.querySelector('[data-action="week-next"]').onclick = function() { changeWeek(1); };
   });
 }
 
