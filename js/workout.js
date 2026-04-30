@@ -4,6 +4,7 @@ function renderTestForm() {
   var items = plans.tests || [];
   var grid = document.getElementById('test-grid');
   if (!items.length) { grid.innerHTML = '<div class="loading">Загрузка теста...</div>'; return; }
+  _bindTestGridHandlers(grid);
   var dk = dateKey(new Date());
   var saved = cache.tests[dk] || {};
   grid.innerHTML = items.map(function(item, i) {
@@ -15,7 +16,7 @@ function renderTestForm() {
     return '<div class="test-item">' +
       '<label class="ex-row">' +
         '<input type="checkbox" class="ex-check" id="tc_' + i + '" ' + (isChecked ? 'checked' : '') +
-          dataAttrs + ' onchange="handleTestCheckbox(this)">' +
+          dataAttrs + ' data-action="test-check">' +
         '<div class="ex-info">' +
           '<div class="ex-name">' + escapeHtml(item.name) + (item.note ? '<span style="color:var(--text-hint);font-size:10px;display:block">' + escapeHtml(item.note) + '</span>' : '') + '</div>' +
           (isChecked && val ? '<div class="ex-value">' + escapeHtml(val) + ' ' + escapeHtml(item.unit || '') + '</div>' : '') +
@@ -39,6 +40,19 @@ function renderTestForm() {
       });
     };
   }
+}
+
+// Делегированный обработчик change по чекбоксам тестов внутри #test-grid.
+// Контейнер не пересоздаётся — навешиваем listener один раз.
+function _bindTestGridHandlers(container) {
+  if (!container || container.__testGridHandlersBound) return;
+  container.__testGridHandlersBound = true;
+  container.addEventListener('change', function(e) {
+    var el = e.target;
+    if (el && el.dataset && el.dataset.action === 'test-check') {
+      handleTestCheckbox(el);
+    }
+  });
 }
 
 // Диспетчер галочки теста — читает параметры из data-* атрибутов
@@ -78,13 +92,16 @@ function showTextTestPopup(name, unit, dk, checkboxEl) {
       '<input id="text-test-input" type="text" placeholder="например 6:30" value="' + escapeHtml(existing) + '" ' +
         'style="width:100%;box-sizing:border-box;border:1.5px solid var(--border-light);border-radius:8px;padding:10px 12px;font-size:16px;outline:none">' +
       '<div style="display:flex;gap:8px;margin-top:16px">' +
-        '<button onclick="cancelTextTestPopup()" style="flex:1;padding:10px;border:1.5px solid var(--border-light);border-radius:8px;background:var(--card);font-size:14px;cursor:pointer;color:var(--text-subtle)">Отмена</button>' +
-        '<button data-test-name="' + escapeHtml(name) + '" data-test-dk="' + escapeHtml(dk) + '"' +
-          ' onclick="confirmTextTestPopupFromBtn(this)" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--green);color:var(--card);font-size:14px;font-weight:600;cursor:pointer">Сохранить</button>' +
+        '<button id="text-test-cancel" style="flex:1;padding:10px;border:1.5px solid var(--border-light);border-radius:8px;background:var(--card);font-size:14px;cursor:pointer;color:var(--text-subtle)">Отмена</button>' +
+        '<button id="text-test-save" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--green);color:var(--card);font-size:14px;font-weight:600;cursor:pointer">Сохранить</button>' +
       '</div>' +
     '</div>';
   overlay.id = 'text-test-overlay';
   document.body.appendChild(overlay);
+
+  document.getElementById('text-test-cancel').onclick = cancelTextTestPopup;
+  document.getElementById('text-test-save').onclick = function() { confirmTextTestPopup(name, dk); };
+
   setTimeout(function() {
     var inp = document.getElementById('text-test-input');
     if (inp) { inp.focus(); inp.select(); }
@@ -95,10 +112,6 @@ function cancelTextTestPopup() {
   var ov = document.getElementById('text-test-overlay');
   if (ov) ov.remove();
   renderTestForm();
-}
-
-function confirmTextTestPopupFromBtn(btn) {
-  confirmTextTestPopup(btn.dataset.testName, btn.dataset.testDk);
 }
 
 function confirmTextTestPopup(name, dk) {
@@ -121,6 +134,7 @@ function saveTestField(dk, name, value) {
 function loadAndRenderHistory() {
   var c = document.getElementById('history-container');
   if (!c) return;
+  _bindHistoryHandlers(c);
   c.innerHTML = '<div class="loading">Загрузка...</div>';
   // Чистим кеш чтобы перечитать всё заново
   resetCache('tests');
@@ -136,6 +150,20 @@ function loadAndRenderHistory() {
     }
     renderTestHistory(c, items, entries);
   }).catch(function() { c.innerHTML = '<div class="empty">Ошибка загрузки.</div>'; });
+}
+
+// Делегированный обработчик клика по карточке t3-item внутри #history-container.
+// Контейнер не пересоздаётся между перерисовками — навешиваем listener один раз.
+function _bindHistoryHandlers(container) {
+  if (!container || container.__historyHandlersBound) return;
+  container.__historyHandlersBound = true;
+  container.addEventListener('click', function(e) {
+    var item = e.target.closest('[data-action="toggle-test-history"]');
+    if (!item || !container.contains(item)) return;
+    var idx = parseInt(item.dataset.testIdx, 10);
+    if (isNaN(idx)) return;
+    toggleTestHistory(idx, item);
+  });
 }
 
 function renderTestHistory(container, items, entries) {
@@ -199,7 +227,7 @@ function renderTestHistory(container, items, entries) {
     });
     histHtml += '</div>';
 
-    html += '<div class="t3-item' + (idx === items.length - 1 ? ' t3-item-last' : '') + '" onclick="toggleTestHistory(' + idx + ', this)">' +
+    html += '<div class="t3-item' + (idx === items.length - 1 ? ' t3-item-last' : '') + '" data-action="toggle-test-history" data-test-idx="' + idx + '">' +
       '<div class="t3-row-main">' +
         '<div class="t3-item-name">' + escapeHtml(item.name) + '</div>' +
         '<div style="display:flex;align-items:center;gap:8px">' +
