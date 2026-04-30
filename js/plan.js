@@ -41,7 +41,7 @@ function renderSection(section, keepOpen) {
       card.className = 'day-card';
       if (isToday) { card.style.outline = '2px solid var(--green)'; card.style.outlineOffset = '-1px'; }
       card.innerHTML =
-        '<div class="day-header" onclick="toggleDay(this)">' +
+        '<div class="day-header" data-action="toggle-day">' +
           '<div class="day-left">' +
             '<span class="day-badge" style="' + getDayTypeBadgeStyle(dayData.type) + '">' + escapeHtml(getDayTypeLabel(dayData.type)) + '</span>' +
             '<span class="day-name">' + DAY_NAMES[date.getDay()] + '</span>' +
@@ -73,7 +73,7 @@ function renderSection(section, keepOpen) {
               ' data-ex-unit="' + escapeHtml(ex.unit || '') + '"' +
               ' data-ex-track="' + (ex.trackValue ? '1' : '0') + '"';
             return '<div class="ex-item"' + itemStyle + '>' +
-              '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + dataAttrs + ' onchange="handleExCheckbox(this)">' +
+              '<input type="checkbox" class="ex-check" ' + (checks[ex.name] ? 'checked' : '') + dataAttrs + ' data-action="ex-check">' +
               '<div class="ex-info">' +
                 '<div class="ex-name">' + escapeHtml(ex.name) + '</div>' +
                 (ex.desc ? '<div class="ex-desc">' + escapeHtml(ex.desc) + '</div>' : '') +
@@ -149,15 +149,29 @@ function handleExCheckbox(el) {
 function _bindDayCardHandlers(container) {
   if (!container || container.__dayCardHandlersBound) return;
   container.__dayCardHandlersBound = true;
+
   container.addEventListener('click', function(e) {
-    var btn = e.target.closest('button[data-action]');
-    if (!btn || !container.contains(btn)) return;
-    var action = btn.dataset.action;
-    var section = btn.dataset.section;
-    var dayIndex = parseInt(btn.dataset.dayIndex, 10);
-    if (isNaN(dayIndex)) return;
-    if (action === 'edit-day-only') editDayOnly(section, dayIndex);
-    else if (action === 'edit-day') editDay(section, dayIndex);
+    var el = e.target.closest('[data-action]');
+    if (!el || !container.contains(el)) return;
+    var action = el.dataset.action;
+    if (action === 'toggle-day') {
+      toggleDay(el);
+      return;
+    }
+    if (action === 'edit-day-only' || action === 'edit-day') {
+      var section = el.dataset.section;
+      var dayIndex = parseInt(el.dataset.dayIndex, 10);
+      if (isNaN(dayIndex)) return;
+      if (action === 'edit-day-only') editDayOnly(section, dayIndex);
+      else editDay(section, dayIndex);
+    }
+  });
+
+  container.addEventListener('change', function(e) {
+    var el = e.target;
+    if (el && el.dataset && el.dataset.action === 'ex-check') {
+      handleExCheckbox(el);
+    }
   });
 }
 
