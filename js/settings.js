@@ -1,9 +1,8 @@
 var API_URL = 'https://api.spring-tracker.ru:8080';
 
-function downloadPlan(section) {
+function downloadPlan(section, btn) {
   var plan = plans[section];
   if (!plan || !plan.length) { alert('План не загружен. Сначала обнови план.'); return; }
-  var btn = event.target;
   btn.disabled = true;
   btn.textContent = '...';
   fetch(API_URL + '/download/' + section, {
@@ -246,6 +245,18 @@ function renderDisciplines(container) {
   container.appendChild(group);
 }
 
+// Навешивает обработчики на кнопки «Скачать» и инпуты «Загрузить» внутри группы
+// настроек. Вызывается из renderPlans/renderTests после вставки group в DOM.
+// Кнопки/инпуты различаются по data-action, секция передается через data-section.
+function _bindPlanGroupHandlers(group) {
+  group.querySelectorAll('button[data-action="download"]').forEach(function(btn) {
+    btn.onclick = function() { downloadPlan(btn.dataset.section, btn); };
+  });
+  group.querySelectorAll('input[type="file"][data-action="upload"]').forEach(function(input) {
+    input.onchange = function() { uploadPlan(input.dataset.section, input); };
+  });
+}
+
 function renderPlans(container) {
   if (!userSections.length) return;
 
@@ -264,14 +275,15 @@ function renderPlans(container) {
       + '<div><div class="settings-item-label">' + label + '</div>'
       + '<div class="update-status" id="status-' + section + '"></div></div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
-      + '<button class="update-btn" onclick="downloadPlan(\'' + section + '\')">Скачать</button>'
+      + '<button class="update-btn" data-action="download" data-section="' + section + '">Скачать</button>'
       + '<label class="update-btn" style="cursor:pointer">Загрузить'
-      + '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'' + section + '\', this)">'
+      + '<input type="file" accept=".xlsx" style="display:none" data-action="upload" data-section="' + section + '">'
       + '</label>'
       + '</div>'
       + '</div>';
   }).join('');
   container.appendChild(group);
+  _bindPlanGroupHandlers(group);
 }
 
 function renderTests(container) {
@@ -287,13 +299,14 @@ function renderTests(container) {
     + '<div><div class="settings-item-label">Список показателей</div>'
     + '<div class="update-status" id="status-tests"></div></div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    + '<button class="update-btn" onclick="downloadPlan(\'tests\')">Скачать</button>'
+    + '<button class="update-btn" data-action="download" data-section="tests">Скачать</button>'
     + '<label class="update-btn" style="cursor:pointer">Загрузить'
-    + '<input type="file" accept=".xlsx" style="display:none" onchange="uploadPlan(\'tests\', this)">'
+    + '<input type="file" accept=".xlsx" style="display:none" data-action="upload" data-section="tests">'
     + '</label>'
     + '</div>'
     + '</div>';
   container.appendChild(group);
+  _bindPlanGroupHandlers(group);
 }
 
 // --- О приложении (в самом низу экрана настроек) ---
