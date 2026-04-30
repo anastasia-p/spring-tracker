@@ -24,10 +24,21 @@ function renderTestForm() {
     '</div>';
   }).join('') +
   '<div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--border-light);text-align:center">' +
-    '<button onclick="openTestEditor({section:\'tests\',sectionLabel:\'Еженедельный тест\',onSave:function(){renderTestForm();}})" ' +
+    '<button id="edit-tests-btn" ' +
       'style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:4px 8px">' +
       '\u270f редактировать тесты</button>' +
   '</div>';
+
+  var editBtn = document.getElementById('edit-tests-btn');
+  if (editBtn) {
+    editBtn.onclick = function() {
+      openTestEditor({
+        section: 'tests',
+        sectionLabel: 'Еженедельный тест',
+        onSave: function() { renderTestForm(); }
+      });
+    };
+  }
 }
 
 // Диспетчер галочки теста — читает параметры из data-* атрибутов
