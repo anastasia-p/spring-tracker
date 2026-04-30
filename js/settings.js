@@ -207,7 +207,7 @@ function renderAccount(container) {
       + '<div style="font-size:13px;color:var(--text-muted);line-height:1.5;margin-bottom:14px">'
       + 'Сейчас вы используете гостевой аккаунт. Чтобы прогресс не пропал при очистке браузера, зарегистрируйтесь.'
       + '</div>'
-      + '<button class="update-btn" style="width:100%" onclick="openLinkPopup()">Сохранить прогресс</button>';
+      + '<button class="update-btn" id="link-account-btn" style="width:100%">Сохранить прогресс</button>';
   } else {
     var email = (currentUser && currentUser.email) || '';
     div.innerHTML = '<div class="settings-item">'
@@ -215,11 +215,16 @@ function renderAccount(container) {
       + '<div class="settings-item-desc">Аккаунт</div>'
       + '<div id="settings-user-email" style="font-size:13px;font-weight:400;color:var(--text-muted)">' + escapeHtml(email) + '</div>'
       + '</div>'
-      + '<button class="update-btn" onclick="doLogout()">Выйти</button>'
+      + '<button class="update-btn" id="logout-btn">Выйти</button>'
       + '</div>';
   }
 
   container.appendChild(div);
+
+  var linkBtn = div.querySelector('#link-account-btn');
+  if (linkBtn) linkBtn.onclick = openLinkPopup;
+  var logoutBtn = div.querySelector('#logout-btn');
+  if (logoutBtn) logoutBtn.onclick = doLogout;
 }
 
 function renderDisciplines(container) {
@@ -237,12 +242,16 @@ function renderDisciplines(container) {
     return '<div class="settings-item">'
       + '<span class="settings-item-label">' + meta.label + '</span>'
       + '<label class="toggle-switch">'
-      + '<input type="checkbox"' + (active ? ' checked' : '') + ' onchange="toggleSection(\'' + id + '\',this.checked,this)">'
+      + '<input type="checkbox"' + (active ? ' checked' : '') + ' data-action="toggle-section" data-section="' + id + '">'
       + '<span class="toggle-slider"></span>'
       + '</label>'
       + '</div>';
   }).join('');
   container.appendChild(group);
+
+  group.querySelectorAll('input[data-action="toggle-section"]').forEach(function(input) {
+    input.onchange = function() { toggleSection(input.dataset.section, input.checked, input); };
+  });
 }
 
 // Навешивает обработчики на кнопки «Скачать» и инпуты «Загрузить» внутри группы
