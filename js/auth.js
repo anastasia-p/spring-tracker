@@ -110,7 +110,7 @@ function doRegister() {
   setAuthLoading(true);
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(function() {
-      if (typeof ym === 'function') ym(108404687, 'reachGoal', 'registration_created');
+      if (typeof ym === 'function') ym(YM_COUNTER, 'reachGoal', 'registration_created');
     })
     .catch(function(e) { setAuthLoading(false); showAuthError(getAuthErrorMessage(e.code), 'register'); });
 }
@@ -120,7 +120,7 @@ function doAnonymousLogin() {
   setAuthLoading(true);
   firebase.auth().signInAnonymously()
     .then(function() {
-      if (typeof ym === 'function') ym(108404687, 'reachGoal', 'guest_started');
+      if (typeof ym === 'function') ym(YM_COUNTER, 'reachGoal', 'guest_started');
     })
     .catch(function(e) {
       setAuthLoading(false);
@@ -240,8 +240,8 @@ function doLinkAccount() {
     })
     .then(function() {
       if (typeof ym === 'function') {
-        ym(108404687, 'reachGoal', 'registration_created');
-        ym(108404687, 'reachGoal', 'registration_complete');
+        ym(YM_COUNTER, 'reachGoal', 'registration_created');
+        ym(YM_COUNTER, 'reachGoal', 'registration_complete');
       }
       closeLinkPopup();
       if (typeof renderSettings === 'function') renderSettings();
@@ -289,11 +289,20 @@ function renderOnboarding() {
   var html = SECTIONS.map(function(id) {
     var meta = SECTION_META[id];
     return '<label class="onboard-item">' +
-      '<input type="checkbox" class="onboard-check" value="' + id + '" onchange="updateOnboardingBtn()">' +
+      '<input type="checkbox" class="onboard-check" value="' + id + '">' +
       '<span>' + meta.label + '</span>' +
     '</label>';
   }).join('');
-  document.getElementById('onboarding-list').innerHTML = html;
+  var listEl = document.getElementById('onboarding-list');
+  listEl.innerHTML = html;
+  if (!listEl.__onboardHandlersBound) {
+    listEl.__onboardHandlersBound = true;
+    listEl.addEventListener('change', function(e) {
+      if (e.target && e.target.classList.contains('onboard-check')) {
+        updateOnboardingBtn();
+      }
+    });
+  }
   updateOnboardingBtn();
 }
 
@@ -360,13 +369,13 @@ function finishOnboarding() {
     }));
   }).then(function() {
     return currentUser.getIdToken().then(function(token) {
-      return fetch('https://api.spring-tracker.ru:8080/notify/new-user', {
+      return fetch(API_URL + '/notify/new-user', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token }
       });
     }).catch(function(e) { console.warn('notify-new-user failed:', e); });
   }).then(function() {
-    if (typeof ym === 'function') ym(108404687, 'reachGoal', 'registration_complete');
+    if (typeof ym === 'function') ym(YM_COUNTER, 'reachGoal', 'registration_complete');
     startApp(selected);
   }).catch(function(e) {
     btn.disabled    = false;

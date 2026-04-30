@@ -1,4 +1,4 @@
-var API_URL = 'https://api.spring-tracker.ru:8080';
+// API_URL объявлен в config.js (загружается раньше).
 
 function downloadPlan(section, btn) {
   var plan = plans[section];
