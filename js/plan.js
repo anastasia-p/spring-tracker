@@ -10,6 +10,7 @@ function renderSection(section, keepOpen) {
   });
   var dates = getWeekDates(weekOffset);
   var container = document.getElementById(section + '-days');
+  _bindDayCardHandlers(container);
   container.innerHTML = '<div class="loading">Загрузка...</div>';
   Promise.all(dates.map(function(d) {
     return loadDayData(section, d);
@@ -84,12 +85,12 @@ function renderSection(section, keepOpen) {
           }).join('') +
           '</div>' +
           '<div style="border-top:0.5px solid var(--border-light);text-align:center;padding:6px 0">' +
-            '<button onclick="editDayOnly(\'' + section + '\',' + i + ')" ' +
+            '<button data-action="edit-day-only" data-section="' + escapeHtml(section) + '" data-day-index="' + i + '" ' +
               'style="background:none;border:none;color:var(--text-hint);font-size:12px;cursor:pointer;padding:4px 8px">' +
               '✏ редактировать день' +
             '</button>' +
             '<span style="color:var(--border-light);font-size:12px">|</span>' +
-            '<button onclick="editDay(\'' + section + '\',' + i + ')" ' +
+            '<button data-action="edit-day" data-section="' + escapeHtml(section) + '" data-day-index="' + i + '" ' +
               'style="background:none;border:none;color:var(--text-hint);font-size:12px;cursor:pointer;padding:4px 8px">' +
               '✏ редактировать план' +
             '</button>' +
@@ -139,6 +140,25 @@ function handleExCheckbox(el) {
   } else {
     toggleCheck(section, dk, exName, el);
   }
+}
+
+// Делегированный обработчик кликов по кнопкам внутри day-card.
+// Контейнер `<div id="{section}-days">` создаётся один раз в renderPlanScreens
+// и больше не пересоздаётся — поэтому navешиваем listener один раз.
+// Защита от двойной навески через флаг __dayCardHandlersBound на самом контейнере.
+function _bindDayCardHandlers(container) {
+  if (!container || container.__dayCardHandlersBound) return;
+  container.__dayCardHandlersBound = true;
+  container.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn || !container.contains(btn)) return;
+    var action = btn.dataset.action;
+    var section = btn.dataset.section;
+    var dayIndex = parseInt(btn.dataset.dayIndex, 10);
+    if (isNaN(dayIndex)) return;
+    if (action === 'edit-day-only') editDayOnly(section, dayIndex);
+    else if (action === 'edit-day') editDay(section, dayIndex);
+  });
 }
 
 function handleExCheck(section, dk, exName, unit, el) {
