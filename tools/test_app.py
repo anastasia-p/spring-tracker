@@ -178,8 +178,8 @@ def main():
         "не нашел MutationObserver или ссылку на auth-screen"
     )
 
-    # --- Consent: cross-tab sync ---
-    print("\nConsent: cross-tab sync")
+    # --- Consent: cross-tab sync и bfcache ---
+    print("\nConsent: cross-tab sync и bfcache")
 
     # 13. storage event listener для синхронизации между вкладками.
     failed += check(
@@ -189,8 +189,19 @@ def main():
         "не нашел подписку на storage event"
     )
 
+    # 14. pageshow listener для bfcache.
+    # При возврате через "назад" страница восстанавливается из кеша со старым
+    # DOM. Скрипт повторно не выполняется — pageshow с persisted=true даёт
+    # точку перепроверки: если на лендинге юзер выбрал consent, здесь применяем.
+    failed += check(
+        "14. addEventListener(\"pageshow\", ...) для bfcache",
+        bool(re.search(
+            r'addEventListener\s*\(\s*["\']pageshow["\']', src)),
+        "не нашел подписку на pageshow event"
+    )
+
     # --- Итог ---
-    total = 13
+    total = 14
     passed = total - failed
     print(f"\n{'=' * 50}")
     if failed == 0:

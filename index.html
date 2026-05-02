@@ -2221,27 +2221,62 @@
 
 <script>
 (function(){
-  // Если выбор уже сделан раньше — баннер не показываем.
-  // 'accepted' — Метрика загружена в <head> на основе localStorage, ничего не делаем.
-  // 'declined' — Метрика не грузится, ничего не делаем.
-  var consent = null;
-  try { consent = localStorage.getItem("cookieConsent"); } catch (e) {}
-  if (consent === "accepted" || consent === "declined") return;
+  // Consent UI для Яндекс.Метрики.
+  // Источники истины: localStorage.cookieConsent.
+  // syncBanner() — единственная точка, выводящая видимость баннера из источника.
+  // Вызывается при загрузке, при возврате из bfcache (pageshow), и при storage event.
 
   var banner = document.getElementById("cookie-banner");
   if (!banner) return;
-  banner.hidden = false;
+
+  function getConsent() {
+    try { return localStorage.getItem("cookieConsent"); } catch (e) { return null; }
+  }
+
+  function syncBanner() {
+    banner.hidden = (getConsent() !== null);
+  }
+
+  // Применить последствия consent-значения: грузим Метрику если accepted, обновляем UI.
+  // Используется и для своих кликов (после setItem), и для storage event (значение
+  // уже записано в другой вкладке).
+  function applyConsent(value) {
+    if (value === "accepted" && typeof window.loadYandexMetrika === "function") {
+      window.loadYandexMetrika();
+    }
+    syncBanner();
+  }
+
+  // Записать consent в localStorage и применить последствия. Только для своих кликов.
+  function setConsent(value) {
+    try { localStorage.setItem("cookieConsent", value); } catch (e) {}
+    applyConsent(value);
+  }
 
   document.getElementById("cookie-accept").addEventListener("click", function() {
-    try { localStorage.setItem("cookieConsent", "accepted"); } catch (e) {}
-    banner.hidden = true;
-    if (typeof window.loadYandexMetrika === "function") window.loadYandexMetrika();
+    setConsent("accepted");
+  });
+  document.getElementById("cookie-decline").addEventListener("click", function() {
+    setConsent("declined");
+    // Метрика НЕ грузится. Накопленные в ym.a inline-вызовы остаются в памяти и никуда не уходят.
   });
 
-  document.getElementById("cookie-decline").addEventListener("click", function() {
-    try { localStorage.setItem("cookieConsent", "declined"); } catch (e) {}
-    banner.hidden = true;
-    // Метрика НЕ грузится. Накопленные в ym.a inline-вызовы остаются в памяти и никуда не уходят.
+  // Первичная синхронизация при загрузке.
+  syncBanner();
+
+  // bfcache: при возврате через "назад"/"вперед" страница восстанавливается из кеша
+  // вместе со старым DOM. Скрипт повторно не выполняется, но pageshow с persisted=true
+  // даёт нам точку перепроверки. Если на другой странице (app) юзер выбрал consent —
+  // здесь баннер скроется без перезагрузки.
+  window.addEventListener("pageshow", function(e) {
+    if (e.persisted) applyConsent(getConsent());
+  });
+
+  // Cross-tab sync: storage event срабатывает в "соседних" вкладках того же origin.
+  // Если юзер выбрал consent в другой вкладке — применяем здесь без повторного setItem.
+  window.addEventListener("storage", function(e) {
+    if (e.key !== "cookieConsent" || !e.newValue) return;
+    applyConsent(e.newValue);
   });
 })();
 </script>

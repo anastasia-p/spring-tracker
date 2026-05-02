@@ -544,6 +544,13 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     initialCheck();
   }
 
+  // bfcache: при возврате через "назад"/"вперед" страница восстанавливается из кеша
+  // вместе со старым DOM. Скрипт повторно не выполняется, но pageshow с persisted=true
+  // даёт точку перепроверки — если на лендинге юзер выбрал consent, здесь применяем.
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) applyConsent(localStorage.getItem('cookieConsent'));
+  });
+
   // Cross-tab sync: storage event срабатывает в "соседних" вкладках того же origin.
   // Если юзер выбрал consent в другой вкладке — применяем здесь без повторного setItem.
   window.addEventListener('storage', function (e) {

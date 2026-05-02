@@ -146,6 +146,23 @@ def run_tests(html):
          f'Найдено {read_count} вызовов localStorage.getItem("cookieConsent"). '
          f'Ожидается >= 2 (раз в head для авто-загрузки и раз в баннер-скрипте)')
 
+    # 21. pageshow listener для bfcache.
+    # Без него баннер "застревает" при возврате через "назад": страница
+    # восстанавливается из bfcache со старым DOM, IIFE повторно не выполняется,
+    # свежий cookieConsent не читается. pageshow с persisted=true даёт точку перепроверки.
+    test('pageshow listener для bfcache (защита от "застрявшего" баннера)',
+         bool(re.search(r'addEventListener\s*\(\s*["\']pageshow["\']', html)),
+         'Не найден addEventListener("pageshow", ...). '
+         'Без него баннер не обновится после возврата через кнопку "назад".')
+
+    # 22. storage event listener для cross-tab sync.
+    # Симметрия с app.html: выбор consent в одной вкладке моментально расходится
+    # по всем открытым вкладкам того же origin.
+    test('storage listener для cross-tab sync',
+         bool(re.search(r'addEventListener\s*\(\s*["\']storage["\']', html)),
+         'Не найден addEventListener("storage", ...). '
+         'Выбор consent в одной вкладке не будет синхронизироваться с другими.')
+
     return results
 
 def main():
