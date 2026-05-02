@@ -62,7 +62,7 @@ test.describe('Desktop (1280x800)', () => {
     await expect(nav).toBeVisible();
   });
 
-  test('кнопка "Начать" ведёт на /app.html', async ({ page }) => {
+  test('кнопка "Начать" ведет на /app.html', async ({ page }) => {
     await page.goto(BASE_URL);
     const btn = page.locator('a.btn-primary').first();
     await expect(btn).toBeVisible();
@@ -172,5 +172,85 @@ test.describe('SEO и мета-теги', () => {
     await page.goto(BASE_URL);
     const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
     expect(canonical).toBeTruthy();
+  });
+});
+
+// --- Cookie consent ---
+// Yandex Metrika tag.js не должен грузиться без явного согласия пользователя.
+// Все тесты следят за запросом на mc.yandex.ru/metrika/tag.js — это сетевая
+// проверка, которая ловит реальное поведение, а не только наличие переменной.
+test.describe('Cookie consent', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  // Утилита: счетчик запросов на tag.js Метрики.
+  // Подписку делаем ДО goto, иначе запрос может уйти раньше, чем мы начнем слушать.
+  function watchMetrika(page) {
+    const state = { requested: false };
+    page.on('request', req => {
+      if (req.url().includes('mc.yandex.ru/metrika/tag.js')) state.requested = true;
+    });
+    return state;
+  }
+
+  test('баннер показывается при первом визите (нет cookieConsent в localStorage)', async ({ page }) => {
+    await page.addInitScript(() => { try { localStorage.removeItem('cookieConsent'); } catch (e) {} });
+    await page.goto(BASE_URL);
+    await expect(page.locator('#cookie-banner')).toBeVisible();
+    await expect(page.locator('#cookie-accept')).toBeVisible();
+    await expect(page.locator('#cookie-decline')).toBeVisible();
+  });
+
+  test('после "Отказаться": tag.js не грузится, в localStorage записан declined', async ({ page }) => {
+    await page.addInitScript(() => { try { localStorage.removeItem('cookieConsent'); } catch (e) {} });
+    const metrika = watchMetrika(page);
+
+    await page.goto(BASE_URL);
+    await page.locator('#cookie-decline').click();
+    await expect(page.locator('#cookie-banner')).toBeHidden();
+
+    // Даем время на возможную (нежелательную) загрузку
+    await page.waitForTimeout(1500);
+    expect(metrika.requested).toBe(false);
+
+    const consent = await page.evaluate(() => localStorage.getItem('cookieConsent'));
+    expect(consent).toBe('declined');
+  });
+
+  test('после "Принять": tag.js грузится, в localStorage записан accepted', async ({ page }) => {
+    await page.addInitScript(() => { try { localStorage.removeItem('cookieConsent'); } catch (e) {} });
+    const metrika = watchMetrika(page);
+
+    await page.goto(BASE_URL);
+    await page.locator('#cookie-accept').click();
+    await expect(page.locator('#cookie-banner')).toBeHidden();
+
+    // Даем время на загрузку tag.js после клика
+    await page.waitForTimeout(1500);
+    expect(metrika.requested).toBe(true);
+
+    const consent = await page.evaluate(() => localStorage.getItem('cookieConsent'));
+    expect(consent).toBe('accepted');
+  });
+
+  test('повторный визит после accepted: баннер скрыт, метрика грузится автоматически', async ({ page }) => {
+    await page.addInitScript(() => { try { localStorage.setItem('cookieConsent', 'accepted'); } catch (e) {} });
+    const metrika = watchMetrika(page);
+
+    await page.goto(BASE_URL);
+    await expect(page.locator('#cookie-banner')).toBeHidden();
+
+    await page.waitForTimeout(1500);
+    expect(metrika.requested).toBe(true);
+  });
+
+  test('повторный визит после declined: баннер скрыт, метрика НЕ грузится', async ({ page }) => {
+    await page.addInitScript(() => { try { localStorage.setItem('cookieConsent', 'declined'); } catch (e) {} });
+    const metrika = watchMetrika(page);
+
+    await page.goto(BASE_URL);
+    await expect(page.locator('#cookie-banner')).toBeHidden();
+
+    await page.waitForTimeout(1500);
+    expect(metrika.requested).toBe(false);
   });
 });

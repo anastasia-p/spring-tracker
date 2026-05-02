@@ -112,6 +112,40 @@ def run_tests(html):
          'centered-section' in html and ('padding: 56px 16px' in html or 'padding:56px 16px' in html or 'padding: 60px 16px' in html),
          'centered-section не имеет мобильного padding в 480px query')
 
+    # 17. КРИТИЧЕСКИЙ: ym(...,"init",...) вызывается ТОЛЬКО внутри loadYandexMetrika.
+    # Если откатить consent-логику и вернуть init на верхний уровень — метрика
+    # снова начнет грузиться без согласия. Этот тест ловит регрессию приватности.
+    init_pattern = re.compile(r'ym\s*\(\s*108404687\s*,\s*["\']init["\']')
+    all_inits = init_pattern.findall(html)
+    func_block = re.search(
+        r'window\.loadYandexMetrika\s*=\s*function[^{]*\{(.*?)\n\s*\};',
+        html, re.S
+    )
+    inits_in_func = init_pattern.findall(func_block.group(1)) if func_block else []
+    test('Метрика init вызывается только внутри loadYandexMetrika',
+         len(all_inits) == 1 and len(inits_in_func) == 1,
+         f'Найдено {len(all_inits)} вызовов ym(...,"init",...), из них в loadYandexMetrika {len(inits_in_func)}. '
+         f'Должно быть ровно 1 и только внутри функции')
+
+    # 18. Cookie banner элемент присутствует
+    test('Cookie banner #cookie-banner присутствует',
+         'id="cookie-banner"' in html,
+         'Не найден #cookie-banner — нет баннера согласия на cookie')
+
+    # 19. Кнопки accept и decline
+    has_accept = 'id="cookie-accept"' in html
+    has_decline = 'id="cookie-decline"' in html
+    test('Cookie banner: кнопки accept и decline',
+         has_accept and has_decline,
+         f'Не найдено: {", ".join([x for x,v in [("cookie-accept",has_accept),("cookie-decline",has_decline)] if not v])}')
+
+    # 20. Чтение cookieConsent из localStorage (>= 2 раза: проверка в head + проверка в баннер-скрипте)
+    read_count = len(re.findall(r'localStorage\.getItem\(\s*["\']cookieConsent["\']', html))
+    test('Чтение cookieConsent из localStorage в двух местах',
+         read_count >= 2,
+         f'Найдено {read_count} вызовов localStorage.getItem("cookieConsent"). '
+         f'Ожидается >= 2 (раз в head для авто-загрузки и раз в баннер-скрипте)')
+
     return results
 
 def main():

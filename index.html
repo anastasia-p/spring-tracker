@@ -1390,18 +1390,111 @@
 
     @media (max-width: 768px) { .hero-sprouts { display: none; } }
 
+    /* Cookie consent banner */
+    .cookie-banner {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 9999;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      padding: 18px 20px;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .cookie-banner[hidden] { display: none; }
+    .cookie-banner-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .cookie-banner-text {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .cookie-banner-text a { color: var(--green-dark); text-decoration: underline; }
+    .cookie-banner-text a:hover { color: var(--green); }
+    .cookie-banner-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+    .cookie-btn {
+      font: inherit;
+      cursor: pointer;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      min-width: 120px;
+      text-align: center;
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
+    }
+    .cookie-btn--decline {
+      background: transparent;
+      border-color: rgba(0,0,0,0.15);
+      color: var(--text);
+    }
+    .cookie-btn--decline:hover {
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,0,0,0.3);
+    }
+    .cookie-btn--accept {
+      background: var(--green);
+      color: #fff;
+    }
+    .cookie-btn--accept:hover { background: var(--green-dark); }
+    @media (min-width: 560px) {
+      .cookie-banner-inner { flex-direction: row; align-items: center; }
+      .cookie-banner-text { flex: 1; }
+    }
+    @media (max-width: 480px) {
+      .cookie-banner { left: 12px; right: 12px; bottom: 12px; padding: 16px; }
+      .cookie-btn { padding: 9px 14px; font-size: 13px; min-width: 100px; }
+    }
+
   </style>
 
-  <!-- Yandex.Metrika counter -->
+  <!-- Yandex.Metrika counter (consent-gated) -->
   <script type="text/javascript">
-    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-    m[i].l=1*new Date();
-    for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
-    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-    (window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
-    ym(108404687,"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});
+    // Stub — буфер для inline ym(...) вызовов, пока tag.js не загружен.
+    // Без него onclick="ym(...)" в разметке падали бы в консоль с ReferenceError.
+    // Вызовы накапливаются в ym.a и проигрываются tag.js'ом ПОСЛЕ его загрузки;
+    // если согласия не было — tag.js не грузится, и буфер просто остается в памяти.
+    (function(m,e,t,i){
+      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+    })(window,document,"script","ym");
+
+    // Загрузка тега + init вызывается только при явном согласии.
+    window.loadYandexMetrika = function() {
+      if (window.__ymLoaded) return;
+      window.__ymLoaded = true;
+      var r = "https://mc.yandex.ru/metrika/tag.js";
+      for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) return; }
+      var k = document.createElement("script");
+      var a = document.getElementsByTagName("script")[0];
+      k.async = 1; k.src = r;
+      a.parentNode.insertBefore(k, a);
+      ym(108404687, "init", {clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true});
+    };
+
+    // Если пользователь раньше уже согласился — грузим Метрику сразу.
+    try {
+      if (localStorage.getItem("cookieConsent") === "accepted") {
+        window.loadYandexMetrika();
+      }
+    } catch (e) {}
   </script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/108404687" style="position:absolute;left:-9999px;" alt=""/></div></noscript>
   <!-- /Yandex.Metrika counter -->
 </head>
 <body>
@@ -2112,6 +2205,46 @@
   <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
   <img id="lightbox-img" src="" alt="">
 </div>
+
+<!-- Cookie consent banner -->
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Согласие на использование cookie" hidden>
+  <div class="cookie-banner-inner">
+    <p class="cookie-banner-text">
+      На сайте собираются файлы cookie, чтобы сделать его работу лучше. Подробнее в <a href="/privacy.html">политике конфиденциальности</a>
+    </p>
+    <div class="cookie-banner-actions">
+      <button type="button" class="cookie-btn cookie-btn--decline" id="cookie-decline">Отказаться</button>
+      <button type="button" class="cookie-btn cookie-btn--accept" id="cookie-accept">Принять</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Если выбор уже сделан раньше — баннер не показываем.
+  // 'accepted' — Метрика загружена в <head> на основе localStorage, ничего не делаем.
+  // 'declined' — Метрика не грузится, ничего не делаем.
+  var consent = null;
+  try { consent = localStorage.getItem("cookieConsent"); } catch (e) {}
+  if (consent === "accepted" || consent === "declined") return;
+
+  var banner = document.getElementById("cookie-banner");
+  if (!banner) return;
+  banner.hidden = false;
+
+  document.getElementById("cookie-accept").addEventListener("click", function() {
+    try { localStorage.setItem("cookieConsent", "accepted"); } catch (e) {}
+    banner.hidden = true;
+    if (typeof window.loadYandexMetrika === "function") window.loadYandexMetrika();
+  });
+
+  document.getElementById("cookie-decline").addEventListener("click", function() {
+    try { localStorage.setItem("cookieConsent", "declined"); } catch (e) {}
+    banner.hidden = true;
+    // Метрика НЕ грузится. Накопленные в ym.a inline-вызовы остаются в памяти и никуда не уходят.
+  });
+})();
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
