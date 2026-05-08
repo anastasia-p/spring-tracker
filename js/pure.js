@@ -83,17 +83,17 @@ var FORMS_LEVELS = [
   { level: 9, name: 'Живая форма',     reps: 100000, desc: 'Ты и есть форма' },
 ];
 
-var LOTUS_LEVELS = [
-  { level: 0, name: 'Беспокойный ум',       hours: 0,     desc: 'Мысли кружатся, как листья на ветру' },
-  { level: 1, name: 'Первый вдох',           hours: 10,    desc: 'Тело начинает успокаиваться' },
-  { level: 2, name: 'Тихая вода',            hours: 30,    desc: 'Рябь уходит с поверхности' },
-  { level: 3, name: 'Ясное озеро',           hours: 60,    desc: 'Вода не спешит' },
-  { level: 4, name: 'Глубина',               hours: 100,   desc: 'Свет проходит насквозь' },
-  { level: 5, name: 'Семя на дне',           hours: 300,   desc: 'Ничто не тревожит' },
-  { level: 6, name: 'Росток тянется к небу', hours: 600,   desc: 'Мысли проходят, как облака' },
-  { level: 7, name: 'Бутон над водой',       hours: 1000,  desc: 'Отражает все, не удерживая ничего' },
-  { level: 8, name: 'Лепестки встрепенулись',hours: 5000,  desc: 'Тишина вокруг' },
-  { level: 9, name: 'Лотос раскрылся',       hours: 10000, desc: 'Пробуждение ото сна' },
+var XIAN_LEVELS = [
+  { level: 0, name: 'Беспокойный ум',    hours: 0,     desc: 'Мысли кружатся, как листья на ветру' },
+  { level: 1, name: 'Первый вдох',       hours: 10,    desc: 'Мгновенья покоя' },
+  { level: 2, name: 'Стихающее тело',    hours: 30,    desc: 'Тело начинает успокаиваться' },
+  { level: 3, name: 'Тихая поза',        hours: 60,    desc: 'Тело привыкло' },
+  { level: 4, name: 'Стихающий ум',      hours: 100,   desc: 'Ум начинает успокаиваться' },
+  { level: 5, name: 'Прозрачное небо',   hours: 300,   desc: 'Мысли проходят, как облака' },
+  { level: 6, name: 'Зеркальная гладь',  hours: 600,   desc: 'Ничто не тревожит' },
+  { level: 7, name: 'Молчание мира',     hours: 1000,  desc: 'Тишина вокруг' },
+  { level: 8, name: 'Молчание сердца',   hours: 5000,  desc: 'Тишина внутри' },
+  { level: 9, name: 'Безмятежный Сянь',  hours: 10000, desc: 'Пробуждение ото сна' },
 ];
 
 
@@ -357,17 +357,18 @@ var SKILLS = [
     levels: SNAKE1_LEVELS,
   },
   {
-    id: 'lotus',
-    name: 'Лотос',
+    id: 'xian',
+    name: 'Безмятежный Сянь',
     section: 'qigong',
     color: '#B06FC4',
     bgColor: '#F3E8FA',
-    icon: '<img src="images/lotus.png" alt="">',
+    // TODO: заменить на <img src="images/xian.png" alt=""> когда будет готова картинка
+    icon: '<span style="font-family:serif;color:#B06FC4;line-height:1">仙</span>',
     valueType: 'minutes',
     source: { collection: 'qigong', field: 'Медитация' },
-    tracker: 'lotus',
+    tracker: 'xian',
     trackerField: 'totalMinutes',
-    levels: LOTUS_LEVELS,
+    levels: XIAN_LEVELS,
   },
   {
     id: 'forest_gump',
@@ -489,10 +490,6 @@ function getFormsLevel(r)    { return getSkillLevel(getSkillById('slt'), r); }
 function getFormsNextLevel(r){ return getSkillNextLevel(getSkillById('slt'), r); }
 function getFormsProgress(r) { return getSkillProgress(getSkillById('slt'), r); }
 
-function getLotusLevel(m)    { return getSkillLevel(getSkillById('lotus'), m); }
-function getLotusNextLevel(m){ return getSkillNextLevel(getSkillById('lotus'), m); }
-function getLotusProgress(m) { return getSkillProgress(getSkillById('lotus'), m); }
-
 function getForestGumpLevel(km)    { return getSkillLevel(getSkillById('forest_gump'), km); }
 function getForestGumpNextLevel(km){ return getSkillNextLevel(getSkillById('forest_gump'), km); }
 function getForestGumpProgress(km) { return getSkillProgress(getSkillById('forest_gump'), km); }
@@ -556,10 +553,9 @@ if (typeof module !== 'undefined') {
     getPushupLevel, getPushupNextLevel, getPushupProgress,
     getPullupLevel, getPullupNextLevel, getPullupProgress,
     getFormsLevel, getFormsNextLevel, getFormsProgress,
-    getLotusLevel, getLotusNextLevel, getLotusProgress,
     getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, LOTUS_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SHISANSI_LEVELS, SNAKE1_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, XIAN_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SHISANSI_LEVELS, SNAKE1_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,

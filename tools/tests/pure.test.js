@@ -350,13 +350,6 @@ test('getPushupLevel совпадает с getSkillLevel(pushups)', function() {
   });
 });
 
-test('getLotusLevel совпадает с getSkillLevel(lotus)', function() {
-  var lotus = p.getSkillById('lotus');
-  [0, 600, 18000].forEach(function(v) {
-    assert.strictEqual(p.getLotusLevel(v).level, p.getSkillLevel(lotus, v).level);
-  });
-});
-
 // ─── Утилиты дат ─────────────────────────────────────────────────────────────
 console.log('\nУтилиты дат');
 
