@@ -362,8 +362,7 @@ var SKILLS = [
     section: 'qigong',
     color: '#B06FC4',
     bgColor: '#F3E8FA',
-    // TODO: заменить на <img src="images/xian.png" alt=""> когда будет готова картинка
-    icon: '<span style="font-family:serif;color:#B06FC4;line-height:1">仙</span>',
+    icon: '<img src="images/xian.png" alt="">',
     valueType: 'minutes',
     source: { collection: 'qigong', field: 'Медитация' },
     tracker: 'xian',
