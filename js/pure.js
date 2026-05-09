@@ -97,6 +97,20 @@ var XIAN_LEVELS = [
 ];
 
 
+var LOTUS_LEVELS = [
+  { level: 0, name: 'Спящее семя',            reps: 0,     desc: 'что такое Ци?' },
+  { level: 1, name: 'Семя пробудилось',       reps: 50,    desc: 'пульсация в темноте' },
+  { level: 2, name: 'Корни в иле',            reps: 200,   desc: 'Ци ищет опору' },
+  { level: 3, name: 'Первый росток',          reps: 500,   desc: 'энергия идет вверх' },
+  { level: 4, name: 'Росток в воде',          reps: 1000,  desc: 'поток находит русло' },
+  { level: 5, name: 'Росток крепнет',         reps: 2000,  desc: 'Ци течет ровно' },
+  { level: 6, name: 'Росток тянется к небу',  reps: 4000,  desc: 'поток поднимается по оси' },
+  { level: 7, name: 'Бутон над водой',        reps: 6000,  desc: 'поток вышел на свет' },
+  { level: 8, name: 'Лепестки встрепенулись', reps: 8000,  desc: 'Ци раскрывается в стороны' },
+  { level: 9, name: 'Лотос раскрылся',        reps: 10000, desc: 'это и есть Ци' },
+];
+
+
 var DUMMY1_LEVELS = [
   { level: 0, name: 'Незнакомец',        reps: 0,     desc: 'Стоит и молчит' },
   { level: 1, name: 'Первый стук',       reps: 50,    desc: 'Три руки и нога' },
@@ -370,6 +384,19 @@ var SKILLS = [
     levels: XIAN_LEVELS,
   },
   {
+    id: 'lotus',
+    name: 'Лотос',
+    section: 'qigong',
+    color: '#D85A85',
+    bgColor: '#FAE0E8',
+    icon: '<img src="images/lotus.png" alt="">',
+    valueType: 'reps',
+    source: { collection: 'qigong', field: 'Лотос' },
+    tracker: 'lotus',
+    trackerField: 'totalReps',
+    levels: LOTUS_LEVELS,
+  },
+  {
     id: 'forest_gump',
     name: 'Форрест Гамп',
     section: 'cardio',
@@ -554,7 +581,7 @@ if (typeof module !== 'undefined') {
     getFormsLevel, getFormsNextLevel, getFormsProgress,
     getForestGumpLevel, getForestGumpNextLevel, getForestGumpProgress,
     // Массивы уровней (для тестов)
-    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, XIAN_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SHISANSI_LEVELS, SNAKE1_LEVELS,
+    TREE_LEVELS, MOUNTAIN_LEVELS, PUSHUP_LEVELS, TITAN_LEGS_LEVELS, PULLUP_LEVELS, FORMS_LEVELS, XIAN_LEVELS, FOREST_GUMP_LEVELS, DUMMY1_LEVELS, SHISANSI_LEVELS, SNAKE1_LEVELS, LOTUS_LEVELS,
     // Утилиты
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,
