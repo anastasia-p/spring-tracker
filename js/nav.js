@@ -140,10 +140,16 @@ function buildSkillCardCompact(skill) {
   var prefix = getElemPrefix(skill.id);
   var div = document.createElement('div');
   div.className = 'sk-card';
+  // Вся карточка — кнопка вызова попапа источников (skill-info). Кнопка "i"
+  // внутри имеет своё data-action="skill-levels" и в делегированном обработчике
+  // перехватывает клик первой через closest('[data-action]').
+  div.setAttribute('data-action', 'skill-info');
+  div.setAttribute('data-skill-id', skill.id);
+  div.style.cursor = 'pointer';
   div.innerHTML = '<button class="sk-q" data-action="skill-levels" data-skill-id="' + escapeHtml(skill.id) + '">i</button>'
     + '<div class="sk3-name-row"><div class="sk-name">' + skill.name + '</div></div>'
     + '<div class="sk3-mid">'
-    + '<div class="sk-icon" style="background:' + skill.bgColor + ';cursor:pointer" data-action="skill-info" data-skill-id="' + escapeHtml(skill.id) + '">' + getSkillIcon(skill) + '</div>'
+    + '<div class="sk-icon" style="background:' + skill.bgColor + '">' + getSkillIcon(skill) + '</div>'
     + '<div class="sk-amount" id="' + prefix + '-hours"></div>'
     + '</div>'
     + '<div class="sk-level" id="' + prefix + '-level-name">Загрузка...</div>'
@@ -186,6 +192,9 @@ function showSkillLevels(skillId) {
     + '</div>'
     + '<div class="levels-scroll"><div id="dynamic-levels-list"></div></div>'
     + '</div>';
+  // Клик по оверлею (вне popup-box) — закрывает попап. Проверка e.target === popup
+  // отсекает клики внутри содержимого, которые всплывают.
+  popup.onclick = function(e) { if (e.target === popup) popup.remove(); };
   document.body.appendChild(popup);
   document.getElementById('dynamic-levels-close').onclick = function() { popup.remove(); };
   var listEl = document.getElementById('dynamic-levels-list');
@@ -246,7 +255,8 @@ function showSkillInfo(skillId) {
   popup.id = 'dynamic-info-popup';
   popup.className = 'popup-overlay';
   popup.style.display = 'flex';
-  popup.onclick = function() { popup.remove(); };
+  // Клик по оверлею (вне popup-box) — закрывает попап.
+  popup.onclick = function(e) { if (e.target === popup) popup.remove(); };
   popup.innerHTML = '<div class="popup-box" style="text-align:center">'
     + '<div style="position:relative;padding:36px 16px 0">'
     + '<button class="popup-close" id="dynamic-info-close" style="position:absolute;top:8px;right:8px">×</button>'
@@ -257,7 +267,6 @@ function showSkillInfo(skillId) {
     + '<p style="margin:0;font-size:14px;line-height:1.5;color:var(--text-muted)">' + sourceText + '</p>'
     + '</div>'
     + '</div>';
-  popup.querySelector('.popup-box').onclick = function(e) { e.stopPropagation(); };
   document.body.appendChild(popup);
   document.getElementById('dynamic-info-close').onclick = function() { popup.remove(); };
 }

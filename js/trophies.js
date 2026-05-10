@@ -287,7 +287,7 @@ function showTrophyPopup(skillId) {
   var popup = document.createElement('div');
   popup.id = 'trophy-popup';
   popup.className = 'trophy-popup-overlay';
-  popup.onclick = function() { popup.remove(); };
+  popup.onclick = function(e) { if (e.target === popup) popup.remove(); };
   var sheetStyle = 'background:' + palette.bg + ';color:' + palette.textPrimary;
   popup.innerHTML = '<div class="trophy-popup-sheet" style="' + sheetStyle + '">'
     + '<div class="trophy-drag-handle" style="background:' + palette.drag + '"></div>'
@@ -300,6 +300,5 @@ function showTrophyPopup(skillId) {
     + currentDateBlock
     + historyBlock
     + '</div>';
-  popup.querySelector('.trophy-popup-sheet').onclick = function(e) { e.stopPropagation(); };
   document.body.appendChild(popup);
 }
