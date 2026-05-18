@@ -478,7 +478,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="auth-btn" id="link-submit-btn" onclick="doLinkAccount()">Зарегистрироваться</button>
   </div>
 
-<script>document.addEventListener('DOMContentLoaded',function(){if(location.hash==='#register'){showRegisterForm();}});</script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(location.hash==='#register'){showRegisterForm();}else if(location.hash==='#guest'){doAnonymousLogin();}});</script>
 
 <!-- Cookie consent banner (auth-screen only) -->
 <div id="cookie-banner" role="dialog" aria-label="Согласие на использование cookie">
