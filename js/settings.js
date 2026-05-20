@@ -355,6 +355,12 @@ function renderDataExport(container) {
     return '<option value="' + y + '"' + sel + '>' + y + '</option>';
   }).join('') + '<option value="all">Все годы</option>';
 
+  // SVG-шеврон в фоне; %23085041 = #085041 (темно-зеленый в тон тексту .update-btn).
+  // appearance:none глушит нативную стрелку браузера, чтобы не было двойной.
+  var caret = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' "
+    + "width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23085041' "
+    + "stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>\")";
+
   group.innerHTML = '<div class="settings-item">'
     + '<div>'
       + '<div class="settings-item-label">Выгрузка истории</div>'
@@ -364,10 +370,10 @@ function renderDataExport(container) {
       + '<div class="update-status" id="status-export" style="margin-top:6px"></div>'
     + '</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-      + '<select id="export-year-select" '
-        + 'style="padding:8px 10px;border:1px solid var(--border, #d0d0d0);'
-        + 'border-radius:8px;background:#fff;cursor:pointer;font-size:14px;'
-        + 'font-family:inherit;color:inherit">'
+      + '<select id="export-year-select" class="update-btn" '
+        + 'style="appearance:none;-webkit-appearance:none;-moz-appearance:none;'
+        + 'background-image:' + caret + ';background-repeat:no-repeat;'
+        + 'background-position:right 10px center;padding-right:28px;cursor:pointer">'
         + options
       + '</select>'
       + '<button class="update-btn" id="export-data-btn">Скачать</button>'
