@@ -364,16 +364,15 @@ function renderDataExport(container) {
   if (!currentUser || currentUser.isAnonymous) return;
 
   // Заголовок с иконкой "i" справа. По клику — попап с описанием.
+  // Стиль "i" — класс .sk-q, как на странице тестов (app.html строка 309).
+  // position:relative сбрасывает абсолютное позиционирование .sk-q по умолчанию.
   var title = document.createElement('div');
   title.className = 'section-title';
   title.style.cssText = 'display:flex;justify-content:space-between;align-items:center';
   title.innerHTML = '<span>Данные</span>'
-    + '<button type="button" id="data-info-btn" aria-label="Подробнее" '
-    + 'style="width:22px;height:22px;border:1px solid var(--text-muted, #888);'
-    + 'border-radius:50%;background:transparent;cursor:pointer;'
-    + 'display:inline-flex;align-items:center;justify-content:center;'
-    + 'font-family:Georgia,serif;font-style:italic;font-size:13px;'
-    + 'color:var(--text-muted, #888);padding:0;line-height:1">i</button>';
+    + '<button class="sk-q" type="button" id="data-info-btn" '
+    + 'style="position:relative;top:auto;right:auto" '
+    + 'aria-label="Подробнее">i</button>';
   container.appendChild(title);
   title.querySelector('#data-info-btn').onclick = showDataExportInfo;
 
