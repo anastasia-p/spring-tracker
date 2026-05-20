@@ -435,6 +435,89 @@ test('пустая строка остается пустой', function() {
   assert.strictEqual(p.escapeHtml(''), '');
 });
 
+// ─── buildExportSummary / buildExportSchemaDoc ────────────────────────────────
+console.log('\nbuildExportSummary / buildExportSchemaDoc');
+
+test('buildExportSummary: пустой ввод не падает', function() {
+  var s = p.buildExportSummary({}, {});
+  assert.strictEqual(s.totalDays, 0);
+  assert.strictEqual(s.lastActivity, null);
+  assert.deepStrictEqual(s.dayTypes, {});
+  assert.deepStrictEqual(s.sectionStats, {});
+});
+
+test('buildExportSummary: totalDays — уникальные даты по всем секциям', function() {
+  var s = p.buildExportSummary({
+    strength: [
+      { id: '2026-05-19', data: { type: 'legs', checks: {} } },
+      { id: '2026-05-20', data: { type: 'rest', checks: {} } },
+    ],
+    wingchun: [
+      { id: '2026-05-19', data: { type: 'wc', checks: {} } }, // дубль даты
+      { id: '2026-05-21', data: { type: 'wc', checks: {} } },
+    ],
+  }, {});
+  assert.strictEqual(s.totalDays, 3); // 19, 20, 21
+});
+
+test('buildExportSummary: dayTypes считает суммарно по всем секциям', function() {
+  var s = p.buildExportSummary({
+    strength: [
+      { id: '2026-05-19', data: { type: 'legs', checks: {} } },
+      { id: '2026-05-20', data: { type: 'rest', checks: {} } },
+    ],
+    wingchun: [
+      { id: '2026-05-19', data: { type: 'wc',   checks: {} } },
+      { id: '2026-05-20', data: { type: 'rest', checks: {} } },
+    ],
+  }, {});
+  assert.strictEqual(s.dayTypes.legs, 1);
+  assert.strictEqual(s.dayTypes.rest, 2);
+  assert.strictEqual(s.dayTypes.wc, 1);
+});
+
+test('buildExportSummary: lastActivity — максимальная дата с true-галочкой', function() {
+  var s = p.buildExportSummary({
+    strength: [
+      { id: '2026-05-19', data: { type: 'legs', checks: { 'Отжимания': true } } },
+      { id: '2026-05-20', data: { type: 'legs', checks: { 'Отжимания': false } } }, // не считается
+    ],
+    wingchun: [
+      { id: '2026-05-18', data: { type: 'wc', checks: { 'Сиу Ним Тау': true } } },
+    ],
+  }, {});
+  assert.strictEqual(s.lastActivity, '2026-05-19');
+});
+
+test('buildExportSummary: sectionStats считает daysWithActivity отдельно по секции', function() {
+  var s = p.buildExportSummary({
+    strength: [
+      { id: '2026-05-19', data: { type: 'legs', checks: { 'Отжимания': true } } },
+      { id: '2026-05-20', data: { type: 'legs', checks: { 'Отжимания': true } } },
+      { id: '2026-05-21', data: { type: 'rest', checks: {} } },
+    ],
+    wingchun: [
+      { id: '2026-05-19', data: { type: 'wc', checks: { 'Сиу Ним Тау': true } } },
+    ],
+  }, {});
+  assert.strictEqual(s.sectionStats.strength.historyDays, 3);
+  assert.strictEqual(s.sectionStats.strength.daysWithActivity, 2);
+  assert.strictEqual(s.sectionStats.strength.lastActivity, '2026-05-20');
+  assert.strictEqual(s.sectionStats.wingchun.historyDays, 1);
+  assert.strictEqual(s.sectionStats.wingchun.daysWithActivity, 1);
+});
+
+test('buildExportSchemaDoc: возвращает структуру с описанием 4 секций и полей', function() {
+  var doc = p.buildExportSchemaDoc();
+  assert.strictEqual(typeof doc.description, 'string');
+  assert.ok(doc.description.length > 0);
+  assert.deepStrictEqual(Object.keys(doc.sections).sort(),
+    ['cardio', 'qigong', 'strength', 'wingchun']);
+  assert.ok(doc.fields['skills[].total']);
+  assert.ok(doc.fields['summary.lastActivity']);
+  assert.ok(doc.fields['sections.{section}.history.{YYYY-MM-DD}.checks']);
+});
+
 // ─── Итог ─────────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────');
 console.log('Итого: ' + passed + ' прошло, ' + failed + ' упало');

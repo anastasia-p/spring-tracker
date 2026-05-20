@@ -565,6 +565,97 @@ function pluralize(n, forms) {
 }
 
 
+// ─── Сводка и схема для выгрузки данных пользователя ────────────────────────
+// Используются в settings.js при формировании JSON-файла экспорта.
+// Чистые функции — без Firebase и DOM. Тесты — в pure.test.js.
+
+// Описание схемы выгружаемого файла. Помещается в _meta.schema — даёт LLM
+// (или человеку) контекст для интерпретации данных без чтения исходников.
+function buildExportSchemaDoc() {
+  return {
+    description: 'Spring Tracker — выгрузка истории тренировок и тестов пользователя для анализа нагрузки. Все даты в формате YYYY-MM-DD. Все ISO-таймстампы в UTC. Имена упражнений и показателей — на русском.',
+    sections: {
+      strength: 'Силовые',
+      wingchun: 'Вин Чун',
+      qigong:   'Цигун',
+      cardio:   'Кардио',
+    },
+    fields: {
+      'sections.{section}.label': 'Человекочитаемое имя секции',
+      'sections.{section}.currentPlan.days[i]': 'Слот плана: weekday (1..7), type, label, exercises[]',
+      'sections.{section}.currentPlan.days[i].exercises[j]': 'name, desc, trackValue (bool), unit (reps/sec/min/km), note',
+      'sections.{section}.currentTests': 'Список показателей секции для записи в дневник тестов',
+      'sections.{section}.history.{YYYY-MM-DD}.checks': 'Имя упражнения → выполнено (true/false)',
+      'sections.{section}.history.{YYYY-MM-DD}.values': 'Имя упражнения → число. Единица — в exerciseUnits или в plan[].unit',
+      'sections.{section}.history.{YYYY-MM-DD}.type': 'Тип дня: training, rest, illness, run, legs, upper, wc, qi, cardio и др.',
+      'sections.{section}.history.{YYYY-MM-DD}.label': 'Произвольная метка дня',
+      'sections.{section}.history.{YYYY-MM-DD}.plan': 'Снапшот списка упражнений плана на этот день',
+      'sections.{section}.testsHistory.{YYYY-MM-DD}': 'Имя показателя → значение (число или строка вида "6:30")',
+      'skills[].id': 'Идентификатор навыка (tree, pushups, slt, ...)',
+      'skills[].name': 'Человекочитаемое имя навыка',
+      'skills[].section': 'К какой секции относится',
+      'skills[].unit': 'reps | minutes | seconds | km',
+      'skills[].total': 'Накопленное значение в unit',
+      'skills[].level': 'Текущий уровень 0..9',
+      'skills[].levelDates': 'Номер уровня (1..9) → ISO-дата достижения',
+      'exerciseUnits': 'Имя упражнения → unit. Сводный справочник из всех currentPlan',
+      'summary.totalDays': 'Уникальных дат с историей по всем секциям',
+      'summary.lastActivity': 'Дата последнего дня с хотя бы одной отметкой в checks',
+      'summary.dayTypes': 'Тип дня → сколько раз встретился (сумма по всем секциям)',
+      'summary.sectionStats.{section}.historyDays': 'Сколько дней записано в этой секции',
+      'summary.sectionStats.{section}.daysWithActivity': 'Из них — с хотя бы одной выполненной отметкой',
+      'summary.sectionStats.{section}.lastActivity': 'Дата последней отметки в этой секции',
+    },
+  };
+}
+
+// Считает сводку по выгруженной истории.
+// Вход:  planBySection = { strength: [{id, data}, ...], wingchun: [...], ... }
+//        testsBySection — зарезервирован, пока не используется.
+// Выход: см. описание в buildExportSchemaDoc().summary.
+function buildExportSummary(planBySection, testsBySection) {
+  var summary = {
+    totalDays: 0,
+    lastActivity: null,
+    dayTypes: {},
+    sectionStats: {},
+  };
+  var allDates = {};
+
+  Object.keys(planBySection || {}).forEach(function(section) {
+    var docs = planBySection[section] || [];
+    var stats = {
+      historyDays: docs.length,
+      daysWithActivity: 0,
+      lastActivity: null,
+    };
+    docs.forEach(function(d) {
+      var date = d.id;
+      var data = d.data || {};
+      allDates[date] = true;
+
+      var type = data.type || 'rest';
+      summary.dayTypes[type] = (summary.dayTypes[type] || 0) + 1;
+
+      var checks = data.checks || {};
+      var hasActivity = false;
+      for (var k in checks) {
+        if (checks[k]) { hasActivity = true; break; }
+      }
+      if (hasActivity) {
+        stats.daysWithActivity++;
+        if (!stats.lastActivity || date > stats.lastActivity) stats.lastActivity = date;
+        if (!summary.lastActivity || date > summary.lastActivity) summary.lastActivity = date;
+      }
+    });
+    summary.sectionStats[section] = stats;
+  });
+
+  summary.totalDays = Object.keys(allDates).length;
+  return summary;
+}
+
+
 // ─── Node.js export (для юнит-тестов) ────────────────────────────────────────
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -586,5 +677,7 @@ if (typeof module !== 'undefined') {
     STANCE_EXERCISES,
     dateKey, getWeekDates, getWeekLabel, getDayPlanIndex, pluralize,
     escapeHtml,
+    // Экспорт данных пользователя
+    buildExportSummary, buildExportSchemaDoc,
   };
 }

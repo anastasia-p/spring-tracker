@@ -38,6 +38,9 @@ function setup(opts) {
   global.getWeekDates = pure.getWeekDates;
   global.getSkillById = pure.getSkillById;
   global.getSkillLevel = pure.getSkillLevel;
+  global.getSectionMeta = pure.getSectionMeta;
+  global.buildExportSummary = pure.buildExportSummary;
+  global.buildExportSchemaDoc = pure.buildExportSchemaDoc;
   global.API_URL = 'http://mock.api';
   global.fetch = function() { return Promise.reject(new Error('fetch disabled in tests')); };
   // userDoc теперь живёт в db.js — сам подхватится при require
@@ -53,6 +56,7 @@ function teardown() {
   ['firebase', 'currentUser', 'userCreatedAt',
    'SECTIONS', 'SECTION_META', 'SKILLS', 'pluralize', 'dateKey',
    'getDayPlanIndex', 'getWeekDates', 'getSkillById', 'getSkillLevel',
+   'getSectionMeta', 'buildExportSummary', 'buildExportSchemaDoc',
    'API_URL', 'fetch', 'userDoc', 'renderSkillById',
   ].forEach(function(name) { delete global[name]; });
 }

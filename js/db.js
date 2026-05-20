@@ -422,12 +422,15 @@ function loadSkill(skill) {
   });
 }
 
-// Загружает всю историю дней секции (массив { id, data } где id = date).
-// Читает коллекции sections/{section}/plan/{year}/history для каждого года в диапазоне
-// [createdAt.year .. currentYear], объединяет.
+// Загружает историю дней секции (массив { id, data } где id = date).
+// Читает коллекции sections/{section}/plan/{year}/history.
+//
+// opts.year       — если задан, читается ТОЛЬКО этот год (один get вместо N).
+//                   Если не задан — все годы от createdAt до текущего.
+// opts.fromServer — обходит локальный кеш Firestore.
 function loadSectionHistoryAll(section, opts) {
   var getOpts = (opts && opts.fromServer) ? { source: 'server' } : undefined;
-  var years = listYearsToRead();
+  var years = (opts && opts.year) ? [String(opts.year)] : listYearsToRead();
   return Promise.all(years.map(function(y) {
     return sectionRef(section).collection('plan').doc(y).collection('history').get(getOpts);
   })).then(function(snaps) {
@@ -440,9 +443,10 @@ function loadSectionHistoryAll(section, opts) {
 }
 
 // То же самое для тестов. sections/{section}/tests/*/history/*.
+// opts.year — фильтр по году (см. loadSectionHistoryAll).
 function loadTestsHistoryForSection(section, opts) {
   var getOpts = (opts && opts.fromServer) ? { source: 'server' } : undefined;
-  var years = listYearsToRead();
+  var years = (opts && opts.year) ? [String(opts.year)] : listYearsToRead();
   return Promise.all(years.map(function(y) {
     return sectionRef(section).collection('tests').doc(y).collection('history').get(getOpts);
   })).then(function(snaps) {
@@ -776,6 +780,113 @@ function migrateLevelDates() {
   }));
 }
 
+// Собирает выгрузку всех данных пользователя для последующего анализа (в т.ч.
+// загрузки в LLM). Возвращает Promise<object>.
+//
+// Параметр year:
+//   '2026'                — только этот год (история + тесты)
+//   null/undefined/'all'  — все годы от createdAt до текущего
+//
+// Структура результата описана в pure.js → buildExportSchemaDoc().
+// Использует существующий API-слой db.js; глобальное состояние
+// (skillTotals/skillLevelDates) только читает, не мутирует.
+function exportUserData(year) {
+  var yearOpt = (year && year !== 'all') ? { year: String(year) } : null;
+  var loadHist  = function(s) { return loadSectionHistoryAll(s, yearOpt); };
+  var loadTests = function(s) { return loadTestsHistoryForSection(s, yearOpt); };
+
+  var sectionPromises = SECTIONS.map(function(section) {
+    return Promise.all([
+      loadSectionPlan(section),
+      loadSectionTests(section),
+      loadHist(section),
+      loadTests(section),
+    ]).then(function(parts) {
+      return {
+        section:      section,
+        plan:         parts[0],
+        tests:        parts[1],
+        history:      parts[2], // массив { id, data }
+        testsHistory: parts[3], // массив { id, data }
+      };
+    });
+  });
+
+  return Promise.all([loadConfig(), Promise.all(sectionPromises)]).then(function(parts) {
+    var config = parts[0] || {};
+    var perSection = parts[1];
+
+    var sections = {};
+    var planBySection = {};
+    var testsBySection = {};
+    var exerciseUnits = {};
+
+    perSection.forEach(function(s) {
+      var historyByDate = {};
+      s.history.forEach(function(d) { historyByDate[d.id] = d.data; });
+
+      var testsHistoryByDate = {};
+      s.testsHistory.forEach(function(d) { testsHistoryByDate[d.id] = d.data; });
+
+      var meta = getSectionMeta(s.section);
+      sections[s.section] = {
+        label:        meta ? meta.label : s.section,
+        currentPlan:  s.plan || [],
+        currentTests: s.tests || [],
+        history:      historyByDate,
+        testsHistory: testsHistoryByDate,
+      };
+
+      planBySection[s.section]  = s.history;
+      testsBySection[s.section] = s.testsHistory;
+
+      // Сводный exerciseUnits — из currentPlan всех секций
+      (s.plan || []).forEach(function(daySlot) {
+        var exs = (daySlot && daySlot.exercises) || [];
+        exs.forEach(function(ex) {
+          if (ex && ex.name && ex.unit && !exerciseUnits[ex.name]) {
+            exerciseUnits[ex.name] = ex.unit;
+          }
+        });
+      });
+    });
+
+    // Скиллы — из глобального состояния (загружено при входе в приложение).
+    var skills = SKILLS.map(function(skill) {
+      var total = (typeof skillTotals !== 'undefined' && skillTotals[skill.id]) || 0;
+      var dates = (typeof skillLevelDates !== 'undefined' && skillLevelDates[skill.id]) || {};
+      var levelInfo = getSkillLevel(skill, total);
+      return {
+        id:         skill.id,
+        name:       skill.name,
+        section:    skill.section,
+        unit:       skill.valueType,
+        total:      total,
+        level:      levelInfo.level,
+        levelDates: dates,
+      };
+    });
+
+    var summary = buildExportSummary(planBySection, testsBySection);
+
+    return {
+      _meta: {
+        exportedAt:    new Date().toISOString(),
+        appVersion:    (typeof window !== 'undefined' && window.APP_VERSION) || null,
+        userCreatedAt: config.createdAt || null,
+        userPlatform:  config.platform || null,
+        schemaVersion: config.schema_version || null,
+        year:          yearOpt ? yearOpt.year : 'all',
+        schema:        buildExportSchemaDoc(),
+        summary:       summary,
+      },
+      exerciseUnits: exerciseUnits,
+      skills:        skills,
+      sections:      sections,
+    };
+  });
+}
+
 // Node.js экспорт (для юнит-тестов) — в браузере module не определён
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -826,6 +937,7 @@ if (typeof module !== 'undefined' && module.exports) {
     loadSectionHistoryAll: loadSectionHistoryAll,
     loadTestsHistoryForSection: loadTestsHistoryForSection,
     listYearsToRead: listYearsToRead,
+    exportUserData: exportUserData,
     // Доступ к db для ручной инициализации под Node
     _setDb: function(newDb) { db = newDb; },
   };

@@ -318,6 +318,108 @@ function renderTests(container) {
   _bindPlanGroupHandlers(group);
 }
 
+// --- Выгрузка данных пользователя (для зарегистрированных) ---
+
+// Список годов для селектора: от года createdAt до текущего, по убыванию,
+// плюс опция "Все годы" в конце.
+function _getExportYears() {
+  var currentYear = new Date().getFullYear();
+  var fromYear = currentYear;
+  if (typeof userCreatedAt !== 'undefined' && userCreatedAt) {
+    var y = new Date(userCreatedAt).getFullYear();
+    if (!isNaN(y)) fromYear = y;
+  }
+  var years = [];
+  for (var y = currentYear; y >= fromYear; y--) years.push(String(y));
+  return years;
+}
+
+// Рендер блока «Данные» в настройках. Только для зарегистрированных юзеров —
+// у гостя данные временные, выгружать преждевременно.
+function renderDataExport(container) {
+  if (!currentUser || currentUser.isAnonymous) return;
+
+  var title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Данные';
+  container.appendChild(title);
+
+  var group = document.createElement('div');
+  group.className = 'settings-group';
+  group.style.marginBottom = '16px';
+
+  var years = _getExportYears();
+  var currentYear = String(new Date().getFullYear());
+  var options = years.map(function(y) {
+    var sel = (y === currentYear) ? ' selected' : '';
+    return '<option value="' + y + '"' + sel + '>' + y + '</option>';
+  }).join('') + '<option value="all">Все годы</option>';
+
+  group.innerHTML = '<div class="settings-item">'
+    + '<div>'
+      + '<div class="settings-item-label">Выгрузка истории</div>'
+      + '<div class="settings-item-desc" style="font-size:13px;color:var(--text-muted);margin-top:2px">'
+        + 'JSON с историей упражнений, тестов и навыков'
+      + '</div>'
+      + '<div class="update-status" id="status-export" style="margin-top:6px"></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+      + '<select id="export-year-select" class="update-btn" style="padding:6px 10px;cursor:pointer">'
+        + options
+      + '</select>'
+      + '<button class="update-btn" id="export-data-btn">Скачать</button>'
+    + '</div>'
+    + '</div>';
+
+  container.appendChild(group);
+
+  var btn = group.querySelector('#export-data-btn');
+  var sel = group.querySelector('#export-year-select');
+  var statusEl = group.querySelector('#status-export');
+  btn.onclick = function() { handleDataExport(sel.value, btn, statusEl); };
+}
+
+// Собирает данные через exportUserData, формирует JSON, создает Blob и
+// инициирует скачивание. Кнопка дизейблится на время сборки, статус-плашка
+// показывает результат с размером файла.
+function handleDataExport(year, btn, statusEl) {
+  btn.disabled = true;
+  var origText = btn.textContent;
+  btn.textContent = '...';
+  if (statusEl) { statusEl.textContent = ''; statusEl.className = 'update-status'; }
+
+  exportUserData(year).then(function(data) {
+    // JSON без отступов — компактнее в ~2 раза, для LLM-чтения отступы не нужны.
+    var json = JSON.stringify(data);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    var suffix = (year && year !== 'all') ? year : 'all';
+    a.download = 'spring-tracker-' + suffix + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+
+    if (statusEl) {
+      var sizeKb = Math.round(json.length / 1024);
+      statusEl.textContent = 'Готово (' + sizeKb + ' КБ)';
+      statusEl.className = 'update-status ok';
+    }
+  }).catch(function(e) {
+    console.error('handleDataExport:', e);
+    if (typeof Sentry !== 'undefined') Sentry.captureException(e);
+    if (statusEl) {
+      statusEl.textContent = 'Ошибка: ' + (e.message || 'не удалось собрать данные');
+      statusEl.className = 'update-status err';
+    }
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = origText;
+  });
+}
+
 // --- О приложении (в самом низу экрана настроек) ---
 function renderAboutApp(container) {
   if (!container) return;
@@ -346,5 +448,6 @@ function renderSettings() {
   renderDisciplines(container);
   renderPlans(container);
   renderTests(container);
+  renderDataExport(container);
   renderAboutApp(container);
 }

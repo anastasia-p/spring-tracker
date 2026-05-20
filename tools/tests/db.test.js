@@ -1405,6 +1405,186 @@ async function runTests() {
   });
 
 
+  // ─── loadSectionHistoryAll: opts.year ─────────────────────────────────────
+
+  group('loadSectionHistoryAll: opts.year');
+
+  await test('opts.year читает только указанный год', function() {
+    var ctx = ts.setup({ config: { createdAt: '2025-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/plan/2025/history/2025-12-30',
+      { type: 'legs', checks: {}, values: {} });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-01-05',
+      { type: 'legs', checks: {}, values: {} });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-05-19',
+      { type: 'legs', checks: {}, values: {} });
+    return ctx.api.loadSectionHistoryAll('strength', { year: '2026' }).then(function(docs) {
+      assert.strictEqual(docs.length, 2);
+      var ids = docs.map(function(d) { return d.id; }).sort();
+      assert.deepStrictEqual(ids, ['2026-01-05', '2026-05-19']);
+    });
+  });
+
+  await test('opts.year несуществующий — пустой массив', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-05-19',
+      { type: 'legs', checks: {}, values: {} });
+    return ctx.api.loadSectionHistoryAll('strength', { year: '2020' }).then(function(docs) {
+      assert.strictEqual(docs.length, 0);
+    });
+  });
+
+  await test('без opts.year читает все годы от createdAt (поведение прежнее)', function() {
+    var ctx = ts.setup({ config: { createdAt: '2025-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/wingchun/plan/2025/history/2025-12-30',
+      { type: 'wc', checks: {}, values: {} });
+    ctx.mock.seed('users/u1/sections/wingchun/plan/2026/history/2026-01-05',
+      { type: 'wc', checks: {}, values: {} });
+    var origDate = Date;
+    global.Date = fakeDate('2026-05-19T12:00:00');
+    return ctx.api.loadSectionHistoryAll('wingchun').then(function(docs) {
+      global.Date = origDate;
+      assert.strictEqual(docs.length, 2);
+    });
+  });
+
+  // ─── loadTestsHistoryForSection: opts.year ────────────────────────────────
+
+  group('loadTestsHistoryForSection: opts.year');
+
+  await test('opts.year читает только указанный год', function() {
+    var ctx = ts.setup({ config: { createdAt: '2025-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/tests/2025/history/2025-12-30',
+      { 'Жим лежа': 70 });
+    ctx.mock.seed('users/u1/sections/strength/tests/2026/history/2026-05-19',
+      { 'Жим лежа': 80 });
+    return ctx.api.loadTestsHistoryForSection('strength', { year: '2026' }).then(function(docs) {
+      assert.strictEqual(docs.length, 1);
+      assert.strictEqual(docs[0].id, '2026-05-19');
+      assert.strictEqual(docs[0].data['Жим лежа'], 80);
+    });
+  });
+
+  // ─── exportUserData ───────────────────────────────────────────────────────
+
+  group('exportUserData');
+
+  await test('возвращает структуру с _meta, sections, skills, exerciseUnits', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z', platform: 'mobile' } });
+    return ctx.api.exportUserData('2026').then(function(data) {
+      assert.ok(data._meta, 'нет _meta');
+      assert.ok(data._meta.schema, 'нет _meta.schema');
+      assert.ok(data._meta.summary, 'нет _meta.summary');
+      assert.strictEqual(data._meta.year, '2026');
+      assert.strictEqual(data._meta.userCreatedAt, '2026-01-01T00:00:00.000Z');
+      assert.strictEqual(data._meta.userPlatform, 'mobile');
+      assert.deepStrictEqual(Object.keys(data.sections).sort(),
+        ['cardio', 'qigong', 'strength', 'wingchun']);
+      assert.ok(Array.isArray(data.skills));
+      assert.strictEqual(typeof data.exerciseUnits, 'object');
+    });
+  });
+
+  await test('секции получают человекочитаемый label из SECTION_META', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z' } });
+    return ctx.api.exportUserData('2026').then(function(data) {
+      assert.strictEqual(data.sections.strength.label, 'Силовые');
+      assert.strictEqual(data.sections.wingchun.label, 'Вин Чун');
+      assert.strictEqual(data.sections.qigong.label, 'Цигун');
+      assert.strictEqual(data.sections.cardio.label, 'Кардио');
+    });
+  });
+
+  await test('history конвертируется из массива в объект {date: data}', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-05-19',
+      { type: 'legs', checks: { 'Отжимания': true }, values: { 'Отжимания': 30 }, plan: [] });
+    return ctx.api.exportUserData('2026').then(function(data) {
+      var h = data.sections.strength.history;
+      assert.ok(h['2026-05-19'], 'нет записи на 2026-05-19');
+      assert.strictEqual(h['2026-05-19'].type, 'legs');
+      assert.deepStrictEqual(h['2026-05-19'].checks, { 'Отжимания': true });
+    });
+  });
+
+  await test('summary правильно считается из загруженных данных', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-05-19',
+      { type: 'legs', checks: { 'Отжимания': true }, values: {} });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-05-20',
+      { type: 'rest', checks: {}, values: {} });
+    return ctx.api.exportUserData('2026').then(function(data) {
+      var s = data._meta.summary;
+      assert.strictEqual(s.totalDays, 2);
+      assert.strictEqual(s.lastActivity, '2026-05-19');
+      assert.strictEqual(s.dayTypes.legs, 1);
+      assert.strictEqual(s.dayTypes.rest, 1);
+      assert.strictEqual(s.sectionStats.strength.historyDays, 2);
+      assert.strictEqual(s.sectionStats.strength.daysWithActivity, 1);
+    });
+  });
+
+  await test('year=all читает все годы (без фильтра)', function() {
+    var ctx = ts.setup({ config: { createdAt: '2025-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/plan/2025/history/2025-12-30',
+      { type: 'legs', checks: { 'A': true }, values: {} });
+    ctx.mock.seed('users/u1/sections/strength/plan/2026/history/2026-05-19',
+      { type: 'legs', checks: { 'A': true }, values: {} });
+    var origDate = Date;
+    global.Date = fakeDate('2026-05-20T12:00:00');
+    return ctx.api.exportUserData('all').then(function(data) {
+      global.Date = origDate;
+      assert.strictEqual(data._meta.year, 'all');
+      assert.strictEqual(Object.keys(data.sections.strength.history).length, 2);
+      assert.strictEqual(data._meta.summary.totalDays, 2);
+    });
+  });
+
+  await test('exerciseUnits собирается из currentPlan всех секций', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z' } });
+    ctx.mock.seed('users/u1/sections/strength/plan/current', {
+      days: [{
+        weekday: 1, type: 'legs', label: 'Ноги',
+        exercises: [
+          { name: 'Приседания', unit: 'reps', trackValue: true },
+          { name: 'Выпады', unit: 'reps', trackValue: true },
+        ]
+      }],
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    });
+    ctx.mock.seed('users/u1/sections/qigong/plan/current', {
+      days: [{
+        weekday: 1, type: 'qi', label: 'Цигун',
+        exercises: [{ name: 'Дерево', unit: 'min', trackValue: true }]
+      }],
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    });
+    return ctx.api.exportUserData('2026').then(function(data) {
+      assert.strictEqual(data.exerciseUnits['Приседания'], 'reps');
+      assert.strictEqual(data.exerciseUnits['Выпады'], 'reps');
+      assert.strictEqual(data.exerciseUnits['Дерево'], 'min');
+    });
+  });
+
+  await test('skills заполняются из глобальных skillTotals/skillLevelDates', function() {
+    var ctx = ts.setup({ config: { createdAt: '2026-01-01T00:00:00.000Z' } });
+    var pushups = pure.getSkillById('pushups');
+    return ctx.api.loadSkill(pushups).then(function() {
+      // Принудительно ставим тотал
+      ctx.api.skillTotals['pushups'] = 5500;
+      ctx.api.skillLevelDates['pushups'] = { '1': '2025-05-01T00:00:00.000Z' };
+      return ctx.api.exportUserData('2026');
+    }).then(function(data) {
+      var skill = data.skills.find(function(s) { return s.id === 'pushups'; });
+      assert.ok(skill, 'нет навыка pushups в выгрузке');
+      assert.strictEqual(skill.total, 5500);
+      assert.strictEqual(skill.unit, 'reps');
+      assert.strictEqual(skill.section, 'strength');
+      assert.ok(skill.level >= 4, 'на 5500 reps должен быть уровень >= 4');
+      assert.strictEqual(skill.levelDates['1'], '2025-05-01T00:00:00.000Z');
+    });
+  });
+
+
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 }
