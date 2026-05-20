@@ -344,18 +344,12 @@ function showDataExportInfo() {
   document.body.appendChild(overlay);
 }
 
-// Список годов для селектора: от года createdAt до текущего, по убыванию,
-// плюс опция "Все годы" в конце.
+// Список годов для селектора. Логика «от года createdAt до текущего» уже есть в
+// listYearsToRead (db.js); там по возрастанию — здесь реверсим, в UI хотим
+// от свежего к старому. .slice() — чтобы не мутировать исходный массив.
 function _getExportYears() {
-  var currentYear = new Date().getFullYear();
-  var fromYear = currentYear;
-  if (typeof userCreatedAt !== 'undefined' && userCreatedAt) {
-    var y = new Date(userCreatedAt).getFullYear();
-    if (!isNaN(y)) fromYear = y;
-  }
-  var years = [];
-  for (var y = currentYear; y >= fromYear; y--) years.push(String(y));
-  return years;
+  if (typeof listYearsToRead !== 'function') return [String(new Date().getFullYear())];
+  return listYearsToRead().slice().reverse();
 }
 
 // Рендер блока «Данные» в настройках. Только для зарегистрированных юзеров —
@@ -437,9 +431,7 @@ function handleDataExport(year, btn, statusEl) {
     a.href = url;
     var suffix = (year && year !== 'all') ? year : 'all';
     a.download = 'spring-tracker-' + suffix + '.json';
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
     setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 
     if (statusEl) {

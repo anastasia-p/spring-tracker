@@ -809,6 +809,19 @@ function exportUserData(year) {
         history:      parts[2], // массив { id, data }
         testsHistory: parts[3], // массив { id, data }
       };
+    }).catch(function(e) {
+      // Если упала любая из четырех загрузок секции — отдаем пустую секцию,
+      // но не валим весь экспорт. Так юзер получит данные по остальным секциям
+      // даже при частичном сбое сети.
+      console.error('exportUserData(' + section + '):', e);
+      if (typeof Sentry !== 'undefined') Sentry.captureException(e);
+      return {
+        section:      section,
+        plan:         null,
+        tests:        [],
+        history:      [],
+        testsHistory: [],
+      };
     });
   });
 
@@ -840,10 +853,21 @@ function exportUserData(year) {
       planBySection[s.section]  = s.history;
       testsBySection[s.section] = s.testsHistory;
 
-      // Сводный exerciseUnits — из currentPlan всех секций
+      // Сводный exerciseUnits — сначала из актуального currentPlan...
       (s.plan || []).forEach(function(daySlot) {
         var exs = (daySlot && daySlot.exercises) || [];
         exs.forEach(function(ex) {
+          if (ex && ex.name && ex.unit && !exerciseUnits[ex.name]) {
+            exerciseUnits[ex.name] = ex.unit;
+          }
+        });
+      });
+      // ...и дополняем из снапшотов плана в истории — ловим упражнения,
+      // которые были в плане раньше, но потом удалены/переименованы.
+      // На текущих данных это подтягивает напр. «Всадник у стены», «Приседания сумо».
+      s.history.forEach(function(d) {
+        var dayPlan = (d.data && d.data.plan) || [];
+        dayPlan.forEach(function(ex) {
           if (ex && ex.name && ex.unit && !exerciseUnits[ex.name]) {
             exerciseUnits[ex.name] = ex.unit;
           }
