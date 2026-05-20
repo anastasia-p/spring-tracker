@@ -388,11 +388,11 @@ function renderDataExport(container) {
     return '<option value="' + y + '"' + sel + '>' + y + '</option>';
   }).join('') + '<option value="all">Все годы</option>';
 
-  // SVG-шеврон в фоне; %23085041 = #085041 (темно-зеленый в тон тексту .update-btn).
-  // appearance:none глушит нативную стрелку браузера, чтобы не было двойной.
-  var caret = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' "
-    + "width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23085041' "
-    + "stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>\")";
+  // Кастомная стрелка-шеврон в фоне селекта. SVG закодирован в base64 —
+  // надежнее inline data-URL (не зависит от парсинга кавычек/символов браузером).
+  // !important на background-* — чтобы перебить background-шорткат класса .update-btn,
+  // который иначе сбрасывает background-image.
+  var caret = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSI4IiB2aWV3Qm94PSIwIDAgMTIgOCI+PHBhdGggZD0iTTEgMWw1IDUgNS01IiBzdHJva2U9IiMwODUwNDEiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+';
 
   group.innerHTML = '<div class="settings-item">'
     + '<div>'
@@ -401,9 +401,11 @@ function renderDataExport(container) {
     + '</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
       + '<select id="export-year-select" class="update-btn" '
-        + 'style="appearance:none;-webkit-appearance:none;-moz-appearance:none;'
-        + 'background-image:' + caret + ';background-repeat:no-repeat;'
-        + 'background-position:right 10px center;padding-right:28px;cursor:pointer">'
+        + 'style="appearance:none !important;-webkit-appearance:none !important;-moz-appearance:none !important;'
+        + 'background-image:url(\'' + caret + '\') !important;'
+        + 'background-repeat:no-repeat !important;'
+        + 'background-position:right 10px center !important;'
+        + 'padding-right:28px !important;cursor:pointer">'
         + options
       + '</select>'
       + '<button class="update-btn" id="export-data-btn">Скачать</button>'
