@@ -364,7 +364,10 @@ function renderDataExport(container) {
       + '<div class="update-status" id="status-export" style="margin-top:6px"></div>'
     + '</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-      + '<select id="export-year-select" class="update-btn" style="padding:6px 10px;cursor:pointer">'
+      + '<select id="export-year-select" '
+        + 'style="padding:8px 10px;border:1px solid var(--border, #d0d0d0);'
+        + 'border-radius:8px;background:#fff;cursor:pointer;font-size:14px;'
+        + 'font-family:inherit;color:inherit">'
         + options
       + '</select>'
       + '<button class="update-btn" id="export-data-btn">Скачать</button>'
