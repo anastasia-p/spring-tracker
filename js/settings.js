@@ -320,6 +320,30 @@ function renderTests(container) {
 
 // --- Выгрузка данных пользователя (для зарегистрированных) ---
 
+// Попап с описанием раздела «Данные». Стиль и поведение по образцу
+// showSkillLevels/showSkillInfo: закрытие кликом по оверлею вне popup-box.
+function showDataExportInfo() {
+  var existing = document.getElementById('data-export-info-popup');
+  if (existing) { existing.remove(); return; }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'data-export-info-popup';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);'
+    + 'z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:12px;padding:18px 20px;'
+    + 'max-width:360px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,0.15)';
+  box.innerHTML = '<div style="font-weight:500;font-size:15px;margin-bottom:8px">Данные</div>'
+    + '<div style="color:var(--text-muted);font-size:14px;line-height:1.5">'
+    + 'JSON с историей упражнений, тестов и навыков'
+    + '</div>';
+
+  overlay.appendChild(box);
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
 // Список годов для селектора: от года createdAt до текущего, по убыванию,
 // плюс опция "Все годы" в конце.
 function _getExportYears() {
@@ -339,10 +363,19 @@ function _getExportYears() {
 function renderDataExport(container) {
   if (!currentUser || currentUser.isAnonymous) return;
 
+  // Заголовок с иконкой "i" справа. По клику — попап с описанием.
   var title = document.createElement('div');
   title.className = 'section-title';
-  title.textContent = 'Данные';
+  title.style.cssText = 'display:flex;justify-content:space-between;align-items:center';
+  title.innerHTML = '<span>Данные</span>'
+    + '<button type="button" id="data-info-btn" aria-label="Подробнее" '
+    + 'style="width:22px;height:22px;border:1px solid var(--text-muted, #888);'
+    + 'border-radius:50%;background:transparent;cursor:pointer;'
+    + 'display:inline-flex;align-items:center;justify-content:center;'
+    + 'font-family:Georgia,serif;font-style:italic;font-size:13px;'
+    + 'color:var(--text-muted, #888);padding:0;line-height:1">i</button>';
   container.appendChild(title);
+  title.querySelector('#data-info-btn').onclick = showDataExportInfo;
 
   var group = document.createElement('div');
   group.className = 'settings-group';
@@ -364,9 +397,6 @@ function renderDataExport(container) {
   group.innerHTML = '<div class="settings-item">'
     + '<div>'
       + '<div class="settings-item-label">Выгрузка истории</div>'
-      + '<div class="settings-item-desc" style="font-size:13px;color:var(--text-muted);margin-top:2px">'
-        + 'JSON с историей упражнений, тестов и навыков'
-      + '</div>'
       + '<div class="update-status" id="status-export" style="margin-top:6px"></div>'
     + '</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
