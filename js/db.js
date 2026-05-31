@@ -455,7 +455,13 @@ function saveTestData(dk, data) {
   var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
   var bySection = {};
   activeSections.forEach(function(s) { bySection[s] = {}; });
-  (plans.tests || []).forEach(function(item) {
+  // Учитываем И активные, И архивные определения тестов. Документ за день
+  // пишется через set без merge — если бы шли только по plans.tests, поля
+  // архивных тестов в Firestore стирались бы при первом же сохранении нового
+  // активного замера за тот же день. Нарушение правила "никакие данные из БД
+  // не удаляются никогда".
+  var allDefinitions = (plans.tests || []).concat(plans.archivedTests || []);
+  allDefinitions.forEach(function(item) {
     var sec = item.section || 'strength';
     if (!bySection.hasOwnProperty(sec)) return;
     if (data[item.name] !== undefined) {

@@ -254,6 +254,11 @@ function renderTestHistory(container, items, entries, opts) {
   if (currentIdx > entries.length - 1) currentIdx = entries.length - 1;
   var sliced = entries.slice(0, currentIdx + 1);
   var isFrozen = currentIdx < entries.length - 1;
+  // Архивный блок: шапка карточки показывает последний реальный замер архивного теста
+  // (а не значение на выбранную дату — для архивного теста после архивации новых
+  // замеров нет, в шапке всегда было бы "—"). Бейдж diff — разница между последним
+  // и предпоследним реальным замером.
+  var isArchivedBlock = container.id === 'archived-history-container';
 
   var last = sliced[sliced.length - 1];
   var prev = sliced.length > 1 ? sliced[sliced.length - 2] : null;
@@ -270,8 +275,20 @@ function renderTestHistory(container, items, entries, opts) {
     var visibleEntries = sliced.slice(firstIdx);
     renderedCount++;
 
-    var lastVal = last.data[item.name];
-    var prevVal = prev ? prev.data[item.name] : null;
+    var lastVal, prevVal;
+    if (isArchivedBlock) {
+      // В архиве показываем последние ДВА реальных замера (а не значение на
+      // выбранную дату — для удалённого теста новые замеры не делаются, шапка
+      // всегда содержала бы "—"). Фильтруем sliced по наличию значения.
+      var realEntries = visibleEntries.filter(function(e) { return e.data[item.name] != null; });
+      var lastReal = realEntries[realEntries.length - 1];
+      var prevReal = realEntries[realEntries.length - 2];
+      lastVal = lastReal ? lastReal.data[item.name] : null;
+      prevVal = prevReal ? prevReal.data[item.name] : null;
+    } else {
+      lastVal = last.data[item.name];
+      prevVal = prev ? prev.data[item.name] : null;
+    }
     var isTextType = item.type === 'text';
     var diff = (!isTextType && lastVal != null && prevVal != null) ? lastVal - prevVal : null;
     var badgeHtml = '';
