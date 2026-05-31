@@ -185,6 +185,12 @@ function _bindHistoryHandlers(container) {
   if (!container || container.__historyHandlersBound) return;
   container.__historyHandlersBound = true;
   container.addEventListener('click', function(e) {
+    // Кнопка "Развернуть/Свернуть" над списком — перехватываем до карточки.
+    var toggleAllBtn = e.target.closest('[data-action="toggle-all-test-history"]');
+    if (toggleAllBtn && container.contains(toggleAllBtn)) {
+      toggleAllTestHistory(container, toggleAllBtn);
+      return;
+    }
     var item = e.target.closest('[data-action="toggle-test-history"]');
     if (!item || !container.contains(item)) return;
     var idx = parseInt(item.dataset.testIdx, 10);
@@ -198,6 +204,7 @@ function renderTestHistory(container, items, entries) {
   var prev = entries.length > 1 ? entries[entries.length - 2] : null;
 
   var html = '<div class="t3-list">';
+  var renderedCount = 0;
   items.forEach(function(item, idx) {
     // Скрываем строки до первого измерения этого теста — тесты, добавленные позже
     // других, не должны показывать пустоту за весь период. После первого измерения
@@ -205,6 +212,7 @@ function renderTestHistory(container, items, entries) {
     var firstIdx = entries.findIndex(function(e) { return e.data[item.name] != null; });
     if (firstIdx === -1) return;
     var visibleEntries = entries.slice(firstIdx);
+    renderedCount++;
 
     var lastVal = last.data[item.name];
     var prevVal = prev ? prev.data[item.name] : null;
@@ -271,7 +279,13 @@ function renderTestHistory(container, items, entries) {
     '</div>';
   });
   html += '</div>';
-  container.innerHTML = html;
+  // Тулбар с кнопкой "Развернуть/Свернуть" — только при двух и более видимых
+  // карточках, для одной карточки кнопка избыточна (юзеру проще нажать на саму
+  // карточку). min-width у .t3-toggle-all фиксирует ширину независимо от текста.
+  var toolbarHtml = renderedCount >= 2
+    ? '<div class="t3-toolbar"><button class="t3-toggle-all" data-action="toggle-all-test-history">Развернуть</button></div>'
+    : '';
+  container.innerHTML = toolbarHtml + html;
 }
 
 function toggleTestHistory(idx, el) {
@@ -284,6 +298,30 @@ function toggleTestHistory(idx, el) {
   hist.style.display = isOpen ? 'none' : 'block';
   if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
   el.style.background = '';
+}
+
+// Развернуть/свернуть все карточки в контейнере. Направление определяется по
+// текущему состоянию DOM: если хоть одна карточка свёрнута — разворачиваем все,
+// иначе сворачиваем. Текст кнопки обновляется по новому состоянию (это "что
+// случится при следующем клике"); если юзер потом свернёт что-то индивидуально,
+// текст временно "отстаёт" — при следующем клике на кнопку направление пересчитается.
+function toggleAllTestHistory(container, btn) {
+  var cards = container.querySelectorAll('.t3-item');
+  if (!cards.length) return;
+  var anyCollapsed = false;
+  cards.forEach(function(card) {
+    var h = card.querySelector('.t3-history');
+    if (h && h.style.display === 'none') anyCollapsed = true;
+  });
+  var open = anyCollapsed;
+  cards.forEach(function(card) {
+    var h = card.querySelector('.t3-history');
+    var chev = card.querySelector('.t3-chevron');
+    if (h) h.style.display = open ? 'block' : 'none';
+    if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+    card.style.background = '';
+  });
+  if (btn) btn.textContent = open ? 'Свернуть' : 'Развернуть';
 }
 
 function showTestInfo() {
