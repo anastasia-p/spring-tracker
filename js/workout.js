@@ -328,7 +328,7 @@ function renderTestHistory(container, items, entries, opts) {
         '<div class="t3-item-name">' + escapeHtml(item.name) + '</div>' +
         '<div style="display:flex;align-items:center;gap:8px">' +
           valHtml + badgeHtml +
-          '<span class="t3-chevron">▼</span>' +
+          '<svg class="t3-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
         '</div>' +
       '</div>' +
       histHtml +
@@ -350,17 +350,19 @@ function renderTestHistory(container, items, entries, opts) {
       '<button class="t3-nav-arrow" data-action="test-next"' + nextDisabled + '>\u2192</button>' +
     '</div>';
   }
-  // Кнопка-toggle: в frozen всегда "▼" (клик сделает сброс к последней дате + разворот).
-  // В обычном режиме также стартует с "▼" — toggleAllTestHistory переключит на "▲"
-  // после разворота. При повторной перерисовке (loadAndRenderHistory) состояние
-  // развёрнутости карточек сбрасывается, и иконка тоже сбрасывается на "▼" — корректно.
-  // В архивном блоке кнопка показывается всегда (даже при одной карточке) — для
+  // Кнопка-toggle: внутри SVG-chevron в стиле .chevron из plan.js (нарисован stroke'ом,
+  // не глифом — для единообразия с вкладкой "План"). Поворот при разворачивании всего
+  // списка делается через transform:rotate(180deg) на самом SVG (см. toggleAllTestHistory).
+  // При повторной перерисовке (loadAndRenderHistory) состояние сбрасывается — SVG смотрит
+  // вниз. В архивном блоке кнопка показывается всегда (даже при одной карточке) — для
   // единообразия UI; в активном — только при >=2 карточках (одиночную карточку проще
   // открыть кликом по самой карточке).
   var isArchived = container.id === 'archived-history-container';
   var showToggle = isArchived ? renderedCount >= 1 : renderedCount >= 2;
   var toggleHtml = showToggle
-    ? '<button class="t3-toggle-all" data-action="toggle-all-test-history">\u25BC</button>'
+    ? '<button class="t3-toggle-all" data-action="toggle-all-test-history">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'
+      + '</button>'
     : '';
   var toolbarHtml = (navHtml || toggleHtml)
     ? '<div class="t3-toolbar">' + navHtml + toggleHtml + '</div>'
@@ -426,7 +428,10 @@ function toggleAllTestHistory(container, btn) {
     if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
     card.style.background = '';
   });
-  if (btn) btn.textContent = open ? '\u25B2' : '\u25BC';
+  if (btn) {
+    var btnSvg = btn.querySelector('svg');
+    if (btnSvg) btnSvg.style.transform = open ? 'rotate(180deg)' : '';
+  }
 }
 
 function showTestInfo() {
