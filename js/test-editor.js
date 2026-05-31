@@ -371,12 +371,18 @@ function _teHandleDelete(state, idx) {
 }
 
 // Диалог "Отображать историю?" — три исхода: 'show' / 'hide' / 'cancel'.
-// z-index 1100 — выше overlay редактора (modal-editor.js, обычно 1000-ый диапазон).
+// z-index 9500 — выше overlay редактора тестов (meOpen в modal-editor.js использует 9000),
+// иначе попап прячется за ним. Кнопки ищем через overlay.querySelector (а не getElementById) —
+// на случай если предыдущий вызов оставил элемент с тем же id, чтобы новый onclick сел
+// на правильную кнопку. На входе зачищаем старый диалог (по аналогии с meOpen).
 function _teShowArchiveDialog(callback) {
+  var existing = document.getElementById('te-archive-dialog');
+  if (existing) existing.remove();
+
   var overlay = document.createElement('div');
   overlay.id = 'te-archive-dialog';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;'
-    + 'display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);'
+    + 'z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px';
   overlay.innerHTML =
     '<div style="background:var(--card);border-radius:16px;padding:20px;width:320px;'
       + 'max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)">'
@@ -387,22 +393,28 @@ function _teShowArchiveDialog(callback) {
     +     'Она переместится в раздел «Прошлые тесты» и останется доступна для просмотра.'
     +   '</div>'
     +   '<div style="display:flex;flex-direction:column;gap:8px">'
-    +     '<button id="te-arch-show" style="padding:10px;border:none;border-radius:8px;'
+    +     '<button class="te-arch-show" style="padding:10px;border:none;border-radius:8px;'
     +       'background:var(--green);color:var(--card);font-size:14px;font-weight:600;cursor:pointer">'
     +       'Отображать</button>'
-    +     '<button id="te-arch-hide" style="padding:10px;border:1.5px solid var(--border-light);'
+    +     '<button class="te-arch-hide" style="padding:10px;border:1.5px solid var(--border-light);'
     +       'border-radius:8px;background:var(--card);color:var(--text);font-size:14px;cursor:pointer">'
     +       'Не отображать</button>'
-    +     '<button id="te-arch-cancel" style="padding:10px;border:none;border-radius:8px;'
+    +     '<button class="te-arch-cancel" style="padding:10px;border:none;border-radius:8px;'
     +       'background:transparent;color:var(--text-muted);font-size:13px;cursor:pointer">'
     +       'Отмена</button>'
     +   '</div>'
     + '</div>';
   document.body.appendChild(overlay);
 
-  function close() { var o = document.getElementById('te-archive-dialog'); if (o) o.remove(); }
-  document.getElementById('te-arch-show').onclick   = function() { close(); callback('show'); };
-  document.getElementById('te-arch-hide').onclick   = function() { close(); callback('hide'); };
-  document.getElementById('te-arch-cancel').onclick = function() { close(); callback('cancel'); };
-  overlay.onclick = function(e) { if (e.target === overlay) { close(); callback('cancel'); } };
+  var called = false;
+  function done(choice) {
+    if (called) return;
+    called = true;
+    overlay.remove();
+    callback(choice);
+  }
+  overlay.querySelector('.te-arch-show').onclick   = function(e) { e.stopPropagation(); done('show'); };
+  overlay.querySelector('.te-arch-hide').onclick   = function(e) { e.stopPropagation(); done('hide'); };
+  overlay.querySelector('.te-arch-cancel').onclick = function(e) { e.stopPropagation(); done('cancel'); };
+  overlay.onclick = function(e) { if (e.target === overlay) done('cancel'); };
 }
