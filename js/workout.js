@@ -354,7 +354,12 @@ function renderTestHistory(container, items, entries, opts) {
   // В обычном режиме также стартует с "▼" — toggleAllTestHistory переключит на "▲"
   // после разворота. При повторной перерисовке (loadAndRenderHistory) состояние
   // развёрнутости карточек сбрасывается, и иконка тоже сбрасывается на "▼" — корректно.
-  var toggleHtml = renderedCount >= 2
+  // В архивном блоке кнопка показывается всегда (даже при одной карточке) — для
+  // единообразия UI; в активном — только при >=2 карточках (одиночную карточку проще
+  // открыть кликом по самой карточке).
+  var isArchived = container.id === 'archived-history-container';
+  var showToggle = isArchived ? renderedCount >= 1 : renderedCount >= 2;
+  var toggleHtml = showToggle
     ? '<button class="t3-toggle-all" data-action="toggle-all-test-history">\u25BC</button>'
     : '';
   var toolbarHtml = (navHtml || toggleHtml)
