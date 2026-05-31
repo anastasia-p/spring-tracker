@@ -146,10 +146,37 @@ function loadAndRenderHistory() {
     var items = plans.tests || [];
     if (!entries.length) {
       c.innerHTML = '<div class="empty">Пока нет ни одного теста.<br>Пройди первый тест в воскресенье.</div>';
-      return;
+    } else {
+      renderTestHistory(c, items, entries);
     }
-    renderTestHistory(c, items, entries);
+    // Прошлые тесты — рендерим в отдельный контейнер ниже. Используем те же entries
+    // (cache.tests хранит все измерения по датам — определения архивных тестов
+    // привязываются к этим же значениям через item.name, секция в пути Firestore).
+    renderArchivedTestsSection(entries);
   }).catch(function() { c.innerHTML = '<div class="empty">Ошибка загрузки.</div>'; });
+}
+
+// Прошлые тесты — рендер блока ниже «Активных тестов». Если архив пуст или
+// ни у одного определения нет ни одного измерения в cache.tests — скрываем
+// заголовок и контейнер целиком (чтобы пустая секция не торчала).
+function renderArchivedTestsSection(entries) {
+  var titleEl = document.getElementById('archived-history-title');
+  var c       = document.getElementById('archived-history-container');
+  if (!c || !titleEl) return;
+  var items = plans.archivedTests || [];
+  var hasAny = items.some(function(item) {
+    return entries.some(function(e) { return e.data[item.name] != null; });
+  });
+  if (!hasAny) {
+    titleEl.style.display = 'none';
+    c.style.display = 'none';
+    c.innerHTML = '';
+    return;
+  }
+  titleEl.style.display = '';
+  c.style.display = '';
+  _bindHistoryHandlers(c);
+  renderTestHistory(c, items, entries);
 }
 
 // Делегированный обработчик клика по карточке t3-item внутри #history-container.
@@ -172,8 +199,13 @@ function renderTestHistory(container, items, entries) {
 
   var html = '<div class="t3-list">';
   items.forEach(function(item, idx) {
-    var hasAnyVal = entries.some(function(e) { return e.data[item.name] != null; });
-    if (!hasAnyVal) return;
+    // Скрываем строки до первого измерения этого теста — тесты, добавленные позже
+    // других, не должны показывать пустоту за весь период. После первого измерения
+    // пустые даты остаются (непрерывная лента начиная с дебюта).
+    var firstIdx = entries.findIndex(function(e) { return e.data[item.name] != null; });
+    if (firstIdx === -1) return;
+    var visibleEntries = entries.slice(firstIdx);
+
     var lastVal = last.data[item.name];
     var prevVal = prev ? prev.data[item.name] : null;
     var isTextType = item.type === 'text';
@@ -195,22 +227,22 @@ function renderTestHistory(container, items, entries) {
       ? '<span class="t3-last-val">' + escapeHtml(lastVal) + '</span><span class="t3-unit"> ' + escapeHtml(item.unit || '') + '</span>'
       : '<span class="t3-last-val" style="color:var(--text-muted)">—</span>';
 
-    // History rows
+    // History rows — по visibleEntries (от первого измерения этого теста)
     var maxVal = 0;
     if (!isTextType) {
-      entries.forEach(function(e) { if (e.data[item.name] && e.data[item.name] > maxVal) maxVal = e.data[item.name]; });
+      visibleEntries.forEach(function(e) { if (e.data[item.name] && e.data[item.name] > maxVal) maxVal = e.data[item.name]; });
     }
-    var histHtml = '<div class="t3-history" id="t3-hist-' + idx + '" style="display:none">';
-    entries.forEach(function(e, i) {
+    var histHtml = '<div class="t3-history" style="display:none">';
+    visibleEntries.forEach(function(e, i) {
       var v = e.data[item.name];
-      var eprev = i > 0 ? entries[i-1].data[item.name] : null;
+      var eprev = i > 0 ? visibleEntries[i-1].data[item.name] : null;
       var ediff = (!isTextType && v != null && eprev != null) ? v - eprev : null;
       var pct = (!isTextType && v != null && maxVal > 0) ? Math.round(v / maxVal * 100) : 0;
       var isDown = ediff !== null && ediff < 0;
       var isUp   = ediff !== null && ediff > 0;
       var barColor = isDown ? 'var(--diff-down-bar)' : 'var(--green)';
-      var valColor = isDown ? 'var(--diff-down)' : (i === entries.length - 1 ? 'var(--green)' : 'var(--text)');
-      var valWeight = i === entries.length - 1 ? '600' : '500';
+      var valColor = isDown ? 'var(--diff-down)' : (i === visibleEntries.length - 1 ? 'var(--green)' : 'var(--text)');
+      var valWeight = i === visibleEntries.length - 1 ? '600' : '500';
       var diffHtml = isTextType ? '' :
         (ediff === null ? '<span style="width:30px"></span>'
         : (isUp   ? '<span style="font-size:11px;color:var(--green);width:30px">+' + ediff + '</span>'
@@ -243,7 +275,9 @@ function renderTestHistory(container, items, entries) {
 }
 
 function toggleTestHistory(idx, el) {
-  var hist = document.getElementById('t3-hist-' + idx);
+  // Ищем .t3-history относительно карточки, а не через id — id пришлось бы префиксить
+  // для двух контейнеров (Активные + Прошлые), querySelector внутри el проще и чище.
+  var hist = el.querySelector('.t3-history');
   var chev = el.querySelector('.t3-chevron');
   if (!hist) return;
   var isOpen = hist.style.display !== 'none';

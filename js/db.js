@@ -97,6 +97,72 @@ function saveAllTests(items) {
   return Promise.all(writes);
 }
 
+// --- Архивные тесты ("Прошлые тесты") --------------------------------------
+// Хранятся параллельно current — в users/{uid}/sections/{section}/tests/archived.items.
+// Идея: при удалении теста с историей пользователь может выбрать "отображать в Прошлых
+// тестах" — определение перемещается из current в archived. Сами измерения (history/{dk}
+// внутри tests/{year}) НЕ трогаются — никакие данные из БД не удаляются. archived хранит
+// только определение (name, unit, note, archivedAt), которое нужно для расшифровки старых
+// записей в UI. При повторном создании теста с теми же (name, section) запись из archived
+// удаляется, и история сама всплывает в "Активных тестах" через тот же кеш cache.tests.
+
+function loadSectionArchivedTests(section) {
+  return sectionRef(section).collection('tests').doc('archived').get()
+    .then(function(s) { return s.exists ? (s.data().items || []) : []; });
+}
+
+function saveArchivedTests(section, items) {
+  return sectionRef(section).collection('tests').doc('archived').set({
+    items: items,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+// Аналог saveAllTests для архива — разносит по секциям через item.section.
+// Пишет только в АКТИВНЫЕ секции; неактивные не трогает.
+function saveAllArchivedTests(items) {
+  var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
+  var bySection = {};
+  activeSections.forEach(function(s) { bySection[s] = []; });
+  (items || []).forEach(function(it) {
+    var sec = it.section || 'strength';
+    if (!bySection[sec]) return;
+    var copy = {};
+    for (var k in it) if (k !== 'section') copy[k] = it[k];
+    bySection[sec].push(copy);
+  });
+  var now = new Date().toISOString();
+  var writes = Object.keys(bySection).map(function(sec) {
+    return sectionRef(sec).collection('tests').doc('archived').set({
+      items: bySection[sec],
+      updatedAt: now
+    });
+  });
+  return Promise.all(writes);
+}
+
+// Грузит архив всех активных секций в plans.archivedTests (с проставленным section
+// у каждого элемента — как loadPlanFromFirebase('tests') делает для current).
+function loadArchivedTests() {
+  var activeSections = (typeof userSections !== 'undefined' && userSections) ? userSections : SECTIONS;
+  return Promise.all(activeSections.map(function(sec) {
+    return sectionRef(sec).collection('tests').doc('archived').get().then(function(s) {
+      if (!s.exists) return [];
+      var items = s.data().items || [];
+      return items.map(function(it) {
+        var copy = {};
+        for (var k in it) copy[k] = it[k];
+        copy.section = sec;
+        return copy;
+      });
+    }).catch(function() { return []; });
+  })).then(function(perSection) {
+    var merged = [];
+    perSection.forEach(function(arr) { arr.forEach(function(it) { merged.push(it); }); });
+    plans.archivedTests = merged;
+  });
+}
+
 // --- Создание дефолтов секции при её включении ---
 // planDays — days из plans/{section}_default.json (или просто массив)
 // testsItems — items из plans/tests_{section}_default.json (или [])
@@ -203,6 +269,9 @@ function resetCache(section) {
 // Current plans loaded from Firebase
 var plans = {};
 ALL_DATA_SECTIONS.forEach(function(s) { plans[s] = null; });
+// Архив определений тестов (для раздела "Прошлые тесты"). Заполняется через
+// loadArchivedTests, обновляется через saveAllArchivedTests из test-editor.js.
+plans.archivedTests = null;
 
 // Skill totals — keyed by skill id
 var skillTotals = {};
@@ -924,6 +993,10 @@ if (typeof module !== 'undefined' && module.exports) {
     loadSectionTests: loadSectionTests,
     saveTests: saveTests,
     saveAllTests: saveAllTests,
+    loadSectionArchivedTests: loadSectionArchivedTests,
+    saveArchivedTests: saveArchivedTests,
+    saveAllArchivedTests: saveAllArchivedTests,
+    loadArchivedTests: loadArchivedTests,
     createSectionDefaults: createSectionDefaults,
     enableSection: enableSection,
     disableSection: disableSection,

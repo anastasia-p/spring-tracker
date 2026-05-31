@@ -30,17 +30,24 @@ function openTestEditor(opts) {
     .then(function(results) {
       var items  = JSON.parse(JSON.stringify(results[0] || []));
       var config = results[1];
+      // Архив определений — дееp copy, чтобы локальные правки до "Сохранить" не
+      // мутировали plans.archivedTests. Поддерживается только в общем редакторе
+      // (section === 'tests'); per-section редактор работает по старой схеме.
+      var archived = (section === 'tests' && plans.archivedTests)
+        ? JSON.parse(JSON.stringify(plans.archivedTests))
+        : [];
       _teOpen({
-        section:      section,
-        sectionLabel: sectionLabel,
-        items:        items,
-        config:       config,
-        onSave:       onSave,
-        mode:         'list',
-        editIdx:      null,
-        formData:     {},
-        formEls:      null,
-        dirty:        false
+        section:       section,
+        sectionLabel:  sectionLabel,
+        items:         items,
+        archivedTests: archived,
+        config:        config,
+        onSave:        onSave,
+        mode:          'list',
+        editIdx:       null,
+        formData:      {},
+        formEls:       null,
+        dirty:         false
       });
     })
     .catch(function(e) { console.error('openTestEditor:', e); });
@@ -149,13 +156,7 @@ function _teRenderList(state, body) {
     var btnDel = meIconBtn('\u2715', 'Удалить');
     btnDel.style.color = 'var(--red-dark)';
     btnDel.onclick = (function(idx) {
-      return function() {
-        if (confirm('Удалить "' + state.items[idx].name + '"?')) {
-          state.items.splice(idx, 1);
-          state.dirty = true;
-          _teRender(state);
-        }
-      };
+      return function() { _teHandleDelete(state, idx); };
     })(i);
 
     card.appendChild(info);
@@ -252,8 +253,19 @@ function _teApplyForm(state) {
   // В v2 общем редакторе добавляем поле section (для последующего разноса в saveAllTests)
   if (els.section) item.section = els.section.value;
 
-  if (state.editIdx === null) state.items.push(item);
-  else                        state.items[state.editIdx] = item;
+  if (state.editIdx === null) {
+    state.items.push(item);
+    // Возврат истории: если в архиве есть тест с такими же (name, section) —
+    // удаляем из архива. Старые записи измерений (sections/*/tests/{year}/history)
+    // в БД не трогаем — они автоматически "всплывут" в Активных тестах через cache.tests.
+    if (state.section === 'tests' && item.section && state.archivedTests && state.archivedTests.length) {
+      state.archivedTests = state.archivedTests.filter(function(a) {
+        return !(a.name === item.name && a.section === item.section);
+      });
+    }
+  } else {
+    state.items[state.editIdx] = item;
+  }
   state.dirty    = true;
   state.mode     = 'list';
   state.editIdx  = null;
@@ -264,9 +276,17 @@ function _teApplyForm(state) {
 // ─── Сохранение в Firestore ───────────────────────────────────────────────────
 
 function _teSave(state) {
-  var savePromise = (state.section === 'tests')
-    ? saveAllTests(state.items)
-    : saveTests(state.section, state.items);
+  var savePromise;
+  if (state.section === 'tests') {
+    // Общий редактор тестов: сохраняем И активные, И архив (один редактор владеет обоими)
+    savePromise = Promise.all([
+      saveAllTests(state.items),
+      saveAllArchivedTests(state.archivedTests || [])
+    ]);
+  } else {
+    // Per-section редактор: архив пока не поддерживаем (на практике не используется)
+    savePromise = saveTests(state.section, state.items);
+  }
 
   meSaveFeedback(
     'te-save-btn',
@@ -275,7 +295,10 @@ function _teSave(state) {
       // cache.tests содержит ЗНАЧЕНИЯ (за даты), а мы сохранили ОПРЕДЕЛЕНИЯ теста.
       // Поэтому cache.tests не трогаем — иначе галочки за сегодня сбросятся до перезагрузки.
       state.dirty = false;
-      if (typeof plans !== 'undefined') plans.tests = state.items;
+      if (typeof plans !== 'undefined') {
+        plans.tests = state.items;
+        if (state.section === 'tests') plans.archivedTests = state.archivedTests || [];
+      }
       state.onSave();
     },
     function(e) { console.error('_teSave:', e); }
@@ -286,3 +309,100 @@ function _teSave(state) {
 
 function _teConfirmClose(state) { meConfirmClose(state, _teClose); }
 function _teClose() { var o = document.getElementById('te-overlay'); if (o) o.remove(); }
+
+// ─── Удаление теста: с диалогом про "Прошлые тесты" ───────────────────────────
+
+// Проверка наличия измерений у теста — синхронно по cache.tests.
+// cache.tests склеивает значения всех активных секций по дате; при коллизии имён
+// в разных секциях это даст false-positive, но дубликаты имён — известное ограничение
+// модели (loadTestsCache перезаписывает поля при сборке).
+function _teTestHasHistory(name) {
+  if (typeof cache === 'undefined' || !cache.tests) return false;
+  var dks = Object.keys(cache.tests);
+  for (var i = 0; i < dks.length; i++) {
+    if (cache.tests[dks[i]][name] != null) return true;
+  }
+  return false;
+}
+
+function _teHandleDelete(state, idx) {
+  var item = state.items[idx];
+  if (!item) return;
+
+  // Архив поддерживается только в общем редакторе тестов. Per-section редактор —
+  // прежнее поведение (на практике не используется).
+  if (state.section !== 'tests') {
+    if (!confirm('Удалить "' + item.name + '"?')) return;
+    state.items.splice(idx, 1);
+    state.dirty = true;
+    _teRender(state);
+    return;
+  }
+
+  // Нет измерений — простой confirm, без диалога про архив.
+  if (!_teTestHasHistory(item.name)) {
+    if (!confirm('Удалить "' + item.name + '"?')) return;
+    state.items.splice(idx, 1);
+    state.dirty = true;
+    _teRender(state);
+    return;
+  }
+
+  // Есть измерения — кастомный диалог "Отображать историю в Прошлых тестах?".
+  _teShowArchiveDialog(function(choice) {
+    if (choice === 'cancel') return;
+    if (choice === 'show') {
+      var copy = {};
+      for (var k in item) copy[k] = item[k];
+      copy.archivedAt = new Date().toISOString();
+      // На случай повторного цикла "удалил → создал → удалил" — заменяем существующую
+      // запись в архиве по ключу (name, section), чтобы не плодить дубликаты.
+      state.archivedTests = (state.archivedTests || []).filter(function(a) {
+        return !(a.name === item.name && a.section === item.section);
+      });
+      state.archivedTests.push(copy);
+    }
+    // 'hide' — определение не кладём в архив, в "Прошлых тестах" тест не показывается.
+    // Сами измерения в БД остаются нетронутыми (никакие данные не удаляем).
+    state.items.splice(idx, 1);
+    state.dirty = true;
+    _teRender(state);
+  });
+}
+
+// Диалог "Отображать историю?" — три исхода: 'show' / 'hide' / 'cancel'.
+// z-index 1100 — выше overlay редактора (modal-editor.js, обычно 1000-ый диапазон).
+function _teShowArchiveDialog(callback) {
+  var overlay = document.createElement('div');
+  overlay.id = 'te-archive-dialog';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;'
+    + 'display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML =
+    '<div style="background:var(--card);border-radius:16px;padding:20px;width:320px;'
+      + 'max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)">'
+    +   '<div style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);line-height:1.35">'
+    +     'Отображать историю измерений удаляемого теста?'
+    +   '</div>'
+    +   '<div style="font-size:13px;color:var(--text-muted);margin-bottom:18px;line-height:1.5">'
+    +     'Она переместится в раздел «Прошлые тесты» и останется доступна для просмотра.'
+    +   '</div>'
+    +   '<div style="display:flex;flex-direction:column;gap:8px">'
+    +     '<button id="te-arch-show" style="padding:10px;border:none;border-radius:8px;'
+    +       'background:var(--green);color:var(--card);font-size:14px;font-weight:600;cursor:pointer">'
+    +       'Отображать</button>'
+    +     '<button id="te-arch-hide" style="padding:10px;border:1.5px solid var(--border-light);'
+    +       'border-radius:8px;background:var(--card);color:var(--text);font-size:14px;cursor:pointer">'
+    +       'Не отображать</button>'
+    +     '<button id="te-arch-cancel" style="padding:10px;border:none;border-radius:8px;'
+    +       'background:transparent;color:var(--text-muted);font-size:13px;cursor:pointer">'
+    +       'Отмена</button>'
+    +   '</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+
+  function close() { var o = document.getElementById('te-archive-dialog'); if (o) o.remove(); }
+  document.getElementById('te-arch-show').onclick   = function() { close(); callback('show'); };
+  document.getElementById('te-arch-hide').onclick   = function() { close(); callback('hide'); };
+  document.getElementById('te-arch-cancel').onclick = function() { close(); callback('cancel'); };
+  overlay.onclick = function(e) { if (e.target === overlay) { close(); callback('cancel'); } };
+}

@@ -694,6 +694,141 @@ async function runTests() {
     });
   });
 
+  // ─── API layer: archived tests ───────────────────────────────────────────
+
+  group('API: archived tests');
+
+  await test('loadSectionArchivedTests reads sections/{section}/tests/archived', function() {
+    var items = [{ name: 'Подтягивания', unit: 'раз', archivedAt: '2026-05-30T10:00:00.000Z' }];
+    var ctx = ts.setup({
+      seed: { 'users/u1/sections/wingchun/tests/archived': { items: items } }
+    });
+    return ctx.api.loadSectionArchivedTests('wingchun').then(function(i) {
+      assert.deepStrictEqual(i, items);
+    });
+  });
+
+  await test('loadSectionArchivedTests returns [] when archived doc is missing', function() {
+    var ctx = ts.setup();
+    return ctx.api.loadSectionArchivedTests('wingchun').then(function(i) {
+      assert.deepStrictEqual(i, []);
+    });
+  });
+
+  await test('saveArchivedTests writes to sections/{section}/tests/archived', function() {
+    var ctx = ts.setup();
+    var items = [{ name: 'Мабу', unit: 'сек', archivedAt: '2026-05-30T10:00:00.000Z' }];
+    return ctx.api.saveArchivedTests('wingchun', items).then(function() {
+      var stored = ctx.mock.store['users/u1/sections/wingchun/tests/archived'];
+      assert.deepStrictEqual(stored.items, items);
+      assert.ok(stored.updatedAt);
+    });
+  });
+
+  await test('saveAllArchivedTests spreads items across sections by item.section', function() {
+    var ctx = ts.setup();
+    global.userSections = ['strength', 'wingchun', 'qigong'];
+    var items = [
+      { name: 'Отжимания',   unit: 'раз', section: 'strength',  archivedAt: 'a' },
+      { name: 'Подтягивания',unit: 'раз', section: 'strength',  archivedAt: 'b' },
+      { name: 'Мабу',        unit: 'сек', section: 'wingchun',  archivedAt: 'c' },
+    ];
+    return ctx.api.saveAllArchivedTests(items).then(function() {
+      delete global.userSections;
+      var strItems = ctx.mock.store['users/u1/sections/strength/tests/archived'].items;
+      var wcItems  = ctx.mock.store['users/u1/sections/wingchun/tests/archived'].items;
+      assert.strictEqual(strItems.length, 2);
+      assert.strictEqual(wcItems.length, 1);
+      // Поле section не должно попасть в хранилище — оно избыточно внутри секции
+      strItems.forEach(function(it) { assert.strictEqual(it.section, undefined); });
+      // archivedAt сохраняется как есть
+      assert.strictEqual(wcItems[0].archivedAt, 'c');
+    });
+  });
+
+  await test('saveAllArchivedTests empties active sections without items', function() {
+    var ctx = ts.setup();
+    global.userSections = ['strength', 'qigong'];
+    var items = [{ name: 'X', section: 'strength' }];
+    return ctx.api.saveAllArchivedTests(items).then(function() {
+      delete global.userSections;
+      var qi = ctx.mock.store['users/u1/sections/qigong/tests/archived'];
+      assert.deepStrictEqual(qi.items, []);
+    });
+  });
+
+  await test('saveAllArchivedTests accepts empty/null items (clear archive)', function() {
+    var ctx = ts.setup();
+    global.userSections = ['strength'];
+    return ctx.api.saveAllArchivedTests([]).then(function() {
+      delete global.userSections;
+      var stored = ctx.mock.store['users/u1/sections/strength/tests/archived'];
+      assert.deepStrictEqual(stored.items, []);
+    });
+  });
+
+  await test('saveAllArchivedTests does not touch inactive sections', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/cardio/tests/archived': { items: [{ name: 'old-archived' }] }
+      }
+    });
+    global.userSections = ['strength']; // cardio не активна
+    return ctx.api.saveAllArchivedTests([{ name: 'X', section: 'strength' }]).then(function() {
+      delete global.userSections;
+      // Данные неактивной секции остались нетронутыми
+      assert.deepStrictEqual(
+        ctx.mock.store['users/u1/sections/cardio/tests/archived'].items,
+        [{ name: 'old-archived' }]
+      );
+    });
+  });
+
+  await test('loadArchivedTests merges archives of active sections into plans.archivedTests', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/tests/archived': { items: [{ name: 'Отжимания', unit: 'раз' }] },
+        'users/u1/sections/wingchun/tests/archived': { items: [{ name: 'Мабу',      unit: 'сек' }] },
+      }
+    });
+    global.userSections = ['strength', 'wingchun'];
+    return ctx.api.loadArchivedTests().then(function() {
+      delete global.userSections;
+      var merged = ctx.api.plans.archivedTests;
+      assert.strictEqual(merged.length, 2);
+      // section проставляется при склейке
+      var byName = {};
+      merged.forEach(function(it) { byName[it.name] = it; });
+      assert.strictEqual(byName['Отжимания'].section, 'strength');
+      assert.strictEqual(byName['Мабу'].section,      'wingchun');
+    });
+  });
+
+  await test('loadArchivedTests does not load inactive sections', function() {
+    var ctx = ts.setup({
+      seed: {
+        'users/u1/sections/strength/tests/archived': { items: [{ name: 'Active' }] },
+        'users/u1/sections/cardio/tests/archived':   { items: [{ name: 'Inactive' }] },
+      }
+    });
+    global.userSections = ['strength']; // cardio не активна
+    return ctx.api.loadArchivedTests().then(function() {
+      delete global.userSections;
+      var merged = ctx.api.plans.archivedTests;
+      assert.strictEqual(merged.length, 1);
+      assert.strictEqual(merged[0].name, 'Active');
+    });
+  });
+
+  await test('loadArchivedTests tolerates missing archived doc (returns [])', function() {
+    var ctx = ts.setup();
+    global.userSections = ['strength', 'wingchun'];
+    return ctx.api.loadArchivedTests().then(function() {
+      delete global.userSections;
+      assert.deepStrictEqual(ctx.api.plans.archivedTests, []);
+    });
+  });
+
   // ─── Promise contracts (защита от race conditions) ──────────────────────
 
   group('Promise contracts');

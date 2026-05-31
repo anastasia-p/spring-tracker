@@ -169,7 +169,13 @@ function getSkillIcon(skill) {
 }
 
 function renderTestsTab(container) {
-  container.innerHTML = '<div class="section-title">История тестов</div><div id="history-container"><div class="empty">Пока нет ни одного теста.</div></div>';
+  container.innerHTML =
+    '<div class="section-title">Активные тесты</div>' +
+    '<div id="history-container"><div class="empty">Пока нет ни одного теста.</div></div>' +
+    // Прошлые тесты — блок ниже Активных. По умолчанию скрыт; loadAndRenderHistory
+    // через renderArchivedTestsSection показывает, если в архиве есть тесты с измерениями.
+    '<div class="section-title" id="archived-history-title" style="display:none">Прошлые тесты</div>' +
+    '<div id="archived-history-container" style="display:none"></div>';
   loadAndRenderHistory();
 }
 
@@ -305,6 +311,7 @@ function initWithSections(sections) {
   var loadPromises = [
     loadDayTypes(),
     loadPlanFromFirebase('tests'),
+    loadArchivedTests(),
     loadTestsCache(),
     loadAllSkills(),
   ].concat(sections.map(function(s) { return loadPlanFromFirebase(s); }));
