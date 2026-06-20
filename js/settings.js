@@ -76,6 +76,75 @@ function applyUploadedPlan(section, data) {
   });
 }
 
+// --- Скачивание / загрузка списка упражнений (по аналогии с планом) ---
+// В отличие от плана, проверки на пустоту нет: пустой список тоже скачивается,
+// бэк отдаст файл с инструкцией и заголовками без строк.
+
+function downloadExercisesList(section, btn) {
+  btn.disabled = true;
+  var origText = btn.textContent;
+  btn.textContent = '...';
+  loadSectionExercisesList(section).then(function(items) {
+    return fetch(API_URL + '/download-list/' + section, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: items }),
+    });
+  })
+    .then(function(r) { if (!r.ok) throw new Error('Ошибка сервера'); return r.blob(); })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = section + '_list.xlsx';
+      a.click();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    })
+    .catch(function(e) {
+      console.error('downloadExercisesList:', e);
+      alert('Извините, что-то сломалось. Напишите @Ponomareva_Anastasia');
+    })
+    .finally(function() { btn.disabled = false; btn.textContent = origText; });
+}
+
+function uploadExercisesList(section, input) {
+  var file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  var label = input.closest('label');
+  if (label) { label.style.opacity = '0.6'; label.style.pointerEvents = 'none'; }
+  currentUser.getIdToken().then(function(token) {
+    var formData = new FormData();
+    formData.append('file', file);
+    return fetch(API_URL + '/upload-list/' + section, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData,
+    });
+  })
+    .then(function(r) { if (!r.ok) throw new Error('Ошибка сервера'); return r.json(); })
+    .then(function(result) {
+      if (!result.valid) { showValidationPopup(file.name, result.errors, result.warnings); return; }
+      if (result.warnings.length > 0) { showValidationPopup(file.name, [], result.warnings); }
+      applyUploadedExercisesList(section, result.data);
+    })
+    .catch(function(e) { alert('Ошибка: ' + e.message); })
+    .finally(function() {
+      if (label) { label.style.opacity = ''; label.style.pointerEvents = ''; }
+    });
+}
+
+function applyUploadedExercisesList(section, data) {
+  saveExercisesList(section, data).then(function() {
+    var statusEl = document.getElementById('status-list-' + section);
+    if (statusEl) { statusEl.textContent = 'Загружено!'; statusEl.className = 'update-status ok'; }
+  }).catch(function(e) {
+    console.error('applyUploadedExercisesList:', e);
+    var statusEl = document.getElementById('status-list-' + section);
+    if (statusEl) { statusEl.textContent = 'Ошибка'; statusEl.className = 'update-status err'; }
+  });
+}
+
 // --- Попап валидации ---
 function showValidationPopup(filename, errors, warnings) {
   var title = document.getElementById('validation-title');
@@ -295,6 +364,47 @@ function renderPlans(container) {
   _bindPlanGroupHandlers(group);
 }
 
+// Хендлеры кнопок для блока «Списки» — отдельный binder, чтобы не пересекаться
+// с _bindPlanGroupHandlers (там data-action="download"/"upload" слушает другие
+// обработчики). У списка data-action="download-list"/"upload-list".
+function _bindListGroupHandlers(group) {
+  group.querySelectorAll('button[data-action="download-list"]').forEach(function(btn) {
+    btn.onclick = function() { downloadExercisesList(btn.dataset.section, btn); };
+  });
+  group.querySelectorAll('input[type="file"][data-action="upload-list"]').forEach(function(input) {
+    input.onchange = function() { uploadExercisesList(input.dataset.section, input); };
+  });
+}
+
+function renderExerciseLists(container) {
+  if (!userSections.length) return;
+
+  var title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Списки';
+  container.appendChild(title);
+
+  var group = document.createElement('div');
+  group.className = 'settings-group';
+  group.style.marginBottom = '16px';
+  group.innerHTML = userSections.map(function(section) {
+    var meta = getSectionMeta(section);
+    var label = meta ? meta.label : section;
+    return '<div class="settings-item">'
+      + '<div><div class="settings-item-label">' + label + '</div>'
+      + '<div class="update-status" id="status-list-' + section + '"></div></div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + '<button class="update-btn" data-action="download-list" data-section="' + section + '">Скачать</button>'
+      + '<label class="update-btn" style="cursor:pointer">Загрузить'
+      + '<input type="file" accept=".xlsx" style="display:none" data-action="upload-list" data-section="' + section + '">'
+      + '</label>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+  container.appendChild(group);
+  _bindListGroupHandlers(group);
+}
+
 function renderTests(container) {
   var title = document.createElement('div');
   title.className = 'section-title';
@@ -480,6 +590,7 @@ function renderSettings() {
   renderDisciplines(container);
   renderPlans(container);
   renderTests(container);
+  renderExerciseLists(container);
   renderDataExport(container);
   renderAboutApp(container);
 }
