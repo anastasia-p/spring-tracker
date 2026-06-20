@@ -69,6 +69,21 @@ function saveTests(section, items) {
   });
 }
 
+// --- Section exercises list (список упражнений для добавления в дни плана) ---
+// users/{uid}/sections/{section}/exercises/list.items
+
+function loadSectionExercisesList(section) {
+  return sectionRef(section).collection('exercises').doc('list').get()
+    .then(function(s) { return s.exists ? (s.data().items || []) : []; });
+}
+
+function saveExercisesList(section, items) {
+  return sectionRef(section).collection('exercises').doc('list').set({
+    items: items,
+    updatedAt: new Date().toISOString()
+  });
+}
+
 // Сохраняет общий агрегированный список тестов (как в plans.tests) —
 // разносит по секциям через item.section. Используется общим редактором тестов.
 // Пишет только в АКТИВНЫЕ секции (userSections). Неактивные не трогаем —
@@ -999,6 +1014,8 @@ if (typeof module !== 'undefined' && module.exports) {
     loadSectionTests: loadSectionTests,
     saveTests: saveTests,
     saveAllTests: saveAllTests,
+    loadSectionExercisesList: loadSectionExercisesList,
+    saveExercisesList: saveExercisesList,
     loadSectionArchivedTests: loadSectionArchivedTests,
     saveArchivedTests: saveArchivedTests,
     saveAllArchivedTests: saveAllArchivedTests,

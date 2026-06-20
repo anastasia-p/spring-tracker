@@ -582,6 +582,60 @@ async function runTests() {
     });
   });
 
+  // ─── API layer: loadSectionExercisesList / saveExercisesList ─────────────
+
+  group('API: loadSectionExercisesList / saveExercisesList');
+
+  await test('loadSectionExercisesList reads sections/{section}/exercises/list', function() {
+    var items = [
+      { name: 'Сиу Ним Тау', desc: 'базовая форма', trackValue: true, unit: 'раз' },
+      { name: 'Чам Кью', note: 'медленно' }
+    ];
+    var ctx = ts.setup({
+      seed: { 'users/u1/sections/wingchun/exercises/list': { items: items } }
+    });
+    return ctx.api.loadSectionExercisesList('wingchun').then(function(i) {
+      assert.deepStrictEqual(i, items);
+    });
+  });
+
+  await test('loadSectionExercisesList returns [] when document does not exist', function() {
+    var ctx = ts.setup();
+    return ctx.api.loadSectionExercisesList('wingchun').then(function(i) {
+      assert.deepStrictEqual(i, []);
+    });
+  });
+
+  await test('loadSectionExercisesList returns [] when items field absent', function() {
+    var ctx = ts.setup({
+      seed: { 'users/u1/sections/wingchun/exercises/list': { updatedAt: 'x' } }
+    });
+    return ctx.api.loadSectionExercisesList('wingchun').then(function(i) {
+      assert.deepStrictEqual(i, []);
+    });
+  });
+
+  await test('saveExercisesList writes sections/{section}/exercises/list', function() {
+    var ctx = ts.setup();
+    var items = [{ name: 'Лотос', trackValue: true, unit: 'раз' }];
+    return ctx.api.saveExercisesList('qigong', items).then(function() {
+      var stored = ctx.mock.store['users/u1/sections/qigong/exercises/list'];
+      assert.deepStrictEqual(stored.items, items);
+      assert.ok(stored.updatedAt);
+    });
+  });
+
+  await test('saveExercisesList accepts empty array', function() {
+    var ctx = ts.setup({
+      seed: { 'users/u1/sections/qigong/exercises/list': { items: [{ name: 'X' }] } }
+    });
+    return ctx.api.saveExercisesList('qigong', []).then(function() {
+      var stored = ctx.mock.store['users/u1/sections/qigong/exercises/list'];
+      assert.deepStrictEqual(stored.items, []);
+      assert.ok(stored.updatedAt);
+    });
+  });
+
   // ─── API layer: createSectionDefaults ────────────────────────────────────
 
   group('API: createSectionDefaults');

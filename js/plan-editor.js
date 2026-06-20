@@ -277,6 +277,28 @@ function _peRenderList(state, body) {
       _peRender(state);
     };
     body.appendChild(addBtn);
+
+    // + добавить из списка — открывает picker модалкой поверх редактора дня.
+    // Добавленное упражнение пушится в state.exercises и убирается из открытого picker.
+    var addFromListBtn = document.createElement('button');
+    addFromListBtn.textContent   = '+ добавить из списка';
+    addFromListBtn.style.cssText = [
+      'width:100%;padding:10px;margin-top:8px',
+      'border:1px dashed #ccc;border-radius:10px',
+      'background:none;color:var(--text-muted);font-size:13px;cursor:pointer'
+    ].join(';');
+    addFromListBtn.onclick = function() {
+      openExerciseListPicker({
+        section:      state.section,
+        dayExercises: state.exercises,
+        onPick:       function(ex) {
+          state.exercises.push(ex);
+          state.dirty = true;
+          _peRender(state);  // sheet редактора дня перерисуется под picker'ом
+        }
+      });
+    };
+    body.appendChild(addFromListBtn);
   }
 
   if (state.savedScrollTop != null) {
@@ -333,6 +355,69 @@ function _peRenderForm(state, body) {
   };
 
   state.formEls = { name: nameEl, desc: descEl, note: noteEl, track: trackChk, unit: unitEl };
+
+  // + добавить в список — независимое действие, не сохраняет упражнение в план.
+  // Берет текущее состояние формы (что видит юзер), пишет в БД списка секции.
+  // При совпадении name — попап "уже есть, заменить?".
+  var addToListBtn = document.createElement('button');
+  addToListBtn.id          = 'pe-add-to-list-btn';
+  addToListBtn.textContent = '+ добавить в список';
+  addToListBtn.style.cssText = [
+    'width:100%;padding:10px;margin-top:6px',
+    'border:1px dashed #ccc;border-radius:10px',
+    'background:none;color:var(--text-muted);font-size:13px;cursor:pointer'
+  ].join(';');
+  addToListBtn.onclick = function() {
+    var els  = state.formEls;
+    var name = els.name.value.trim();
+    if (!name) { els.name.style.borderColor = 'var(--red)'; els.name.focus(); return; }
+
+    var ex   = { name: name };
+    var desc = els.desc.value.trim();
+    var note = els.note.value.trim();
+    if (desc) ex.desc = desc;
+    if (note) ex.note = note;
+    if (els.track.checked) { ex.trackValue = true; ex.unit = els.unit.value; }
+
+    _peFeedbackAddToList(addToListBtn, addExerciseToList(state.section, ex));
+  };
+  body.appendChild(addToListBtn);
+}
+
+// Визуальный фидбек для кнопки "+ добавить в список": зеленая галочка на ~1.5с.
+// Для 'cancelled' — просто возвращаем исходный вид без галочки.
+function _peFeedbackAddToList(btn, promise) {
+  var origText        = btn.textContent;
+  var origColor       = btn.style.color;
+  var origBorderColor = btn.style.borderColor;
+  // Фиксируем размеры, чтобы кнопка не дергалась при смене текста.
+  btn.style.width  = btn.offsetWidth  + 'px';
+  btn.style.height = btn.offsetHeight + 'px';
+  btn.disabled     = true;
+  btn.textContent  = 'Сохранение...';
+
+  function restore() {
+    btn.disabled            = false;
+    btn.textContent         = origText;
+    btn.style.color         = origColor;
+    btn.style.borderColor   = origBorderColor;
+    btn.style.width         = '';
+    btn.style.height        = '';
+  }
+
+  promise
+    .then(function(result) {
+      if (result.status === 'cancelled') { restore(); return; }
+      btn.textContent       = result.status === 'replaced' ? 'Заменено \u2713' : 'Добавлено \u2713';
+      btn.style.color       = 'var(--green)';
+      btn.style.borderColor = 'var(--green)';
+      setTimeout(restore, 1500);
+    })
+    .catch(function(e) {
+      console.error('addExerciseToList:', e);
+      alert('Ошибка при добавлении в список');
+      restore();
+    });
 }
 
 // ─── Применить форму → в список ───────────────────────────────────────────────
