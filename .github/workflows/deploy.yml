@@ -30,6 +30,8 @@ jobs:
         run: node tools/tests/pure.test.js
       - name: Юнит-тесты db.js
         run: node tools/tests/db.test.js
+      - name: Юнит-тесты exercise-list.js
+        run: node tools/tests/exercise-list.test.js
       - name: Установить Playwright
         run: |
           npm init -y
