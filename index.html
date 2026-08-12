@@ -1055,19 +1055,41 @@
     .cta-section .section-title { color: #fff; }
     .cta-section .section-sub { color: rgba(255,255,255,0.7); margin: 0 auto 48px; }
 
-    .btn-white {
-      display: inline-block;
-      padding: 16px 40px;
-      background: #fff;
-      color: var(--green-dark);
-      border-radius: 12px;
-      font-size: 17px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: transform 0.15s;
+    .cta-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
+    .btn-white,
+    .btn-white-outline {
+      display: inline-block;
+      box-sizing: border-box;
+      width: 220px;
+      max-width: 100%;
+      padding: 15px 0;
+      text-align: center;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1.5px solid transparent;
+      transition: background 0.2s, box-shadow 0.15s, border-color 0.2s;
+    }
+
+    .btn-white {
+      background: #fff;
+      color: var(--green-dark);
+    }
     .btn-white:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+
+    .btn-white-outline {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255,255,255,0.7);
+    }
+    .btn-white-outline:hover { border-color: #fff; background: rgba(255,255,255,0.08); }
 
     /* FAQ */
     .faq-section {
@@ -1997,7 +2019,10 @@
 <div class="cta-section">
   <h2 class="section-title">Начни прокачку сегодня</h2>
   <p class="section-sub">Бесплатно, без рекламы</p>
-  <a class="btn-white" href="/app.html#register" onclick="ym(108404687,'reachGoal','click_cta_register')">Создать аккаунт</a>
+  <div class="cta-buttons">
+    <a class="btn-white" href="/app.html#register" onclick="ym(108404687,'reachGoal','click_cta_register')">Зарегистрироваться</a>
+    <a class="btn-white-outline" href="/app.html#guest">Войти как гость</a>
+  </div>
 </div>
 
 <!-- FAQ -->
