@@ -423,7 +423,7 @@
     /* ── RPG BLOCK ───────────────────────────────── */
     .rpg-section {
       padding: 80px 48px;
-      background: var(--pink);
+      background: #fff;
     }
 
     .rpg-inner {
@@ -826,6 +826,12 @@
       margin-bottom: 12px;
     }
 
+    /* Плашка "План" — розовая: секция ПЛАН на мятном фоне, мятная плашка терялась */
+    #plan .section-badge {
+      background: var(--pink);
+      color: var(--pink-text);
+    }
+
     .section-title {
       font-size: clamp(26px, 4vw, 40px);
       font-weight: 700;
@@ -995,8 +1001,8 @@
     }
 
     .feature-section--alt {
-      background: #fff;
-      --fade-color: #ffffff;
+      background: var(--green-light);
+      --fade-color: #E1F5EE;
     }
 
     .feature-section--accent {
