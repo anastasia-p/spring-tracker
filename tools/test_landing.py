@@ -76,11 +76,27 @@ def run_tests(html):
          'max-width: 480px' in html or 'max-width:480px' in html,
          'Нет @media (max-width: 480px)')
 
-    # 12. white-space: nowrap не переопределен в мобильном media query
-    mobile_block = re.search(r'max-width:\s*480px\s*\)(.*?)(?=@media|\Z)', html, re.S)
-    mobile_nowrap = False
-    if mobile_block:
-        mobile_nowrap = 'white-space: nowrap' in mobile_block.group(1) or 'white-space:nowrap' in mobile_block.group(1)
+    # 12. white-space: nowrap не переопределен ни в одном мобильном media query.
+    # Разбираем тело каждого @media (max-width: 480px) { ... } по балансу
+    # фигурных скобок и проверяем ВСЕ такие блоки, а не только первый.
+    # Прежняя версия хватала первый 480px-блок регуляркой до следующего @media —
+    # порядок блоков в файле мог давать и ложное срабатывание, и пропуск реальной регрессии.
+    def media_480_bodies(src):
+        bodies = []
+        for m in re.finditer(r'@media[^{]*max-width:\s*480px[^{]*\{', src):
+            depth, j = 1, m.end()
+            while depth and j < len(src):
+                if src[j] == '{':
+                    depth += 1
+                elif src[j] == '}':
+                    depth -= 1
+                j += 1
+            bodies.append(src[m.end():j - 1])
+        return bodies
+    mobile_nowrap = any(
+        ('white-space: nowrap' in body or 'white-space:nowrap' in body)
+        for body in media_480_bodies(html)
+    )
     test('white-space: nowrap не задан в mobile query',
          not mobile_nowrap,
          'white-space: nowrap найден внутри @media (max-width: 480px) — сломает typewriter')
